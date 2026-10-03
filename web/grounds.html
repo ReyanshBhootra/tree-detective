@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grounds Tree Health</title>
+  <meta name="description" content="Live map of crowd-reported tree conditions and pest flags on campus.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/grounds.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <a href="./" class="back">← Back to the map</a>
+      <h1>Campus tree health</h1>
+      <p class="sub">Crowd-reported photos, species guesses and problem flags. A flag says <b>possible</b> until <b id="threshold">5</b> different people report the same thing on the same tree.</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn" id="csv" href="api/reports.csv" download>Download CSV</a>
+      <span class="muted small" id="updated"></span>
+    </div>
+  </header>
+
+  <section class="stats" id="stats" aria-label="Summary"></section>
+
+  <section class="layout">
+    <div id="gmap" aria-label="Map of tree conditions"></div>
+    <div class="legend">
+      <span><i class="dot ok"></i> No flags</span>
+      <span><i class="dot possible"></i> Possible problem</span>
+      <span><i class="dot confirmed"></i> Confirmed problem</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every tagged tree</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Tree</th><th>Flags</th><th>Species (crowd guess)</th><th>Reports</th><th>Latest photos</th></tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="muted small">
+    Species guesses come from Azure Custom Vision and are sometimes wrong, so the confidence and how many people agreed are shown next to each one.
+    Nothing here has been checked by an arborist.
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="js/grounds.js"></script>
+</body>
+</html>

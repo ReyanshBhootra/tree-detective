@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tree Detective</title>
+  <meta name="description" content="Wake the trees of campus. Every tagged tree has a name, a voice and a true local story.">
+  <meta name="theme-color" content="#0f1c17">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='28' y='38' width='8' height='20' rx='3' fill='%238a5a35'/%3E%3Ccircle cx='32' cy='28' r='20' fill='%2367c587'/%3E%3Ccircle cx='24' cy='22' r='4' fill='%23ffe9a8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="map" aria-label="Storybook map of campus trees"></div>
+  <canvas id="fireflies" aria-hidden="true"></canvas>
+
+  <header class="hud">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">🌳</span>
+      <span class="brand-name">Tree Detective</span>
+    </div>
+    <div class="score" aria-live="polite">
+      <span class="score-points"><strong id="points">0</strong> pts</span>
+      <span class="score-trees"><strong id="awake">0</strong>/<span id="total">0</span> awake</span>
+    </div>
+  </header>
+
+  <nav class="actions">
+    <button id="btn-scan" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
+      Scan a tree
+    </button>
+    <button id="btn-route" class="btn">Route</button>
+    <button id="btn-link" class="btn" hidden>Text me</button>
+    <a class="btn" href="grounds.html">Grounds</a>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Scan dialog -->
+  <dialog id="scan-dialog" class="sheet">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <h2>Scan a tree</h2>
+    <p class="muted">Point your camera at the QR code on the tree's tag. Your phone's own camera app works too.</p>
+    <div class="scanner">
+      <video id="scan-video" playsinline muted></video>
+      <div class="scanner-frame" aria-hidden="true"></div>
+      <p id="scan-status" class="scanner-status">Starting camera…</p>
+    </div>
+    <form id="code-form" class="code-form">
+      <label for="code-input">No camera? Type the code on the tag</label>
+      <div class="row">
+        <input id="code-input" placeholder="TD-001" autocomplete="off" autocapitalize="characters" required>
+        <button class="btn btn-primary">Wake it</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Story dialog -->
+  <dialog id="story-dialog" class="sheet story">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <div class="story-head">
+      <div>
+        <p class="persona" id="story-persona"></p>
+        <h2 id="story-name"></h2>
+      </div>
+      <div class="badges">
+        <span class="badge" id="story-label"></span>
+        <span class="badge badge-draft" id="story-draft" hidden>Draft · not yet source-checked</span>
+      </div>
+    </div>
+    <p id="story-visit" class="visit-note"></p>
+
+    <figure class="timelapse">
+      <div class="timelapse-stage" id="tl-stage"></div>
+      <figcaption>
+        <span class="tl-era"><strong id="tl-year"></strong> <span id="tl-caption"></span></span>
+        <span class="tl-note" id="tl-note">Generated impression, not a real photo</span>
+      </figcaption>
+      <div class="tl-dots" id="tl-dots" role="tablist" aria-label="Eras of this tree's life"></div>
+    </figure>
+
+    <div class="narration">
+      <button id="btn-play" class="btn btn-primary btn-round" aria-label="Play story">▶</button>
+      <div class="narration-bar"><div id="narration-progress"></div></div>
+      <span class="muted small" id="voice-note"></span>
+    </div>
+
+    <p id="story-text" class="story-text"></p>
+    <p class="source small" id="story-source"></p>
+
+    <details class="report" id="report">
+      <summary>Help the grounds team: add a photo or flag a problem</summary>
+      <form id="report-form">
+        <label class="file">
+          <input type="file" name="photo" accept="image/*" capture="environment">
+          <span>📷 Take or choose a photo of this tree</span>
+        </label>
+        <fieldset>
+          <legend>Anything wrong with it?</legend>
+          <label><input type="radio" name="flagType" value="none" checked> Looks fine</label>
+          <label><input type="radio" name="flagType" value="pest"> Pests (like spotted lanternfly)</label>
+          <label><input type="radio" name="flagType" value="damage"> Damage (broken limbs, bark wounds)</label>
+          <label><input type="radio" name="flagType" value="dying"> Looks like it's dying</label>
+        </fieldset>
+        <button class="btn btn-primary">Send report</button>
+        <p class="muted small">Flags stay <em>possible</em> until <span class="confirm-n">5</span> different people report the same thing. Photos go to the campus grounds map.</p>
+      </form>
+      <div id="report-result" hidden></div>
+    </details>
+  </dialog>
+
+  <!-- Route panel -->
+  <aside id="route-panel" class="panel" hidden>
+    <div class="panel-head">
+      <h2>Your walking route</h2>
+      <button class="icon-btn" id="route-close" aria-label="Close route">×</button>
+    </div>
+    <ol id="route-list"></ol>
+  </aside>
+
+  <!-- Photon link dialog -->
+  <dialog id="link-dialog" class="sheet">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <h2>Get texts from the grove</h2>
+    <p>Text this code to <strong id="link-number">our Tree Detective number</strong> to link your progress. It works for 30 minutes.</p>
+    <p class="link-code" id="link-code">······</p>
+    <p class="muted small">Then text "points", "next", "route" or "story Old Oakley". Text "stop" any time to pause reminders.</p>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+[
+  {
+    "code": "TD-001",
+    "name": "Old Oakley",
+    "persona": "elder",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 1950,
+    "lat": 40.74195,
+    "lng": -74.17875,
+    "story": "Well now. Come closer, I don't shout. They call me Old Oakley. My roots go deeper than this path, and I have watched more first days of school than I can count. My real story, the one with names and dates in it, is still being dug out of the archives by someone careful. Until they're sure of every word, I'll only tell you what I know for certain: you're here, the light is good, and you found me. That's a fine start.",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1925,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 1953,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 1988,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  },
+  {
+    "code": "TD-002",
+    "name": "Whisper",
+    "persona": "gossip",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 1985,
+    "lat": 40.74232,
+    "lng": -74.1779,
+    "story": "Oh! Oh, hello, you came over. Everyone walks right past me, phones out, coffee in hand, and I see all of it. I'd love to tell you who used to stand on this corner long before me, and believe me, I will, but my storyteller says I am not allowed to repeat a single thing until it's been checked against the library. Rules, rules. Come back soon and I'll have the good stuff, sourced and everything.",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1960,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 1988,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 2006,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  },
+  {
+    "code": "TD-003",
+    "name": "Professor Plane",
+    "persona": "scholar",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 1970,
+    "lat": 40.74148,
+    "lng": -74.1795,
+    "story": "Good afternoon. I am Professor Plane, and I insist on citations. My lecture on the history of this exact spot is in draft, pending review against NJIT records and the Newark Public Library collections. I will not state a date I cannot source. For now, observe my bark: it peels in patches, like a map. Make a note of it. There will be a quiz.",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1945,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 1973,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 1998,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  },
+  {
+    "code": "TD-004",
+    "name": "Lumen",
+    "persona": "dreamer",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 1995,
+    "lat": 40.74275,
+    "lng": -74.17905,
+    "story": "Mm. You woke me. That's alright. I was dreaming about the afternoon light, how it slides down the brick and lands right here, at my feet. Someone is still gathering the true story of this place for me, and I'd rather wait for the real thing than dream one up. Stay a minute. Listen to the leaves. That part, at least, is entirely true.",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1970,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 1998,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 2011,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  },
+  {
+    "code": "TD-005",
+    "name": "Sprig",
+    "persona": "sprout",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 2015,
+    "lat": 40.7411,
+    "lng": -74.1782,
+    "story": "Hi! Hi! Are you here for me? Nobody ever scans me, I'm the little one. I don't have a long history yet, I'm still growing my first big branches. Do you think I'll get as tall as the old ones? What's the tallest thing you've ever climbed? Come back next year and see how much I've grown!",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1990,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 2018,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 2021,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  },
+  {
+    "code": "TD-006",
+    "name": "Riddle",
+    "persona": "trickster",
+    "species": null,
+    "speciesConfidence": null,
+    "plantedYearEstimate": 1975,
+    "lat": 40.743,
+    "lng": -74.1776,
+    "story": "Riddle me this: what has rings but no fingers? Ha, me. I am Riddle, and I collect local legends the way squirrels collect acorns. But here's my promise: when I tell you one, I'll tell you it's a legend, and when I tell you a fact, it'll come with a source. Neither is ready yet. Come back, and bring a friend who likes a good tale.",
+    "label": "Fact",
+    "sourceUrl": null,
+    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
+    "verified": false,
+    "audioUrl": null,
+    "timelapse": [
+      {
+        "era": "before",
+        "year": 1950,
+        "caption": "Before me: the ground where I now stand.",
+        "imageUrl": null
+      },
+      {
+        "era": "sapling",
+        "year": 1978,
+        "caption": "A sapling, newly planted.",
+        "imageUrl": null
+      },
+      {
+        "era": "midlife",
+        "year": 2001,
+        "caption": "Halfway through my life so far.",
+        "imageUrl": null
+      },
+      {
+        "era": "today",
+        "year": 2026,
+        "caption": "Me, today.",
+        "imageUrl": null
+      }
+    ]
+  }
+]

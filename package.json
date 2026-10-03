@@ -1,0 +1,30 @@
+{
+  "name": "tree-detective",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A storybook campus map where every tagged tree has a name, a voice, and a true local story, plus a crowdsourced tree health map for the grounds team.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "photon": "node photon/index.js",
+    "photon:nudge": "node photon/index.js --nudge-now",
+    "test": "node --test test/*.test.js",
+    "stories": "node scripts/generate-stories.js",
+    "timelapse": "node scripts/generate-timelapse.js",
+    "audio": "node scripts/generate-audio.js",
+    "qr": "node scripts/make-qr.js",
+    "check-content": "node scripts/check-content.js"
+  },
+  "dependencies": {
+    "@azure/data-tables": "^13.3.0",
+    "@azure/storage-blob": "^12.26.0",
+    "express": "^4.21.2",
+    "multer": "^2.0.0",
+    "qrcode": "^1.5.4"
+  },
+  "optionalDependencies": {
+    "spectrum-ts": "^12.10.1"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "code": "TD-001",
+  "label": "Fact",
+  "plantedYearEstimate": 1950,
+  "facts": [
+    {
+      "text": "Write one checked fact about this exact spot here, in plain words.",
+      "sourceUrl": "https://example.org/the-archive-page-you-read",
+      "sourceNote": "Archive name, collection, page or item number"
+    }
+  ],
+  "eras": [
+    { "era": "before", "year": 1925, "caption": "What stood here before the tree, per the sources.", "details": "Visual details for the image model, only from the sources." },
+    { "era": "sapling", "year": 1953, "caption": "Newly planted.", "details": "" },
+    { "era": "midlife", "year": 1988, "caption": "", "details": "" },
+    { "era": "today", "year": 2026, "caption": "Today.", "details": "" }
+  ]
+}
