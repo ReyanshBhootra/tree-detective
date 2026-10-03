@@ -21,7 +21,7 @@ function photoUrl(u) {
   return u.startsWith('http') ? u : `${API}${u}`;
 }
 
-function render(data) {
+async function render(data) {
   $('threshold').textContent = data.confirmThreshold;
   $('updated').textContent = `Updated ${new Date(data.generatedAt).toLocaleTimeString()}`;
   $('csv').href = `${API}/api/reports.csv`;
@@ -68,10 +68,9 @@ function render(data) {
 
   if (!map) {
     map = L.map('gmap', { scrollWheelZoom: false });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20, subdomains: 'abcd',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    }).addTo(map);
+    const tiles = (await fetch(`${API}/api/config`).then((r) => r.json()).catch(() => ({}))).tiles
+      ?? { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' };
+    L.tileLayer(tiles.url, { maxZoom: tiles.maxZoom, attribution: tiles.attribution }).addTo(map);
     if (trees.length) map.fitBounds(L.latLngBounds(trees.map((t) => [t.lat, t.lng])).pad(0.3));
   }
   for (const t of trees) {
@@ -86,7 +85,7 @@ async function load() {
   try {
     const res = await fetch(`${API}/api/health`);
     if (!res.ok) throw new Error(res.status);
-    render(await res.json());
+    await render(await res.json());
   } catch (e) {
     $('rows').innerHTML = `<tr><td colspan="6">Could not load reports (${esc(e.message)}).</td></tr>`;
   }

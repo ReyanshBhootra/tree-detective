@@ -112,6 +112,12 @@ export function createApp({
       flagTypes: FLAG_TYPES,
       seasons: SEASONS,
       photonNumber: env.PHOTON_PHONE_NUMBER || null,
+      // Map background. OpenStreetMap's free tiles by default, no key needed.
+      tiles: {
+        url: env.MAP_TILES_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: env.MAP_TILES_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: Number(env.MAP_TILES_MAX_ZOOM || 19),
+      },
       pestReport: { url: PEST_REPORT_URL, hotline: PEST_HOTLINE },
       historic: historicUrl
         ? {

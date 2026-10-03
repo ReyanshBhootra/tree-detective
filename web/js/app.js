@@ -111,11 +111,9 @@ function initMap() {
     : [40.7424, -74.1784];
   map = L.map('map', { zoomControl: false, attributionControl: true }).setView(center, 18);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
-    maxZoom: 20,
-    subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  }).addTo(map);
+  const tiles = state.config.tiles;
+  map.setMaxZoom(tiles.maxZoom);
+  L.tileLayer(tiles.url, { maxZoom: tiles.maxZoom, attribution: tiles.attribution }).addTo(map);
 
   for (const tree of state.trees) {
     const m = L.marker([tree.lat, tree.lng], { icon: treeIcon(tree), title: tree.name, keyboard: true })
