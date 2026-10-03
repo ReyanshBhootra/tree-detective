@@ -17,7 +17,7 @@ export function loadPersonas(file = PERSONAS_FILE) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-// Checks the content rules from the context doc. Returns a list of problems;
+// Checks a tree has everything it needs. Returns a list of problems;
 // an empty list means the tree is safe to show in a live demo.
 export function contentProblems(tree, personas) {
   const p = [];

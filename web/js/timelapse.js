@@ -1,5 +1,5 @@
 // Storybook placeholder scenes for a tree's life, drawn in SVG.
-// Used only until Person A's pre-generated images exist (tree.timelapse[i].imageUrl).
+// Used until the real generated images exist (tree.timelapse[i].imageUrl).
 // Like the real ones, these are impressions, never historical photos.
 
 function rng(seed) {

@@ -1,18 +1,7 @@
-# Sourced facts, one file per tree
+# Facts
 
-Person A drops one JSON file here per tree, named after its code (`TD-001.json`).
-`npm run stories` turns the facts into a story in the tree's persona voice with
-Azure OpenAI. The model is told to use **only** these facts, and every story it
-writes comes back with `verified: false` until a human reads it against the
-sources and flips it to `true` in `data/trees.json`.
+One JSON file per tree, named after its code, like `TD-001.json`. Copy `TD-001.example.json` to start.
 
-Rules from the context doc:
+`npm run stories` turns these into the tree's story. It only uses what's in the file, so every fact needs a source link. Keep a tree either all `Fact` or all `Local Legend`, don't mix them.
 
-- Every fact needs a real source link (NJIT archives, Newark Public Library, etc).
-- A tree's facts are either all `Fact` or all `Local Legend`. Never mixed.
-- Don't invent dates. If you only know a decade, write the decade.
-
-`eras` is optional. It lets you write the time-lapse captions and give the image
-model era details that come from the same sources.
-
-See `TD-001.example.json` for the shape. Files ending in `.example.json` are ignored.
+New stories come out with `verified: false`. Read them over and flip it to `true` in `data/trees.json` once they're right.

@@ -1,96 +1,52 @@
 # Tree Detective
 
-A storybook campus map where every real tagged tree has a name, a voice, and a true local story. Walk up to a tree, scan its tag, and it wakes up: it glows on the map, you earn points, and it tells you what this spot looked like across its own lifetime. Meanwhile, the photos and problem flags people send quietly build a real, usable map of campus tree health for the grounds team.
+Scan a QR tag on a real tree around campus and it wakes up on the map, tells you its story out loud, and shows you what that spot looked like over its lifetime. You collect points for every tree you find.
 
-Built for GirlHacks 2026, "Enchanted Grove" (NJIT). Tracks: **Whimsical Wonders** and **Best Use of Azure by Avanade**.
+People can also snap a photo of a tree or report pests and damage, which ends up on a dashboard the grounds crew can actually use. A problem only gets marked confirmed once 5 different people report it.
 
-## Run it
+Made for GirlHacks 2026 at NJIT.
+
+## Running it
 
 ```bash
 npm install
-npm start            # http://localhost:3000
-npm test             # 23 tests: points, vouching, API, Photon replies
+npm start
 ```
 
-You don't need any Azure keys to run it. When a service isn't configured, the app falls back to a local equivalent:
+Then open http://localhost:3000. To fake a scan, go to http://localhost:3000/?tree=TD-001 (that's the same link the QR tags point to).
 
-| Piece | With Azure | Without |
-|---|---|---|
-| Visits, points, reports | Azure Table Storage | JSON files in `.data/` |
-| Report photos | Azure Blob Storage | `uploads/` folder |
-| Species guess | Azure Custom Vision | Photo is saved, guess is skipped |
-| Tree voices | Azure Speech (pre-rendered MP3) | Browser speech, tuned per persona |
-| Stories | Azure OpenAI, ahead of time, human-checked | Sample text in `data/trees.json` |
-| Time-lapse | Azure OpenAI images, ahead of time | Drawn storybook SVG scenes |
+Tests: `npm test`
 
-Copy `.env.example` to `.env` and fill in whatever keys you have.
+It runs fine without any Azure keys, it just falls back to local files and the browser's built in voice. Copy `.env.example` to `.env` and add keys as you get them.
 
-Try it without a tree: open `http://localhost:3000/?tree=TD-001`, which is exactly the link a printed QR tag holds.
+## What uses Azure
 
-## How it works
+- Speech for each tree's voice
+- OpenAI for writing the stories and generating the time-lapse images (done ahead of time, not live)
+- Custom Vision for guessing the species from a photo
+- Table Storage and Blob Storage for visits, reports and photos
+- App Service / Static Web Apps for hosting
 
-1. **Map** (`web/`): a dark storybook Leaflet map with fireflies. Sleeping trees are grey with little "z z"s. Woken trees glow in their persona's color and sway.
-2. **Scan**: each tag's QR is a plain link (`/?tree=TD-001`), so any phone camera works. There's also an in-app scanner and a "type the code" fallback.
-3. **Location check**: happens on the phone. Only the yes/no result goes to the server, never the position. If location is off, the QR code alone still counts.
-4. **Points**: 10 per tree, once per player. Players are an anonymous random ID kept on the device.
-5. **Story**: read aloud in the tree's voice while the words light up, with a time-lapse of the spot across the tree's life. Every story shows its label (**Fact** or **Local Legend**), its source, and a "Draft" badge until a human has verified it.
-6. **Photo and flags**: a photo gets a species guess with a confidence score, and the person can say if it looks right. Pest, damage, and dying flags stay **possible** until **5 different people** flag the same thing on the same tree, and then they become **confirmed**. The same person reporting five times still counts as one.
-7. **Grounds dashboard** (`/grounds.html`): a map and table of every tree's flags, crowd species guesses, and recent photos, plus a CSV export.
-8. **Photon** (optional): an iMessage companion that answers "points", "visited", "next", "route", and "story Old Oakley", and sends a gentle "go explore" nudge.
+## Pages
 
-## The content pipeline (Person A)
+- `/` the map
+- `/grounds.html` tree health dashboard for the grounds team, with a CSV export
 
-The rule: **nothing is generated live during the demo, and no fact is invented.**
+## Adding trees and stories
+
+Trees live in `data/trees.json` and the 9 tree personalities are in `data/personas.json`. The 6 trees in there right now are placeholders.
+
+To write a tree's story, put the facts and sources in `data/facts/<code>.json` (there's an example file) and run:
 
 ```bash
-# 1. Write sourced facts: data/facts/TD-001.json (see TD-001.example.json)
-npm run stories -- --dry-run      # see exactly what the model will be told
-npm run stories                   # Azure OpenAI writes it in-persona, marked verified:false
-# 2. Read each story against its sources, then set "verified": true in data/trees.json
-npm run timelapse                 # Azure OpenAI images for each era -> web/timelapse/
-npm run audio                     # Azure Speech narration per persona -> web/audio/
-npm run check-content             # what's still missing before each tree is demo-ready
+npm run stories     # writes the story in the tree's voice
+npm run timelapse   # makes the time-lapse images
+npm run audio       # records the narration
+npm run qr          # printable QR tags, set PUBLIC_URL first
 ```
 
-The 9 personas (voice, speaking style, glow color) live in `data/personas.json`.
+`npm run check-content` tells you what each tree is still missing.
 
-## Tagging trees (Person D)
+## Texting (Photon)
 
-1. Replace the sample trees in `data/trees.json` with the real tagged trees (code, name, persona, lat, lng).
-2. Set `PUBLIC_URL` to the deployed site, then run `npm run qr` and print `print/qr-tags.html`.
-
-## Photon setup (Person C, cut first if short on time)
-
-1. Sign up at [app.photon.codes](https://app.photon.codes) for a project ID and secret.
-2. Set `PHOTON_PROJECT_ID`, `PHOTON_PROJECT_SECRET`, `PHOTON_PHONE_NUMBER`, and the same `PHOTON_API_KEY` on the API and the Photon service.
-3. `npm run photon` runs the chat loop, and nudges are checked hourly. `npm run photon:nudge` sends any due nudges once.
-
-Linking: the website shows a 6-letter code (it lasts 30 minutes and works once). The player texts it to the number, and from then on their texts map to their progress. Text "stop" to pause nudges.
-
-## Deploying on Azure
-
-- **One App Service (simplest):** `npm start` serves both the API and the website. Run `npm run photon` as a second App Service, or as a WebJob.
-- **Split:** deploy `web/` to Azure Static Web Apps (`staticwebapp.config.json` is included), deploy the API to App Service, and set `apiBase` in `web/config.js`. The API would also need CORS for the static site's origin.
-- Set `AZURE_STORAGE_CONNECTION_STRING`. Tables and the blob container are created automatically. The photo container uses public blob read access so the dashboard can show the photos.
-
-## API
-
-| Method | Path | What it does |
-|---|---|---|
-| GET | `/api/trees`, `/api/trees/:code`, `/api/personas`, `/api/config` | Read content |
-| POST | `/api/visits` `{playerId, treeCode, locationVerified}` | Wake a tree, award points |
-| GET | `/api/players/:playerId` | Points, visited trees, next tree |
-| POST | `/api/trees/:code/reports` (multipart: `photo`, `flagType`, `playerId`) | Photo, species guess, flag |
-| POST | `/api/trees/:code/reports/:id/feedback` | "Does the species guess look right?" |
-| GET | `/api/health`, `/api/reports.csv` | Grounds team data |
-| POST | `/api/link-codes` | Code for linking Photon |
-| * | `/api/photon/*` | Photon service only (needs `x-photon-key`) |
-
-## Honest limits
-
-- The six trees in this repo are **samples** with placeholder coordinates. Their stories deliberately contain no historical claims, and each one is marked as a draft.
-- Stories use only real, sourced local history. Legends are labeled as legends.
-- Time-lapse images are always labeled as generated impressions, never as real photos.
-- Species guesses are sometimes wrong, so the confidence score is always shown.
-- Don't claim NJIT facilities uses this data unless they've said so.
-- `npm audit` reports moderate advisories in OpenTelemetry packages pulled in by Photon's SDK. They only affect the optional Photon service.
+There's an optional iMessage bot that answers stuff like "points", "next" or "story Old Oakley" and reminds people to go find more trees. Get keys from app.photon.codes, add them to `.env`, and run `npm run photon`.
