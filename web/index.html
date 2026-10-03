@@ -33,10 +33,18 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
       Scan a tree
     </button>
+    <button id="btn-book" class="btn">Book</button>
     <button id="btn-route" class="btn">Route</button>
     <button id="btn-link" class="btn" hidden>Text me</button>
     <a class="btn" href="grounds.html">Grounds</a>
   </nav>
+
+ <div id="timetravel" class="timetravel" hidden>
+    <label for="tt-range">Time travel</label>
+    <span>Today</span>
+    <input id="tt-range" type="range" min="0" max="100" value="0" aria-label="Fade the map back to the 1930s aerial photos">
+    <span id="tt-year">1930</span>
+  </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
@@ -73,6 +81,7 @@
       </div>
     </div>
     <p id="story-visit" class="visit-note"></p>
+    <p id="story-status" class="status-note" hidden></p>
 
     <figure class="timelapse">
       <div class="timelapse-stage" id="tl-stage"></div>
@@ -92,6 +101,17 @@
     <p id="story-text" class="story-text"></p>
     <p class="source small" id="story-source"></p>
 
+    <div id="story-benefits" class="benefits" hidden></div>
+
+    <section id="ask" class="ask" hidden>
+      <h3>Ask me something</h3>
+      <form id="ask-form" class="row">
+        <input id="ask-input" maxlength="200" placeholder="What was here before you?" autocomplete="off" required>
+        <button class="btn btn-primary">Ask</button>
+      </form>
+      <p id="ask-answer" class="ask-answer" hidden></p>
+    </section>
+
     <details class="report" id="report">
       <summary>Help the grounds team: add a photo or flag a problem</summary>
       <form id="report-form">
@@ -106,11 +126,35 @@
           <label><input type="radio" name="flagType" value="damage"> Damage (broken limbs, bark wounds)</label>
           <label><input type="radio" name="flagType" value="dying"> Looks like it's dying</label>
         </fieldset>
+        <label class="season">
+          <span>Season sighting (optional)</span>
+          <select name="season">
+            <option value="">Skip</option>
+            <option value="buds">Buds</option>
+            <option value="first-leaves">First leaves</option>
+            <option value="full-leaf">Full leaf</option>
+            <option value="flowers-fruit">Flowers or fruit</option>
+            <option value="color-change">Leaves changing color</option>
+            <option value="dropping">Leaves dropping</option>
+            <option value="bare">Bare branches</option>
+          </select>
+        </label>
         <button class="btn btn-primary">Send report</button>
-        <p class="muted small">Flags stay <em>possible</em> until <span class="confirm-n">5</span> different people report the same thing. Photos go to the campus grounds map.</p>
+        <p class="muted small">Flags stay <em>possible</em> until <span class="confirm-n">5</span> different people report the same thing with a photo. Photos go to the campus grounds map.</p>
       </form>
       <div id="report-result" hidden></div>
     </details>
+  </dialog>
+
+  <!-- Grove book -->
+  <dialog id="book-dialog" class="sheet book">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <h2>Your grove book</h2>
+    <p class="muted" id="book-progress"></p>
+    <h3>Badges</h3>
+    <ul class="badge-list" id="book-badges"></ul>
+    <h3>Trees</h3>
+    <ul class="cards" id="book-cards"></ul>
   </dialog>
 
   <!-- Route panel -->

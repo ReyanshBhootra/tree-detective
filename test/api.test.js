@@ -13,10 +13,14 @@ const trees = [
   { code: 'TD-002', name: 'Whisper', persona: 'gossip', lat: 40.7425, lng: -74.178, story: 'Hey.', label: 'Fact', timelapse: [] },
 ];
 let vision = async () => ({ available: true, speciesGuess: 'Pin Oak', confidence: 0.77, alternatives: [], suggestedFlag: null });
+let askedWith = null;
 const app = createApp({
-  env, trees, personas: [], store: new JsonStore(path.join(tmp, 'data')),
+  env, trees, personas: [{ id: 'elder', name: 'The Elder', style: 'Slow.' }], store: new JsonStore(path.join(tmp, 'data')),
   photos: { kind: 'local', dir: env.UPLOAD_DIR, save: async (name) => `/uploads/${name}` },
   vision: (b) => vision(b),
+  askEnabled: true,
+  askModel: async (messages) => { askedWith = messages; return 'I remember the old well. That is all I know.'; },
+  facts: () => ({ label: 'Fact', facts: [{ text: 'A well stood here.', sourceUrl: 'https://src' }] }),
 });
 const server = app.listen(0);
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -50,10 +54,11 @@ test('bad input is rejected', async () => {
   assert.equal((await json('GET', '/api/nothing')).status, 404);
 });
 
-async function report(playerId, flagType, withPhoto = false) {
+async function report(playerId, flagType, withPhoto = false, season = '') {
   const form = new FormData();
   form.append('playerId', playerId);
   form.append('flagType', flagType);
+  if (season) form.append('season', season);
   if (withPhoto) form.append('photo', new Blob([Buffer.from('fakejpeg')], { type: 'image/jpeg' }), 'tree.jpg');
   const r = await fetch(`${base}/api/trees/TD-002/reports`, { method: 'POST', body: form });
   return { status: r.status, body: await r.json() };
@@ -73,15 +78,30 @@ test('photo report gets a species guess with confidence', async () => {
 });
 
 test('pest flag flips to confirmed at 5 independent reporters', async () => {
-  for (let i = 0; i < 3; i++) assert.equal((await report('repeat-reporter', 'pest')).body.flag.reporters, 1);
+  for (let i = 0; i < 3; i++) assert.equal((await report('repeat-reporter', 'pest', true)).body.flag.reporters, 1);
   for (let i = 2; i <= 4; i++) {
-    const r = await report(`reporter-000${i}`, 'pest');
+    const r = await report(`reporter-000${i}`, 'pest', true);
     assert.equal(r.body.flag.status, 'possible');
     assert.equal(r.body.flag.reporters, i);
+    assert.match(r.body.pestReport.url, /nj\.gov\/agriculture/);
   }
-  const r = await report('reporter-0005', 'pest');
+  const noPhoto = await report('reporter-nophoto', 'pest');
+  assert.equal(noPhoto.body.flag.status, 'possible', 'a report without a photo never confirms');
+  assert.equal(noPhoto.body.flag.withoutPhoto, 1);
+
+  const key = { 'x-photon-key': 'secret-key' };
+  assert.deepEqual((await json('GET', '/api/photon/alerts', null, key)).body, []);
+  const r = await report('reporter-0005', 'pest', true);
   assert.equal(r.body.flag.status, 'confirmed');
   assert.equal(r.body.report.status, 'confirmed');
+  await report('reporter-0006', 'pest', true); // more reports don't queue a second alert
+  const alerts = (await json('GET', '/api/photon/alerts', null, key)).body;
+  assert.equal(alerts.length, 1);
+  assert.equal(alerts[0].id, 'TD-002-pest');
+  assert.equal(alerts[0].treeName, 'Whisper');
+  assert.equal(alerts[0].mapUrl, 'https://td.example/grounds.html');
+  await json('POST', '/api/photon/alerts/TD-002-pest/sent', {}, key);
+  assert.deepEqual((await json('GET', '/api/photon/alerts', null, key)).body, [], 'sent alerts are not repeated');
 
   const health = await json('GET', '/api/health');
   const t = health.body.trees.find((x) => x.code === 'TD-002');
@@ -91,7 +111,7 @@ test('pest flag flips to confirmed at 5 independent reporters', async () => {
 
   const csv = await (await fetch(`${base}/api/reports.csv`)).text();
   assert.match(csv.split('\n')[0], /^treeCode,timestamp,flagType/);
-  assert.equal(csv.trim().split('\n').length, 1 + 8);
+  assert.equal(csv.trim().split('\n').length, 1 + 10);
   assert.ok(!csv.includes('reporter'), 'no reporter ids in the export');
   assert.match(csv, /https:\/\/td\.example\/uploads\//);
 });
@@ -115,6 +135,30 @@ test('a broken species service never loses the report', async () => {
 test('an empty report is refused', async () => {
   assert.equal((await report(P1, 'none')).status, 400);
   assert.equal((await report(P1, 'sparkly')).status, 400);
+  assert.equal((await report(P1, 'none', false, 'winter')).status, 400);
+});
+
+test('a season sighting on its own is a valid report and shows on the tree', async () => {
+  const r = await report(P1, 'none', false, 'color-change');
+  assert.equal(r.status, 201);
+  assert.equal(r.body.report.season, 'color-change');
+  const status = await json('GET', '/api/trees/TD-002/status');
+  assert.equal(status.body.season.season, 'color-change');
+  assert.equal(status.body.flags.pest.status, 'confirmed');
+  const me = await json('GET', `/api/players/${P1}`);
+  assert.equal(me.body.seasonsLogged, 1);
+  assert.equal(me.body.reportsSent, 1);
+});
+
+test('asking a tree: only after waking it, answer comes from the model', async () => {
+  assert.equal((await json('POST', '/api/trees/TD-002/ask', { playerId: P1, question: 'what was here?' })).status, 403);
+  const r = await json('POST', '/api/trees/TD-001/ask', { playerId: P1, question: 'what was here?' });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.answer, 'I remember the old well. That is all I know.');
+  assert.equal(r.body.audio, null);
+  assert.match(askedWith[0].content, /A well stood here/);
+  assert.match(askedWith[0].content, /The Elder/);
+  assert.equal((await json('POST', '/api/trees/TD-001/ask', { playerId: P1, question: '?' })).status, 400);
 });
 
 test('Photon: link a code, answer questions, manage nudges', async () => {
@@ -148,4 +192,25 @@ test('static site and config are served', async () => {
   const cfg = await json('GET', '/api/config');
   assert.equal(cfg.body.confirmThreshold, 5);
   assert.equal(cfg.body.features.speciesVision, false);
+  assert.equal(cfg.body.features.ask, true);
+  assert.equal(cfg.body.historic.layer, 'BlackWhite1930');
+});
+
+test('signed tags: links without the right key don\'t wake trees', async () => {
+  const { treeKey } = await import('../server/lib/qr.js');
+  const signed = createApp({
+    env: { ...env, QR_SECRET: 'tag-secret' }, trees, personas: [],
+    store: new JsonStore(path.join(tmp, 'signed')), photos: { kind: 'x', save: async () => '' },
+  });
+  const srv = signed.listen(0);
+  const url = `http://127.0.0.1:${srv.address().port}/api/visits`;
+  const post = (body) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.status);
+  try {
+    assert.equal(await post({ playerId: P1, treeCode: 'TD-001' }), 403);
+    assert.equal(await post({ playerId: P1, treeCode: 'TD-001', treeKey: 'AAAAAA' }), 403);
+    assert.equal(await post({ playerId: P1, treeCode: 'TD-001', treeKey: treeKey('TD-002', 'tag-secret') }), 403);
+    assert.equal(await post({ playerId: P1, treeCode: 'TD-001', treeKey: treeKey('TD-001', 'tag-secret') }), 201);
+  } finally {
+    srv.close();
+  }
 });

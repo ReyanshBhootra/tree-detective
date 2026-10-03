@@ -146,7 +146,7 @@ button { font: inherit; }
 }
 
 .toast {
-  position: fixed; z-index: 700; left: 50%; top: 80px; transform: translateX(-50%);
+  position: fixed; z-index: 700; left: 50%; top: 128px; transform: translateX(-50%);
   max-width: calc(100vw - 32px);
   background: var(--parchment); color: var(--ink);
   padding: 12px 18px; border-radius: 14px; box-shadow: var(--shadow);
@@ -218,11 +218,60 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
   position: relative; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden;
   background: #cbbf9f; box-shadow: inset 0 0 0 3px rgba(45, 36, 22, 0.15);
 }
-.timelapse-stage > * {
+.timelapse-stage > .layer {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   opacity: 0; transition: opacity 1.2s ease;
 }
 .timelapse-stage > .on { opacity: 1; }
+/* marks the tree's spot on the real aerial photo */
+.tl-ring {
+  position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; pointer-events: none;
+  transform: translate(-50%, -50%);
+  border: 3px solid var(--glow); border-radius: 50%;
+  box-shadow: 0 0 14px var(--glow), inset 0 0 10px var(--glow);
+  animation: ring 2s ease-in-out infinite;
+}
+@keyframes ring { 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; } }
+.tl-note.real { color: var(--leaf-deep); font-weight: 700; font-style: normal; }
+.status-note { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: #fff6dc; font-weight: 600; font-size: 0.92rem; }
+.benefits { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; background: #e7f5ea; }
+.benefits h3 { font-size: 1rem; margin-bottom: 6px; }
+.benefits ul { margin: 0; padding-left: 18px; }
+.benefits p { margin: 6px 0 0; }
+.ask { margin-top: 16px; }
+.ask h3 { font-size: 1.05rem; margin-bottom: 8px; color: var(--leaf-deep); }
+.ask-answer { margin: 10px 0 0; padding: 12px 14px; border-radius: 14px 14px 14px 4px; background: #fff; font-size: 1.02rem; line-height: 1.5; }
+.ask .row input { text-transform: none; }
+.season { display: grid; gap: 6px; font-weight: 700; }
+.season select { min-height: 44px; border-radius: 12px; border: 2px solid var(--parchment-2); padding: 0 10px; font: 600 1rem var(--font-body); background: #fff; color: var(--ink); }
+
+/* time travel slider */
+.timetravel {
+  position: fixed; z-index: 500; left: 50%; transform: translateX(-50%);
+  top: calc(max(12px, env(safe-area-inset-top)) + 58px);
+  display: flex; align-items: center; gap: 8px;
+  width: min(420px, calc(100vw - 32px));
+  background: rgba(22, 40, 31, 0.9); border: 1px solid rgba(255, 224, 138, 0.25);
+  border-radius: 999px; padding: 6px 14px; box-shadow: var(--shadow);
+  font: 600 0.85rem var(--font-head);
+}
+.timetravel label { color: var(--glow); white-space: nowrap; }
+.timetravel input { flex: 1; min-width: 0; accent-color: var(--glow); }
+.timetravel.past { border-color: var(--glow); }
+
+/* grove book */
+.book h3 { font-size: 1.1rem; margin: 16px 0 8px; }
+.badge-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.badge-item { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 12px; background: var(--parchment-2); opacity: 0.6; }
+.badge-item.got { opacity: 1; background: #fff3c4; box-shadow: 0 0 0 2px #f2c55c inset; }
+.badge-item small { display: block; font-size: 0.75rem; color: var(--ink-soft); }
+.badge-icon { font-size: 1.5rem; }
+.cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.card { border-radius: 14px; background: #fff; text-align: center; box-shadow: 0 0 0 2px var(--card-glow, transparent) inset, 0 4px 14px rgba(0,0,0,.08); }
+.card button, .card.sleeping { display: grid; gap: 2px; width: 100%; padding: 12px 8px; background: none; border: none; cursor: pointer; font: inherit; color: inherit; }
+.card.sleeping { background: #e9e2cf; color: var(--ink-soft); }
+.card small { font-size: 0.75rem; color: var(--ink-soft); }
+.card-art { font-size: 2rem; }
 .timelapse figcaption {
   display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   margin-top: 8px; font-size: 0.9rem;
@@ -261,6 +310,7 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 .file input:focus-visible + span { outline: 3px solid var(--leaf-deep); }
 .file.has-file span { border-style: solid; border-color: var(--leaf-deep); background: #e7f5ea; }
 .result-card { background: #fff; border-radius: 12px; padding: 14px; margin-top: 12px; display: grid; gap: 10px; }
+.result-card a { color: var(--leaf-deep); font-weight: 700; }
 .meter { height: 8px; border-radius: 999px; background: var(--parchment-2); overflow: hidden; }
 .meter > div { height: 100%; background: var(--leaf-deep); }
 .meter.warn > div { background: var(--warn); }
@@ -300,6 +350,7 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 
 @media (max-width: 520px) {
   .brand-name { display: none; }
+  .timetravel label { display: none; }
   .leaflet-control-zoom { display: none; }
   .actions .btn { flex: 1 1 40%; padding: 0 10px; }
   .story-head h2 { font-size: 1.6rem; }

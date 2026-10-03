@@ -1,20 +1,27 @@
 import { CONFIRM_THRESHOLD } from '../config.js';
 
 // A flag is "confirmed" only once enough *different* people reported the same
-// flag on the same tree. One person reporting five times still counts once.
+// flag on the same tree, each with a photo as evidence. One person reporting
+// five times still counts once, and photo-less flags stay "possible" forever.
 export function flagStatus(reports, treeCode, flagType, threshold = CONFIRM_THRESHOLD) {
   if (!flagType || flagType === 'none') return null;
-  const reporters = new Set(
-    reports
-      .filter((r) => r.treeCode === treeCode && r.flagType === flagType)
-      .map((r) => r.reporterHash),
-  );
+  const same = reports.filter((r) => r.treeCode === treeCode && r.flagType === flagType);
+  const reporters = new Set(same.filter((r) => r.photoUrl).map((r) => r.reporterHash));
+  const allPeople = new Set(same.map((r) => r.reporterHash));
   return {
     flagType,
     reporters: reporters.size,
+    withoutPhoto: allPeople.size - reporters.size,
     needed: threshold,
     status: reporters.size >= threshold ? 'confirmed' : 'possible',
   };
+}
+
+export function latestSeason(reports, treeCode) {
+  const r = reports
+    .filter((x) => x.treeCode === treeCode && x.season)
+    .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))[0];
+  return r ? { season: r.season, timestamp: r.timestamp } : null;
 }
 
 // Summary per tree for the grounds dashboard.
@@ -42,5 +49,6 @@ export function treeHealth(reports, treeCode, threshold = CONFIRM_THRESHOLD) {
     lastReportAt: mine.reduce((t, r) => (!t || r.timestamp > t ? r.timestamp : t), null),
     flags,
     species: speciesList,
+    season: latestSeason(mine, treeCode),
   };
 }

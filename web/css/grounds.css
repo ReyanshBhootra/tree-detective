@@ -52,3 +52,5 @@ tr:last-child td { border-bottom: none; }
 .thumbs img.flag-confirmed { border-color: var(--confirmed); }
 .thumbs img.flag-possible { border-color: var(--possible); }
 footer { margin-top: 24px; }
+.pest-note { margin: 20px 0 0; padding: 12px 16px; border-radius: 14px; background: #fdebc8; color: #5c3b00; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .pest-note { background: #3a2c10; color: #f6dca3; } }

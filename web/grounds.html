@@ -16,7 +16,7 @@
     <div>
       <a href="./" class="back">← Back to the map</a>
       <h1>Campus tree health</h1>
-      <p class="sub">Crowd-reported photos, species guesses and problem flags. A flag says <b>possible</b> until <b id="threshold">5</b> different people report the same thing on the same tree.</p>
+      <p class="sub">Crowd-reported photos, species guesses and problem flags. A flag says <b>possible</b> until <b id="threshold">5</b> different people report the same thing on the same tree, each with a photo.</p>
     </div>
     <div class="top-actions">
       <a class="btn" id="csv" href="api/reports.csv" download>Download CSV</a>
@@ -40,15 +40,17 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Tree</th><th>Flags</th><th>Species (crowd guess)</th><th>Reports</th><th>Latest photos</th></tr>
+          <tr><th>Tree</th><th>Flags</th><th>Species (crowd guess)</th><th>Season</th><th>Reports</th><th>Latest photos</th></tr>
         </thead>
-        <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+        <tbody id="rows"><tr><td colspan="6">Loading…</td></tr></tbody>
       </table>
     </div>
   </section>
 
+  <p class="pest-note" id="pest-note" hidden></p>
+
   <footer class="muted small">
-    Species guesses come from Azure Custom Vision and are sometimes wrong, so the confidence and how many people agreed are shown next to each one.
+    Species guesses come from an image model and are sometimes wrong, so the confidence and how many people agreed are shown next to each one.
     Nothing here has been checked by an arborist.
   </footer>
 

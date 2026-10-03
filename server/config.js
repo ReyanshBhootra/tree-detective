@@ -21,3 +21,9 @@ export const LOCATION_RADIUS_METERS = 75;
 // Independent matching reports needed to flip a flag from "possible" to "confirmed".
 export const CONFIRM_THRESHOLD = 5;
 export const FLAG_TYPES = ['none', 'pest', 'damage', 'dying'];
+// Per network address, per hour. Generous because a whole campus can share one address.
+export const REPORT_LIMIT_PER_HOUR = 30;
+export const ASK_LIMIT_PER_HOUR = 40;
+export const SEASONS = ['buds', 'first-leaves', 'full-leaf', 'flowers-fruit', 'color-change', 'dropping', 'bare'];
+export const PEST_REPORT_URL = 'https://www.nj.gov/agriculture/divisions/pi/prog/pests-diseases/spotted-lanternfly/#reporting-tool';
+export const PEST_HOTLINE = '1-833-223-2840';

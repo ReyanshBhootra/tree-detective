@@ -14,15 +14,19 @@ function loadJsQR() {
   return jsQRPromise;
 }
 
-// Pulls a tree code out of whatever the QR holds: a full link or a bare code.
-export function treeCodeFrom(value) {
+// Pulls {code, key} out of whatever the QR or the typed box holds:
+// a full link (?tree=TD-001&k=7K3QXZ), a typed "TD-001-7K3QXZ", or a bare code.
+export function parseTag(value) {
   const raw = String(value ?? '').trim();
   try {
     const url = new URL(raw);
     const code = url.searchParams.get('tree');
-    if (code) return code.toUpperCase();
+    if (code) return { code: code.toUpperCase(), key: (url.searchParams.get('k') ?? '').toUpperCase() };
   } catch { /* not a URL */ }
-  return /^[A-Z0-9-]{3,20}$/i.test(raw) ? raw.toUpperCase() : null;
+  const clean = raw.toUpperCase().replace(/\s+/g, '-');
+  const signed = clean.match(/^([A-Z0-9-]{3,20})-([A-HJ-NP-Z2-9]{6})$/);
+  if (signed) return { code: signed[1], key: signed[2] };
+  return /^[A-Z0-9-]{3,20}$/.test(clean) ? { code: clean, key: '' } : null;
 }
 
 export async function startScanner(video, onCode, onStatus) {
@@ -68,8 +72,8 @@ export async function startScanner(video, onCode, onStatus) {
     while (!stopped && detect) {
       try {
         const value = await detect();
-        const code = treeCodeFrom(value);
-        if (code) { stop(); onCode(code); return; }
+        const tag = parseTag(value);
+        if (tag) { stop(); onCode(tag); return; }
         if (value) onStatus("That QR code isn't a Tree Detective tag.");
       } catch { /* keep trying */ }
       await new Promise((r) => setTimeout(r, 250));

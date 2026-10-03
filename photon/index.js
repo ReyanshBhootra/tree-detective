@@ -5,7 +5,7 @@
 //   npm run photon              run the chat loop + daily nudges
 //   npm run photon:nudge        send any due nudges once and exit
 import { loadEnv } from '../server/config.js';
-import { parse, reply, nudgeText, dueForNudge, NOT_LINKED } from './commands.js';
+import { parse, reply, nudgeText, dueForNudge, alertText, NOT_LINKED } from './commands.js';
 
 loadEnv();
 const API = (process.env.API_BASE || 'http://localhost:3000').replace(/\/+$/, '');
@@ -65,6 +65,32 @@ async function sendNudges(spectrum, imessage, text) {
   console.log(`explore nudges sent: ${sent}`);
 }
 
+// Grounds team numbers or iMessage addresses, comma separated.
+const GROUNDS = (process.env.GROUNDS_ALERT_TO || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+async function sendAlerts(spectrum, imessage, text) {
+  if (!GROUNDS.length) return;
+  const r = await api('/api/photon/alerts');
+  if (!r.ok) throw new Error(`could not list alerts: ${r.status}`);
+  if (!r.json.length) return;
+  const config = await (await fetch(`${API}/api/config`)).json();
+  const im = imessage(spectrum);
+  for (const alert of r.json) {
+    const msg = alertText(alert, config.pestReport?.hotline);
+    let delivered = 0;
+    for (const to of GROUNDS) {
+      try {
+        await (await im.space.create(to)).send(text(msg));
+        delivered++;
+      } catch (e) {
+        console.warn(`alert to ${to} failed:`, e.message);
+      }
+    }
+    if (delivered) await api(`/api/photon/alerts/${encodeURIComponent(alert.id)}/sent`, { method: 'POST' });
+    console.log(`grounds alert ${alert.id}: sent to ${delivered}/${GROUNDS.length}`);
+  }
+}
+
 async function main() {
   if (!process.env.PHOTON_PROJECT_ID || !process.env.PHOTON_PROJECT_SECRET) {
     console.error('Set PHOTON_PROJECT_ID and PHOTON_PROJECT_SECRET (from app.photon.codes) first.');
@@ -90,6 +116,9 @@ async function main() {
 
   const trees = await (await fetch(`${API}/api/trees`)).json();
   setInterval(() => sendNudges(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 60 * 1000);
+  // Confirmed problems go out within a minute.
+  setInterval(() => sendAlerts(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 1000);
+  if (GROUNDS.length) console.log(`Grounds alerts go to ${GROUNDS.length} contact(s).`);
   console.log('Photon companion listening for iMessages.');
 
   for await (const [space, message] of spectrum.messages) {

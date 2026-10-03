@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, reply, nudgeText, dueForNudge, shortStory, HELP } from '../photon/commands.js';
+import { parse, reply, nudgeText, dueForNudge, shortStory, alertText, HELP } from '../photon/commands.js';
 
 const trees = [
   { code: 'TD-001', name: 'Old Oakley', story: 'Well now. Come closer. I am old. Very old indeed.', label: 'Fact', verified: true, sourceUrl: 'https://src' },
@@ -54,4 +54,12 @@ test('explore nudge text and timing', () => {
   assert.equal(dueForNudge({ nudges: true, summary, lastNudgedAt: '2026-10-04T01:00:00Z' }, now), false);
   assert.equal(dueForNudge({ nudges: true, summary, lastNudgedAt: '2026-10-03T11:00:00Z' }, now), true);
   assert.equal(dueForNudge({ nudges: false, summary, lastNudgedAt: '' }, now), false);
+});
+
+test('grounds alert text', () => {
+  const msg = alertText({ flagType: 'pest', treeName: 'Old Oakley', treeCode: 'TD-001', reporters: 5, lat: 40.742, lng: -74.179, mapUrl: 'https://td.example/grounds.html' }, '1-833-223-2840');
+  assert.match(msg, /^Tree Detective: confirmed pests on Old Oakley \(TD-001\)\. 5 different people/);
+  assert.match(msg, /maps\?q=40\.742,-74\.179/);
+  assert.match(msg, /1-833-223-2840/);
+  assert.doesNotMatch(alertText({ flagType: 'damage', treeName: 'X', treeCode: 'X', reporters: 5, lat: 1, lng: 1, mapUrl: 'u' }, '1-833'), /1-833/);
 });

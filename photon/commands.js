@@ -84,3 +84,15 @@ export function dueForNudge(link, now = Date.now(), intervalHours = 24) {
   if (!link.lastNudgedAt) return true;
   return now - Date.parse(link.lastNudgedAt) >= intervalHours * 3600 * 1000;
 }
+
+const PROBLEM = { pest: 'pests', damage: 'damage', dying: 'a dying tree' };
+
+// Sent to the grounds team the moment a problem is confirmed.
+export function alertText(alert, pestHotline) {
+  const what = PROBLEM[alert.flagType] ?? alert.flagType;
+  const pin = `https://www.google.com/maps?q=${alert.lat},${alert.lng}`;
+  let msg = `Tree Detective: confirmed ${what} on ${alert.treeName} (${alert.treeCode}). ` +
+    `${alert.reporters} different people reported it with photos. Location: ${pin} Photos: ${alert.mapUrl}`;
+  if (alert.flagType === 'pest' && pestHotline) msg += ` If it's spotted lanternfly, NJ asks for reports at ${pestHotline}.`;
+  return msg;
+}

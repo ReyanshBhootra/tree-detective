@@ -1,7 +1,10 @@
 import { distanceMeters, planRoute, currentPosition } from './geo.js';
 import { startFireflies } from './fireflies.js';
 import { eraScene } from './timelapse.js';
-import { startScanner, treeCodeFrom } from './scanner.js';
+import { startScanner, parseTag } from './scanner.js';
+import { shrinkPhoto } from './photo.js';
+import { initBook } from './book.js';
+import { initTimeTravel } from './timetravel.js';
 
 const API = (window.TD_CONFIG?.apiBase || '').replace(/\/+$/, '');
 const $ = (id) => document.getElementById(id);
@@ -134,11 +137,16 @@ function refreshMarker(code, opts) {
 // ---------- HUD ----------
 
 function applySummary(summary) {
+  state.summary = summary;
   state.points = summary.totalPoints;
   state.visited = new Set(summary.visited.map((v) => v.code));
   $('points').textContent = state.points;
   $('awake').textContent = state.visited.size;
   $('total').textContent = state.trees.length;
+}
+
+async function refreshSummary() {
+  try { applySummary(await api(`/api/players/${playerId}`)); } catch { /* keep what we have */ }
 }
 
 function bumpPoints() {
@@ -156,7 +164,7 @@ function openScanner() {
   const dlg = $('scan-dialog');
   dlg.showModal();
   $('scan-status').textContent = 'Starting camera…';
-  startScanner($('scan-video'), (code) => { dlg.close(); wakeTree(code); }, (msg) => { $('scan-status').textContent = msg; })
+  startScanner($('scan-video'), (tag) => { dlg.close(); wakeTree(tag); }, (msg) => { $('scan-status').textContent = msg; })
     .then((stop) => { stopScanner = stop; });
 }
 
@@ -164,14 +172,14 @@ $('scan-dialog').addEventListener('close', () => stopScanner());
 
 $('code-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const code = treeCodeFrom($('code-input').value);
-  if (!code) return toast('That doesn\'t look like a tree code.');
+  const tag = parseTag($('code-input').value);
+  if (!tag) return toast('That doesn\'t look like a tree code.');
   $('scan-dialog').close();
   $('code-input').value = '';
-  wakeTree(code);
+  wakeTree(tag);
 });
 
-async function wakeTree(code) {
+async function wakeTree({ code, key }) {
   const tree = state.byCode.get(code);
   if (!tree) return toast(`No tree with the code ${code} lives on this map.`);
 
@@ -186,7 +194,7 @@ async function wakeTree(code) {
 
   let result;
   try {
-    result = await api('/api/visits', { method: 'POST', body: JSON.stringify({ playerId, treeCode: code, locationVerified }) });
+    result = await api('/api/visits', { method: 'POST', body: JSON.stringify({ playerId, treeCode: code, locationVerified, treeKey: key }) });
   } catch (e) {
     return toast(`Couldn't reach the grove: ${e.message}`);
   }
@@ -283,11 +291,14 @@ function buildTimelapse(tree) {
     if (era.imageUrl) {
       layer = document.createElement('img');
       layer.src = era.imageUrl.startsWith('http') ? era.imageUrl : `${API}${era.imageUrl}`;
-      layer.alt = `Generated impression of this spot, ${era.year ?? era.era}`;
+      layer.alt = era.real
+        ? `Real aerial photo of this spot, ${era.year}`
+        : `Generated impression of this spot, ${era.year ?? era.era}`;
     } else {
       layer = document.createElement('div');
       layer.innerHTML = eraScene({ era: era.era, index: i, total: eras.length, code: tree.code, glow });
     }
+    layer.classList.add('layer');
     stage.appendChild(layer);
     const dot = document.createElement('button');
     dot.setAttribute('role', 'tab');
@@ -295,6 +306,11 @@ function buildTimelapse(tree) {
     dot.addEventListener('click', () => { stopAutoTimelapse(); showEra(tree, i); });
     dots.appendChild(dot);
   });
+  const ring = document.createElement('div');
+  ring.id = 'tl-ring';
+  ring.className = 'tl-ring';
+  ring.hidden = true;
+  stage.appendChild(ring);
   showEra(tree, 0);
 }
 
@@ -302,14 +318,18 @@ function showEra(tree, i) {
   const eras = tree.timelapse ?? [];
   if (!eras.length) return;
   i = Math.max(0, Math.min(eras.length - 1, i));
-  [...$('tl-stage').children].forEach((el, j) => el.classList.toggle('on', j === i));
+  $('tl-stage').querySelectorAll('.layer').forEach((el, j) => el.classList.toggle('on', j === i));
   [...$('tl-dots').children].forEach((el, j) => el.setAttribute('aria-selected', String(j === i)));
   const era = eras[i];
   $('tl-year').textContent = era.year ? `c. ${era.year}` : '';
   $('tl-caption').textContent = era.caption ?? '';
-  $('tl-note').textContent = era.imageUrl
-    ? 'AI-generated impression, not a real historical photo'
-    : 'Storybook placeholder, not a real photo';
+  $('tl-note').textContent = era.real
+    ? `Real photo: ${era.credit ?? 'historic aerial survey'}`
+    : era.imageUrl
+      ? 'AI-generated impression, not a real historical photo'
+      : 'Storybook placeholder, not a real photo';
+  $('tl-note').classList.toggle('real', Boolean(era.real));
+  $('tl-ring').hidden = !era.real;
   state.currentEra = i;
 }
 
@@ -371,6 +391,11 @@ function openStory(tree, visitNote) {
 
   buildTimelapse(tree);
   autoTimelapse(tree);
+  renderBenefits(tree);
+  loadTreeStatus(tree);
+  $('ask').hidden = !state.config.features.ask || !state.visited.has(tree.code);
+  $('ask-answer').hidden = true;
+  $('ask-input').value = '';
 
   lastProgress = 0;
   $('narration-progress').style.width = '0';
@@ -392,6 +417,82 @@ function openStory(tree, visitNote) {
   // Try to start talking right away; browsers may insist on a tap first.
   if (visitNote) togglePlay().catch(() => toast('Tap ▶ to hear the tree speak.'));
 }
+
+// What this tree does for campus each year, from an i-Tree MyTree estimate
+// worked out ahead of time and saved on the tree (tree.benefits).
+function renderBenefits(tree) {
+  const b = tree.benefits;
+  const box = $('story-benefits');
+  if (!b) { box.hidden = true; return; }
+  const items = [
+    b.stormwaterGallons && `<li><b>${Math.round(b.stormwaterGallons).toLocaleString()}</b> gallons of rain soaked up</li>`,
+    b.co2Pounds && `<li><b>${Math.round(b.co2Pounds).toLocaleString()}</b> lbs of carbon dioxide taken in</li>`,
+    b.airPollutionOunces && `<li><b>${Math.round(b.airPollutionOunces).toLocaleString()}</b> oz of air pollution cleaned</li>`,
+  ].filter(Boolean);
+  box.innerHTML = `<h3>What I do for campus every year</h3><ul>${items.join('')}</ul>
+    <p class="muted small">Estimate from ${escapeHtml(b.source ?? 'i-Tree MyTree')}${b.year ? `, ${b.year}` : ''}.</p>`;
+  box.hidden = !items.length;
+}
+
+const SEASON_NAMES = {
+  buds: 'buds', 'first-leaves': 'first leaves', 'full-leaf': 'full leaf', 'flowers-fruit': 'flowers or fruit',
+  'color-change': 'leaves changing color', dropping: 'leaves dropping', bare: 'bare branches',
+};
+const PROBLEM_NAMES = { pest: 'pests', damage: 'damage', dying: 'that it might be dying' };
+
+async function loadTreeStatus(tree) {
+  const el = $('story-status');
+  el.hidden = true;
+  try {
+    const s = await api(`/api/trees/${encodeURIComponent(tree.code)}/status`);
+    if (state.currentTree !== tree) return;
+    const bits = [];
+    for (const f of Object.values(s.flags ?? {})) {
+      bits.push(f.status === 'confirmed'
+        ? `⚠️ The grounds team knows about ${PROBLEM_NAMES[f.flagType] ?? f.flagType} here.`
+        : `🔎 ${f.reporters + f.withoutPhoto} ${f.reporters + f.withoutPhoto === 1 ? 'person has' : 'people have'} reported ${PROBLEM_NAMES[f.flagType] ?? f.flagType}. Seen it too? Add a photo below.`);
+    }
+    if (s.season) bits.push(`🍃 Last season sighting: ${SEASON_NAMES[s.season.season] ?? s.season.season} (${new Date(s.season.timestamp).toLocaleDateString()}).`);
+    el.innerHTML = bits.map(escapeHtml).join('<br>');
+    el.hidden = !bits.length;
+  } catch { /* status is a nice extra, never block the story */ }
+}
+
+// ---------- ask the tree ----------
+
+$('ask-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const tree = state.currentTree;
+  const question = $('ask-input').value.trim();
+  if (!question) return;
+  const btn = e.target.querySelector('button');
+  btn.disabled = true;
+  btn.textContent = '…';
+  narrator?.pause();
+  try {
+    const r = await api(`/api/trees/${encodeURIComponent(tree.code)}/ask`, {
+      method: 'POST', body: JSON.stringify({ playerId, question }),
+    });
+    if (state.currentTree !== tree) return;
+    $('ask-answer').textContent = r.answer;
+    $('ask-answer').hidden = false;
+    if (r.audio) {
+      new Audio(r.audio).play().catch(() => {});
+    } else if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(r.answer);
+      const pv = persona(tree).browserVoice ?? {};
+      u.rate = pv.rate ?? 1;
+      u.pitch = pv.pitch ?? 1;
+      speechSynthesis.speak(u);
+    }
+  } catch (err) {
+    toast(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ask';
+  }
+});
 
 async function togglePlay() {
   if (!narrator) return;
@@ -441,13 +542,18 @@ $('report-form').addEventListener('submit', async (e) => {
   const form = new FormData(e.target);
   form.append('playerId', playerId);
   if (!form.get('photo')?.size) form.delete('photo');
-  if (!form.get('photo') && form.get('flagType') === 'none') return toast('Add a photo or choose a problem to report.');
-  const btn = e.target.querySelector('button');
+  if (!form.get('photo') && form.get('flagType') === 'none' && !form.get('season')) {
+    return toast('Add a photo, a problem, or a season sighting.');
+  }
+  const btn = e.target.querySelector('button[class~="btn-primary"]');
   btn.disabled = true;
   btn.textContent = 'Sending…';
   try {
+    if (form.get('photo')) form.set('photo', await shrinkPhoto(form.get('photo')));
     const r = await api(`/api/trees/${encodeURIComponent(tree.code)}/reports`, { method: 'POST', body: form });
     state.lastReportId = r.report.id;
+    refreshSummary();
+    loadTreeStatus(tree);
     e.target.hidden = true;
     showReportResult(tree, r);
   } catch (err) {
@@ -463,7 +569,7 @@ function showReportResult(tree, r) {
   let html = '<div class="result-card"><strong>Thank you, detective. Your report is on the grounds map.</strong>';
   if (r.species) {
     const c = r.species.confidence ?? 0;
-    html += `<div><p style="margin:0 0 6px">Species guess: <strong>${escapeHtml(r.species.guess)}</strong> (${pct(c)} confident)</p>
+    html += `<div><p style="margin:0 0 6px">Species guess: <strong>${escapeHtml(r.species.guess)}</strong> (${pct(c)} confident${r.species.provider ? `, via ${escapeHtml(r.species.provider)}` : ''})</p>
       <div class="meter ${c < 0.5 ? 'warn' : ''}"><div style="width:${pct(c)}"></div></div>
       ${r.species.alternatives?.length ? `<p class="muted small" style="margin:6px 0 0">Could also be: ${r.species.alternatives.map((a) => `${escapeHtml(a.name)} (${pct(a.confidence)})`).join(', ')}</p>` : ''}
       <p class="small" style="margin:8px 0 0">Guesses are sometimes wrong. Does it look right?
@@ -478,8 +584,15 @@ function showReportResult(tree, r) {
     html += `<div><p style="margin:0 0 6px">Flag: <strong>${escapeHtml(label)}</strong> is
       <strong>${f.status === 'confirmed' ? 'CONFIRMED' : 'possible'}</strong>
       (${f.reporters} of ${f.needed} independent reports${r.report.flagSource === 'vision' ? ', spotted by the photo check' : ''})</p>
-      <div class="meter ${f.status === 'confirmed' ? 'danger' : 'warn'}"><div style="width:${pct(Math.min(1, f.reporters / f.needed))}"></div></div></div>`;
+      <div class="meter ${f.status === 'confirmed' ? 'danger' : 'warn'}"><div style="width:${pct(Math.min(1, f.reporters / f.needed))}"></div></div>
+      ${r.report.photoUrl ? '' : '<p class="muted small" style="margin:6px 0 0">Only reports with a photo count toward confirming it. Add one next time you pass by.</p>'}</div>`;
   }
+  if (r.pestReport) {
+    html += `<p class="small" style="margin:0">Think it's a <b>spotted lanternfly</b>? New Jersey tracks them:
+      <a href="${escapeHtml(r.pestReport.url)}" target="_blank" rel="noopener">report it to the state</a>
+      or call <a href="tel:${escapeHtml(r.pestReport.hotline)}">${escapeHtml(r.pestReport.hotline)}</a>.</p>`;
+  }
+  if (r.report.season) html += '<p class="small" style="margin:0">🍃 Season sighting saved. Thanks for watching the seasons.</p>';
   html += '</div>';
   out.innerHTML = html;
   out.hidden = false;
@@ -572,11 +685,14 @@ async function boot() {
   }
   initMap();
   startFireflies($('fireflies'));
+  initTimeTravel(map, state.config.historic, toast);
+  initBook({ state, persona, escapeHtml, onOpenTree: (code) => openStory(state.byCode.get(code), null) });
 
   const params = new URLSearchParams(location.search);
-  const code = treeCodeFrom(params.get('tree'));
+  const tag = params.get('tree') ? parseTag(location.href) : null;
+  const code = tag?.code;
   if (code || params.has('route')) history.replaceState(null, '', location.pathname);
-  if (code) wakeTree(code);
+  if (tag) wakeTree(tag);
   else if (params.has('route')) showRoute();
   else if (!state.visited.size) toast('The trees are asleep. Find a tagged tree on campus and scan it to wake it up.', 6000);
 }

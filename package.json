@@ -4,7 +4,9 @@
   "private": true,
   "description": "A storybook campus map where every tagged tree has a name, a voice, and a true local story, plus a crowdsourced tree health map for the grounds team.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
@@ -15,9 +17,12 @@
     "timelapse": "node scripts/generate-timelapse.js",
     "audio": "node scripts/generate-audio.js",
     "qr": "node scripts/make-qr.js",
-    "check-content": "node scripts/check-content.js"
+    "check-content": "node scripts/check-content.js",
+    "historic": "node scripts/fetch-historic.js",
+    "digest": "node scripts/send-digest.js"
   },
   "dependencies": {
+    "@azure/communication-email": "^1.1.0",
     "@azure/data-tables": "^13.3.0",
     "@azure/storage-blob": "^12.26.0",
     "express": "^4.21.2",

@@ -6,9 +6,12 @@ import path from 'node:path';
 import QRCode from 'qrcode';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees } from '../server/lib/trees.js';
+import { treeLink, typedCode } from '../server/lib/qr.js';
 
 loadEnv();
 const base = (process.env.PUBLIC_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const secret = process.env.QR_SECRET;
+if (!secret) console.warn('Warning: QR_SECRET is empty, so anyone could wake trees by typing links. Set it before printing.');
 if (/localhost|127\.0\.0\.1/.test(base)) console.warn(`Warning: PUBLIC_URL is ${base}. Phones can't open that, set the real site URL before printing.`);
 const outDir = path.join(ROOT, 'print');
 fs.mkdirSync(outDir, { recursive: true });
@@ -16,10 +19,10 @@ fs.mkdirSync(outDir, { recursive: true });
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const tags = [];
 for (const tree of loadTrees()) {
-  const url = `${base}/?tree=${encodeURIComponent(tree.code)}`;
+  const url = treeLink(base, tree.code, secret);
   const opts = { errorCorrectionLevel: 'Q', margin: 1, width: 600, color: { dark: '#1b2b22', light: '#ffffff' } };
   await QRCode.toFile(path.join(outDir, `${tree.code}.png`), url, opts);
-  tags.push(`<div class="tag"><p class="hi">Psst. I'm awake if you scan me.</p><img src="${await QRCode.toDataURL(url, opts)}" alt="QR code for ${esc(tree.name)}"><p class="name">${esc(tree.name)}</p><p class="code">${esc(tree.code)} · Tree Detective</p></div>`);
+  tags.push(`<div class="tag"><p class="hi">Psst. I'm awake if you scan me.</p><img src="${await QRCode.toDataURL(url, opts)}" alt="QR code for ${esc(tree.name)}"><p class="name">${esc(tree.name)}</p><p class="code">No camera? Type <b>${esc(typedCode(tree.code, secret))}</b></p></div>`);
 }
 
 fs.writeFileSync(path.join(outDir, 'qr-tags.html'), `<!doctype html><html><head><meta charset="utf-8"><title>Tree Detective tags</title>

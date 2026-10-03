@@ -2,6 +2,10 @@ const API = (window.TD_CONFIG?.apiBase || '').replace(/\/+$/, '');
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const LABEL = { pest: 'Pests', damage: 'Damage', dying: 'Dying' };
+const SEASON = {
+  buds: 'Buds', 'first-leaves': 'First leaves', 'full-leaf': 'Full leaf', 'flowers-fruit': 'Flowers or fruit',
+  'color-change': 'Color change', dropping: 'Leaves dropping', bare: 'Bare',
+};
 
 let map;
 const pins = new Map();
@@ -38,7 +42,7 @@ function render(data) {
     const flagHtml = flags.length
       ? flags.map((f) => `<div><span class="tag ${f.status}">${LABEL[f.flagType] ?? esc(f.flagType)}: ${f.status}</span>
           <div class="bar ${f.status}" title="${f.reporters} of ${f.needed} independent reports"><div style="width:${Math.min(100, (f.reporters / f.needed) * 100)}%"></div></div>
-          <span class="muted small">${f.reporters}/${f.needed} people</span></div>`).join('')
+          <span class="muted small">${f.reporters}/${f.needed} people with photos${f.withoutPhoto ? `, +${f.withoutPhoto} without` : ''}</span></div>`).join('')
       : '<span class="tag ok">No flags</span>';
     const sp = t.species[0];
     const speciesHtml = sp
@@ -49,10 +53,18 @@ function render(data) {
       <td><b>${esc(t.name)}</b><br><span class="muted small">${esc(t.code)}</span></td>
       <td>${flagHtml}</td>
       <td>${speciesHtml}</td>
+      <td>${t.season ? `${esc(SEASON[t.season.season] ?? t.season.season)}<br><span class="muted small">${new Date(t.season.timestamp).toLocaleDateString()}</span>` : '<span class="muted small">No sightings</span>'}</td>
       <td>${t.reportCount}${t.lastReportAt ? `<br><span class="muted small">last ${new Date(t.lastReportAt).toLocaleDateString()}</span>` : ''}</td>
       <td><div class="thumbs">${thumbs || '<span class="muted small">None yet</span>'}</div></td>
     </tr>`;
   }).join('');
+
+  const pestTrees = trees.filter((t) => t.flags.pest);
+  if (pestTrees.length && data.pestReport) {
+    $('pest-note').hidden = false;
+    $('pest-note').innerHTML = `🦗 Pest reports on ${pestTrees.map((t) => esc(t.name)).join(', ')}. If it's spotted lanternfly, New Jersey asks for sightings at
+      <a href="${esc(data.pestReport.url)}" target="_blank" rel="noopener">the state reporting tool</a> or ${esc(data.pestReport.hotline)}.`;
+  }
 
   if (!map) {
     map = L.map('gmap', { scrollWheelZoom: false });
@@ -76,7 +88,7 @@ async function load() {
     if (!res.ok) throw new Error(res.status);
     render(await res.json());
   } catch (e) {
-    $('rows').innerHTML = `<tr><td colspan="5">Could not load reports (${esc(e.message)}).</td></tr>`;
+    $('rows').innerHTML = `<tr><td colspan="6">Could not load reports (${esc(e.message)}).</td></tr>`;
   }
 }
 
