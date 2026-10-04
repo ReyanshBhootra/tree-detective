@@ -203,6 +203,12 @@
       <h2>Your walking route</h2>
       <button class="icon-btn" id="route-close" aria-label="Close route">×</button>
     </div>
+    <p class="route-from small" id="route-from"></p>
+    <form id="route-where" class="row route-where" hidden>
+      <input id="route-place" placeholder="Building, address or ZIP code" autocomplete="off" enterkeyhint="go">
+      <button class="btn btn-small btn-primary">Go</button>
+    </form>
+    <p class="muted small" id="route-tap" hidden>…or tap where you are on the map.</p>
     <ol id="route-list"></ol>
   </aside>
 

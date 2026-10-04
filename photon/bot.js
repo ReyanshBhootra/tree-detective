@@ -7,6 +7,9 @@ import {
   HELP, MORE, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText, signed,
 } from './commands.js';
 
+import { locationFromText } from '../server/lib/geocode.js';
+
+const LOCATION_FRESH_MS = 45 * 60 * 1000;
 const LANG_NAMES = { en: 'English', es: 'Español', zh: '中文', hi: 'हिन्दी', gu: 'ગુજરાતી' };
 const REPORT_WINDOW_MS = 10 * 60 * 1000;
 
@@ -23,6 +26,8 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   const history = new Map(); // senderId:tree -> last questions and answers
   const questMenus = new Map(); // senderId -> { list, until } after "quest"
   const questPending = new Map(); // senderId -> { quest, until } waiting for the photo
+  const places = new Map(); // senderId -> { lat, lng, label, at } where they last said they were
+  const askedWhere = new Map(); // senderId -> until, after we asked "where are you?"
   let trees = [];
   let personas = [];
 
@@ -203,6 +208,36 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     return [say(`🎙️ Saved at ${tree.name}! The next person who wakes it will hear your memory.`)];
   }
 
+  // ---------- routes from where you actually are ----------
+
+  const WHERE = '📍 Where are you? Share your location (tap + then Location), or text a building, address or ZIP code.';
+
+  async function routeReply(me, senderId, place) {
+    const r = await api(`/api/photon/route?senderId=${encodeURIComponent(senderId)}&lat=${place.lat}&lng=${place.lng}`);
+    if (!r.ok) return [say('I couldn\'t plan a route right now. Try again in a minute.')];
+    const stops = r.json.stops;
+    if (!stops.length) return [say(`You've woken every tree, all ${trees.length}. The grove thanks you 🌳`)];
+    const far = r.json.metersFromCampus > 3000;
+    const lines = stops.slice(0, 5).map((t, i) => `${i + 1}. ${personaOf(treeByCode(t.code))?.emoji ?? '🌳'} ${t.name} · ${t.meters} m · ${t.minutes} min`);
+    const head = far
+      ? `🧭 You're about ${(r.json.metersFromCampus / 1000).toFixed(1)} km from campus. Here's the order to go in:`
+      : `🧭 Your route from ${place.label ?? 'where you are'}:`;
+    return [say(`${head}\n${lines.join('\n')}\n\n👣 Walk to ${stops[0].name}: ${stops[0].walk}`)];
+  }
+
+  async function routeOrAsk(me, senderId) {
+    const place = places.get(senderId);
+    if (place && Date.now() - place.at < LOCATION_FRESH_MS) return routeReply(me, senderId, place);
+    askedWhere.set(senderId, Date.now() + REPORT_WINDOW_MS);
+    return [say(WHERE)];
+  }
+
+  async function gotPlace(me, senderId, place) {
+    askedWhere.delete(senderId);
+    places.set(senderId, { ...place, at: Date.now() });
+    return routeReply(me, senderId, place);
+  }
+
   async function onPhoto(me, senderId, photo) {
     const tag = await readTag(photo.buffer, photo.mimeType);
     if (tag) return wake(me, senderId, tag.code, tag.key);
@@ -213,6 +248,8 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   }
 
   async function onText(me, senderId, text) {
+    const shared = locationFromText(text);
+    if (shared) return gotPlace(me, senderId, { ...shared, label: 'your pin' });
     let intent = parse(text);
     if (intent.intent === 'link') {
       const r = await api('/api/photon/link', { method: 'POST', body: { code: intent.code, senderId, spaceId: me.spaceId } });
@@ -276,10 +313,11 @@ export function createBot({ api, readTag, publicUrl = '' }) {
         return [say(publicUrl
           ? `Your map, with your trees awake: ${publicUrl}/?player=${encodeURIComponent(me.playerId)}`
           : 'The map lives on the Tree Detective website. Ask the team for the link!')];
-      case 'points':
-      case 'visited':
       case 'next':
       case 'route':
+        return routeOrAsk(me, senderId);
+      case 'points':
+      case 'visited':
         return [say(reply(intent, me, trees))];
       case 'help': {
         const t = me.visited?.some((v) => v.code === me.currentTree) && treeByCode(me.currentTree);
@@ -287,8 +325,15 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       }
       case 'more':
         return [say(MORE)];
-      default:
+      default: {
+        // Right after "where are you?", a short answer is a place, not a question.
+        if ((askedWhere.get(senderId) ?? 0) > Date.now() && !/\?$/.test(text.trim()) && text.length <= 80) {
+          const r = await api(`/api/photon/geocode?q=${encodeURIComponent(text)}`);
+          if (r.ok) return gotPlace(me, senderId, { lat: r.json.lat, lng: r.json.lng, label: r.json.label });
+          return [say('I couldn\'t find that place. Try a building name like "Campus Center", an address, or share your location 📍')];
+        }
         return ask(me, senderId, text);
+      }
     }
   }
 
@@ -307,6 +352,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       if (me.isNew && parse(c.text).intent === 'help') continue; // the welcome already explains
       out.push(...(await onText(me, senderId, c.text)));
     }
+    for (const c of contents.filter((x) => x.type === 'location')) out.push(...(await gotPlace(me, senderId, { lat: c.lat, lng: c.lng, label: 'your location' })));
     for (const c of contents.filter((x) => x.type === 'image')) out.push(...(await onPhoto(me, senderId, c)));
     for (const c of contents.filter((x) => x.type === 'voice')) out.push(...(await onVoice(me, senderId, c)));
     return out;

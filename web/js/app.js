@@ -1,4 +1,4 @@
-import { distanceMeters, planRoute, currentPosition } from './geo.js';
+import { distanceMeters, currentPosition } from './geo.js';
 import { startFireflies } from './fireflies.js';
 import { eraScene } from './timelapse.js';
 import { startScanner, parseTag } from './scanner.js';
@@ -6,6 +6,7 @@ import { shrinkPhoto } from './photo.js';
 import { initBook } from './book.js';
 import { initTimeTravel } from './timetravel.js';
 import { initSocial, loadTreeSocial } from './social.js';
+import { initRoute, openRoute, refreshRoute } from './route.js';
 
 const API = (window.TD_CONFIG?.apiBase || '').replace(/\/+$/, '');
 const $ = (id) => document.getElementById(id);
@@ -238,7 +239,7 @@ async function wakeTree({ code, key }) {
     return toast(e.status === 403 ? e.message : `Couldn't reach the grove: ${e.message}`);
   }
   applySummary(result);
-  if (state.routeLayer) showRoute();
+  refreshRoute();
 
   let note;
   if (result.firstVisit) note = `<span class="plus">+${result.pointsEarned} points.</span> You woke ${escapeHtml(tree.name)}!`;
@@ -903,48 +904,6 @@ function showReportResult(tree, r) {
 
 // ---------- walking route ----------
 
-async function showRoute() {
-  const unvisited = state.trees.filter((t) => !state.visited.has(t.code));
-  if (state.routeLayer) { state.routeLayer.remove(); state.routeLayer = null; }
-  const list = $('route-list');
-  if (!unvisited.length) {
-    list.innerHTML = '<li>Every tree is awake. The grove thanks you.</li>';
-    $('route-panel').hidden = false;
-    return;
-  }
-  const pos = await currentPosition(4000);
-  const start = pos ?? map.getCenter();
-  const route = planRoute({ lat: start.lat, lng: start.lng }, unvisited);
-  const points = [[start.lat, start.lng], ...route.map((t) => [t.lat, t.lng])];
-  state.routeLayer = L.layerGroup([
-    L.polyline(points, { color: '#ffe08a', weight: 10, opacity: 0.18 }),
-    L.polyline(points, { color: '#ffe08a', weight: 3, dashArray: '2 10', lineCap: 'round' }),
-    ...route.map((t, i) => L.marker([t.lat, t.lng], {
-      interactive: false,
-      icon: L.divIcon({ className: '', html: `<div class="route-num">${i + 1}</div>`, iconSize: [22, 22], iconAnchor: [11, 80] }),
-    })),
-  ]).addTo(map);
-  let prev = start;
-  list.innerHTML = route.map((t, i) => {
-    const d = Math.round(distanceMeters(prev, t));
-    prev = t;
-    return `<li><button data-code="${t.code}">${escapeHtml(t.name)}</button><span class="muted">${d} m ${i === 0 && !pos ? 'from map center' : 'walk'} · ${state.config.pointsPerTree} pts</span></li>`;
-  }).join('');
-  list.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
-    const t = state.byCode.get(b.dataset.code);
-    map.flyTo([t.lat, t.lng], 19);
-  }));
-  $('route-panel').hidden = false;
-  map.fitBounds(L.latLngBounds(points).pad(0.2));
-}
-
-$('btn-route').addEventListener('click', () => showRoute());
-$('route-close').addEventListener('click', () => {
-  $('route-panel').hidden = true;
-  state.routeLayer?.remove();
-  state.routeLayer = null;
-});
-
 // ---------- boot ----------
 
 $('btn-scan').addEventListener('click', openScanner);
@@ -978,13 +937,14 @@ async function boot() {
   api('/api/weather').then((w) => { state.weather = w; renderStatusLine(); }).catch(() => {});
   initBook({ state, persona, escapeHtml, onOpenTree: (code) => openStory(state.byCode.get(code), null) });
   initSocial({ state, api, API, playerId, toast, escapeHtml, burst, bumpPoints, refreshSummary, loadNotes });
+  initRoute({ map, state, api, toast, escapeHtml });
 
   const params = new URLSearchParams(location.search);
   const tag = params.get('tree') ? parseTag(location.href) : null;
   const code = tag?.code;
   if (code || params.has('route')) history.replaceState(null, '', location.pathname);
   if (tag) wakeTree(tag);
-  else if (params.has('route')) showRoute();
+  else if (params.has('route')) openRoute();
   else if (!state.visited.size) toast('The trees are asleep. Find a tagged tree on campus and scan it to wake it up.', 6000);
 }
 

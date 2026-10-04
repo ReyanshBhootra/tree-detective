@@ -31,6 +31,7 @@ const app = createApp({
   facts: () => null,
   weather: async () => null,
   timeline: async () => ({ stops: [] }),
+  geocode: async (q) => (/kupfrian/i.test(q) ? { lat: 40.7425, lng: -74.1785, label: 'Kupfrian Hall' } : null),
   translator: async (text, langs) => Object.fromEntries(langs.map((l) => [l, `[${l}] ${text}`])),
 });
 const server = app.listen(0);
@@ -208,4 +209,23 @@ test('adopt, quests, voice memories and logging in, all from iMessage', async ()
   assert.match(out, /logged in on the website/);
   const status = await (await fetch(`${base}/api/login/${loginId}`)).json();
   assert.equal(status.status, 'done');
+});
+
+test('routes start from where you really are', async () => {
+  const PH = '+15558889999';
+  const go = (...contents) => bot.handle({ senderId: PH, spaceId: 'sp7', contents });
+  let out = texts(await go({ type: 'text', text: 'route' }));
+  assert.match(out, /Where are you\?/);
+  out = texts(await go({ type: 'text', text: 'somewhere weird' }));
+  assert.match(out, /couldn't find that place/);
+  out = texts(await go({ type: 'text', text: 'kupfrian hall' }));
+  assert.match(out, /Your route from Kupfrian Hall:\n1\. /);
+  assert.match(out, /👣 Walk to .*maps\.apple\.com\/\?daddr=.*dirflg=w/);
+  // a shared location pin (what iPhones send)
+  out = texts(await go({ type: 'location', lat: 40.742, lng: -74.1795 }));
+  assert.match(out, /Your route from your location/);
+  out = texts(await go({ type: 'text', text: 'next' }));
+  assert.match(out, /Your route from your location/, 'remembers where you were');
+  out = texts(await go({ type: 'text', text: 'https://maps.apple.com/?ll=40.7425,-74.1789&q=Dropped%20Pin' }));
+  assert.match(out, /Your route from your pin/);
 });

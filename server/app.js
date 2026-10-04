@@ -14,7 +14,8 @@ import { createPhotoStore } from './lib/blob.js';
 import { analyzePhoto, visionConfigured, speciesProvider } from './lib/vision.js';
 import { flagStatus, treeHealth } from './lib/vouch.js';
 import { totalPoints, visitPoints } from './lib/points.js';
-import { planRoute } from './lib/geo.js';
+import { planRoute, distanceMeters } from './lib/geo.js';
+import { createGeocoder, walkingLink, WALK_M_PER_MIN } from './lib/geocode.js';
 import { verifyTreeKey } from './lib/qr.js';
 import { rateLimiter } from './lib/ratelimit.js';
 import { loadFacts, buildAskMessages } from './lib/ask.js';
@@ -54,6 +55,7 @@ export function createApp({
   questCheck = env.GEMINI_API_KEY ? (buf, mime, quest) => geminiQuestCheck(env, buf, mime, quest) : null,
   listen = env.GEMINI_API_KEY ? (buf, mime) => geminiListen(env, buf, mime) : null,
   social = {},
+  geocode = null,
   translator = env.AZURE_TRANSLATOR_KEY && env.AZURE_TRANSLATOR_REGION ? (text, langs, codeMap) => translate(env, text, langs, codeMap) : null,
 } = {}) {
   const app = express();
@@ -84,6 +86,18 @@ export function createApp({
   };
   const limitKey = (req, kind, playerId) => hash(fromPhoton(req) ? `${kind}:player:${playerId}` : `${kind}:${req.ip}`);
   const currentWeather = weather ?? (trees.length ? createWeather(centroid()) : async () => null);
+  const findPlace = geocode ?? createGeocoder({ center: trees.length ? centroid() : null });
+
+  // A walking route through the trees this player hasn't woken, from where they are.
+  async function routeFrom(playerId, from) {
+    const visited = new Set((await store.list('visits', playerId)).map((v) => v.rowKey));
+    let prev = from;
+    return planRoute(from, trees.filter((t) => !visited.has(t.code))).map((t) => {
+      const meters = Math.round(distanceMeters(prev, t));
+      prev = t;
+      return { code: t.code, name: t.name, lat: t.lat, lng: t.lng, meters, minutes: Math.max(1, Math.round(meters / WALK_M_PER_MIN)), walk: walkingLink(t) };
+    });
+  }
   // TigerData writes never block or break a request.
   const logEvent = (e) => tiger?.logEvent(e).catch((err) => console.warn('tigerdata:', err.message));
 
@@ -657,6 +671,27 @@ export function createApp({
     if (!(await store.get('alerts', 'alert', req.params.id))) return bad(res, 'unknown alert', 404);
     await store.upsert('alerts', { partitionKey: 'alert', rowKey: req.params.id, sentAt: new Date().toISOString() });
     res.json({ ok: true });
+  }));
+
+  // "I'm at Kupfrian Hall" / an address / a ZIP code -> a point on the map.
+  app.get('/api/geocode', wrap(async (req, res) => {
+    const hit = await findPlace(req.query.q);
+    if (!hit) return bad(res, 'I couldn\'t find that place. Try a building name, an address or a ZIP code.', 404);
+    const center = centroid();
+    res.json({ ...hit, metersFromCampus: Math.round(distanceMeters(center, hit)) });
+  }));
+
+  photon.get('/route', wrap(async (req, res) => {
+    const link = await store.get('links', 'link', String(req.query.senderId ?? ''));
+    if (!link) return bad(res, 'not linked', 404);
+    const from = { lat: Number(req.query.lat), lng: Number(req.query.lng) };
+    if (!Number.isFinite(from.lat) || !Number.isFinite(from.lng)) return bad(res, 'lat and lng required');
+    res.json({ stops: await routeFrom(link.playerId, from), metersFromCampus: Math.round(distanceMeters(centroid(), from)) });
+  }));
+
+  photon.get('/geocode', wrap(async (req, res) => {
+    const hit = await findPlace(req.query.q);
+    return hit ? res.json(hit) : bad(res, 'not found', 404);
   }));
 
   addSocial({

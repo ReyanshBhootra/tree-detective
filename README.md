@@ -51,6 +51,7 @@ Create a free service at [console.cloud.timescale.com](https://console.cloud.tim
 Inside a tree's story you can switch language, compare "then" with "today", ask it a question (type or hold the mic), and leave it a note for the next visitor. Sending a photo of a tree that already has a reported problem earns a rescue bonus.
 - 📱 **Log in** with your phone number: the bot texts you, you reply YES, and the website and iMessage share the same trees and points. No password.
 - 💚 **Adopt** a tree you've woken. After that it texts you first, in its own voice: when someone reports a problem on it, leaves a note or voice memory, takes its photo, or when it's scorching, freezing or stormy (at most 4 texts a day, never at night).
+- 🧭 **Route** starts from where you really are: live location (a blue dot that follows you, and a heads-up when you walk up to a sleeping tree), or type a building, address or ZIP code, or tap the map. The first stop has a "Walk there" link for Apple or Google Maps. In iMessage, text "route" and share your location or say where you are.
 - 🎯 **Quests**: seasonal photo challenges ("a tree with red leaves", "a squirrel on a tree"). Gemini checks the photo, you get points, and the photo goes into that tree's explorer album and the grounds team's records.
 - 🎙️ **Voice memories**: record a short memory at a tree (or send a voice note in iMessage). It's transcribed and checked, and the next person who wakes the tree hears it.
 - `/grounds.html` tree health dashboard for the grounds team, with seasons, photos and a CSV export

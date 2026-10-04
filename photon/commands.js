@@ -65,6 +65,7 @@ export const MORE =
   '• "adopt" so your tree texts you 💚\n' +
   '• "quest" for photo challenges 📸\n' +
   '• a voice note to leave a memory at the tree 🎙️\n' +
+  '• "route" for a walking route from where you are 🧭\n' +
   '• "points" or "next"\n' +
   '• "report", then a photo of a sick tree\n' +
   '• "spanish", "hindi", "gujarati", "chinese" or "english"';

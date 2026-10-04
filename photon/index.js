@@ -10,6 +10,7 @@ import { nudgeText, dueForNudge, alertText } from './commands.js';
 import { createBot } from './bot.js';
 import { readTag } from '../server/lib/qrread.js';
 import { geminiReadTag } from '../server/lib/gemini.js';
+import { locationFromText } from '../server/lib/geocode.js';
 
 loadEnv();
 const API = (process.env.API_BASE || `http://localhost:${process.env.PORT || 3000}`).replace(/\/+$/, '');
@@ -42,6 +43,13 @@ async function contentsOf(content) {
   if (!content) return [];
   if (content.type === 'group') return (await Promise.all(content.items.map((m) => contentsOf(m.content)))).flat();
   if (content.type === 'text') return [{ type: 'text', text: content.text }];
+  // A shared location arrives as a contact card (.loc.vcf) with a map link inside.
+  if (content.type === 'contact' || (content.type === 'attachment' && /vcard|\.vcf$/i.test(`${content.mimeType} ${content.name}`))) {
+    let raw = JSON.stringify(content);
+    if (content.type === 'attachment') raw = (await content.read().catch(() => Buffer.from(''))).toString('utf8');
+    const loc = locationFromText(raw);
+    return loc ? [{ type: 'location', ...loc }] : [];
+  }
   if (content.type === 'attachment' && /^image\//.test(content.mimeType ?? '')) {
     return [{ type: 'image', buffer: await content.read(), mimeType: content.mimeType, name: content.name }];
   }
