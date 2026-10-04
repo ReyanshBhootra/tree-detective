@@ -102,6 +102,6 @@ The whole game also works over iMessage, no app, website or sign-in needed. Text
 - "spanish", "chinese", "hindi", "gujarati" or "english" switches the language
 - "points", "visited", "next", "route", "story", "talk to Whisper", "map" (opens the website as you)
 
-People who already play on the website can tap "Text me" and send the code to link the two. Get keys from app.photon.codes, add them to `.env`, and run `npm run photon` next to `npm start`.
+People who already play on the website can tap "Text me" and send the code to link the two. Get keys from app.photon.codes and add them to `.env`. Then `npm start` runs the website and the iMessage bot together in one window (set `PHOTON=off` to run the website alone).
 
 Put the grounds team's numbers in `GROUNDS_ALERT_TO` and they get a text within a minute of a problem being confirmed, with a map pin and a link to the photos.

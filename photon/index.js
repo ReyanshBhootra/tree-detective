@@ -12,7 +12,7 @@ import { readTag } from '../server/lib/qrread.js';
 import { geminiReadTag } from '../server/lib/gemini.js';
 
 loadEnv();
-const API = (process.env.API_BASE || 'http://localhost:3000').replace(/\/+$/, '');
+const API = (process.env.API_BASE || `http://localhost:${process.env.PORT || 3000}`).replace(/\/+$/, '');
 const KEY = process.env.PHOTON_API_KEY;
 const INTERVAL_H = Number(process.env.NUDGE_INTERVAL_HOURS || 24);
 
@@ -136,14 +136,18 @@ async function sendAlerts(spectrum, imessage, text) {
   }
 }
 
-async function main() {
+// Started by "npm start" (inside the website's process), or on its own with "npm run photon".
+export async function startPhoton({ standalone = false } = {}) {
   if (!process.env.PHOTON_PROJECT_ID || !process.env.PHOTON_PROJECT_SECRET) {
-    console.error('Set PHOTON_PROJECT_ID and PHOTON_PROJECT_SECRET (from app.photon.codes) first.');
-    process.exit(1);
+    throw new Error('Set PHOTON_PROJECT_ID and PHOTON_PROJECT_SECRET (from app.photon.codes) first.');
   }
-  if (!KEY) {
-    console.error('Set PHOTON_API_KEY to the same value the API server uses.');
-    process.exit(1);
+  if (!KEY) throw new Error('Set PHOTON_API_KEY in .env (any random phrase).');
+  if (standalone && !process.argv.includes('--nudge-now')) {
+    const running = await fetch(`${API}/api/config`).then((r) => r.json()).then((c) => c.features?.photonInApp).catch(() => false);
+    if (running) {
+      console.log('The iMessage bot is already running inside "npm start". Nothing else to do!');
+      return;
+    }
   }
   const { Spectrum, text, voice, attachment, group } = await import('spectrum-ts');
   const { imessage } = await import('spectrum-ts/providers/imessage');
@@ -163,8 +167,7 @@ async function main() {
   try {
     await bot.loadTrees();
   } catch {
-    console.error(`Can't reach the app at ${API}. Start it first with "npm start" in another window.`);
-    process.exit(1);
+    throw new Error(`Can't reach the app at ${API}. Start it with "npm start".`);
   }
   setInterval(() => sendNudges(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 60 * 1000);
   // Confirmed problems go out within a minute.
@@ -195,7 +198,7 @@ async function main() {
 
 // Run only when started directly (works on Windows paths too).
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
+  startPhoton({ standalone: true }).catch((e) => {
     console.error('Photon companion stopped:', e.message);
     process.exit(1);
   });

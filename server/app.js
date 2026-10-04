@@ -171,6 +171,7 @@ export function createApp({
         speciesVision: visionConfigured(env),
         speciesProvider: speciesProvider(env),
         photon: Boolean(env.PHOTON_PROJECT_ID),
+        photonInApp: env.PHOTON_IN_APP === '1',
         photoStorage: photos.kind,
         signedTags: Boolean(env.QR_SECRET),
         ask: askEnabled,
