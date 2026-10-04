@@ -36,7 +36,10 @@ check('Azure Speech', ['AZURE_SPEECH_KEY', 'AZURE_SPEECH_REGION'], {
 check('Azure Translator', ['AZURE_TRANSLATOR_KEY', 'AZURE_TRANSLATOR_REGION'], {
   validate: () => !AZURE_REGION.test(env.AZURE_TRANSLATOR_REGION) ? 'region should look like westus2 (no spaces)' : null,
 });
-check('Gemini', ['GEMINI_API_KEY'], { validate: () => !/^AIza/.test(env.GEMINI_API_KEY) ? 'Gemini keys usually start with "AIza"' : null });
+check('Gemini', ['GEMINI_API_KEY'], {
+  validate: () => ['GEMINI_CHAT_MODEL', 'GEMINI_IMAGE_MODEL', 'GEMINI_EMBEDDING_MODEL'].some((k) => /gemini-2\.5/.test(env[k] ?? ''))
+    ? 'remove the GEMINI_*_MODEL lines, Google retired those models (the app now picks current ones itself)' : null,
+});
 check('ElevenLabs', ['ELEVENLABS_API_KEY'], { optional: has('AZURE_SPEECH_KEY') });
 check('Pl@ntNet', ['PLANTNET_API_KEY']);
 check('TigerData', ['TIGER_DATABASE_URL'], {
@@ -79,15 +82,18 @@ async function liveChecks() {
     return `"tree" → "${out.es}"`;
   });
   if (has('GEMINI_API_KEY')) await t('Gemini', async () => {
-    const { geminiChat } = await import('../server/lib/gemini.js');
-    return `said "${(await geminiChat(env, [{ role: 'user', content: 'Reply with just the word: ready' }], { maxTokens: 10 })).slice(0, 30)}"`;
+    const { geminiChat, geminiModels } = await import('../server/lib/gemini.js');
+    const m = await geminiModels(env);
+    const said = (await geminiChat(env, [{ role: 'user', content: 'Reply with just the word: ready' }], { maxTokens: 10 })).slice(0, 30);
+    return `said "${said}" · chat ${m.chat ?? 'none'}, images ${m.image ?? 'none'}, embeddings ${m.embed ?? 'none'}`;
   });
   if (has('ELEVENLABS_API_KEY')) await t('ElevenLabs', async () => {
     await ok(await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': env.ELEVENLABS_API_KEY } }), 'ElevenLabs');
   });
   if (has('TIGER_DATABASE_URL')) await t('TigerData', async () => {
     const { default: pg } = await import('pg');
-    const client = new pg.Client({ connectionString: env.TIGER_DATABASE_URL });
+    const { pgConfig } = await import('../server/lib/tiger.js');
+    const client = new pg.Client(pgConfig(env.TIGER_DATABASE_URL));
     await client.connect();
     try {
       const { rows: r } = await client.query("SELECT count(*) FILTER (WHERE name = 'timescaledb') AS ts, count(*) FILTER (WHERE name = 'vector') AS vec FROM pg_available_extensions");

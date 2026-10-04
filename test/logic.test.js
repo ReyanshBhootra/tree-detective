@@ -362,6 +362,19 @@ test('five languages, and Translator gets its own code for Chinese', async () =>
   }
 });
 
+const MODEL_LIST = { models: [
+  { name: 'models/gemini-2.5-flash', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3.5-flash', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3.7-flash', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3.8-flash-preview', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3.5-flash-lite', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3.1-flash-image', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-3-pro-image', supportedGenerationMethods: ['generateContent'] },
+  { name: 'models/gemini-embedding-001', supportedGenerationMethods: ['embedContent'] },
+  { name: 'models/gemini-embedding-2', supportedGenerationMethods: ['embedContent'] },
+] };
+const listing = (url) => url.includes('/models?pageSize') ? { ok: true, json: async () => MODEL_LIST } : null;
+
 test('AI switch: Azure OpenAI first, Gemini fills any gap, nothing when neither is set', async () => {
   const { createAI } = await import('../server/lib/ai.js');
   assert.deepEqual(createAI({}).providers, { chat: null, embed: null, image: null });
@@ -375,6 +388,7 @@ test('Gemini: chat, embeddings and photo-based images are sent the right way', a
   const { createAI } = await import('../server/lib/ai.js');
   const calls = [];
   const fake = async (url, opts) => {
+    if (listing(url)) return listing(url);
     const body = JSON.parse(opts.body);
     calls.push({ url, body, key: opts.headers['x-goog-api-key'] });
     if (url.includes(':batchEmbedContents')) return { ok: true, json: async () => ({ embeddings: body.requests.map(() => ({ values: [3, 4] })) }) };
@@ -384,12 +398,12 @@ test('Gemini: chat, embeddings and photo-based images are sent the right way', a
   const ai = createAI({ GEMINI_API_KEY: 'g' }, { fetchImpl: fake });
 
   assert.equal(await ai.chat([{ role: 'system', content: 'Be a tree.' }, { role: 'user', content: 'Who are you?' }], { maxTokens: 50 }), 'I am an old oak.');
-  assert.match(calls[0].url, /models\/gemini-2\.5-flash:generateContent$/);
+  assert.match(calls[0].url, /models\/gemini-3\.7-flash:generateContent$/, 'newest stable Flash');
   assert.equal(calls[0].key, 'g');
   assert.deepEqual(calls[0].body.systemInstruction, { parts: [{ text: 'Be a tree.' }] });
   assert.deepEqual(calls[0].body.contents, [{ role: 'user', parts: [{ text: 'Who are you?' }] }]);
-  assert.equal(calls[0].body.generationConfig.maxOutputTokens, 50);
-  assert.equal(calls[0].body.generationConfig.thinkingConfig.thinkingBudget, 0);
+  assert.equal(calls[0].body.generationConfig.maxOutputTokens, 2048, 'room for thinking on 3.x');
+  assert.equal(calls[0].body.generationConfig.thinkingConfig, undefined);
 
   assert.deepEqual(await ai.embed('one'), [0.6, 0.8], 'normalized');
   assert.equal((await ai.embed(['a', 'b'])).length, 2);
@@ -398,16 +412,16 @@ test('Gemini: chat, embeddings and photo-based images are sent the right way', a
   const png = await ai.imageFromPhoto('Same spot in 1930', { buffer: Buffer.from('jpg'), type: 'image/jpeg', name: 'r.jpg' });
   assert.equal(png.toString(), 'png');
   const img = calls.at(-1);
-  assert.match(img.url, /gemini-2\.5-flash-image:generateContent$/);
+  assert.match(img.url, /gemini-3\.1-flash-image:generateContent$/);
   assert.deepEqual(img.body.contents[0].parts[1], { inlineData: { mimeType: 'image/jpeg', data: Buffer.from('jpg').toString('base64') } });
   assert.deepEqual(img.body.generationConfig.responseModalities, ['IMAGE']);
 });
 
 test('Gemini: an empty or blocked answer is an error, not a blank tree', async () => {
   const { geminiChat } = await import('../server/lib/gemini.js');
-  const fake = async () => ({ ok: true, json: async () => ({ candidates: [{ finishReason: 'SAFETY', content: { parts: [] } }] }) });
+  const fake = async (u) => listing(u) ?? { ok: true, json: async () => ({ candidates: [{ finishReason: 'SAFETY', content: { parts: [] } }] }) };
   await assert.rejects(geminiChat({ GEMINI_API_KEY: 'g' }, [{ role: 'user', content: 'x' }], {}, fake), /no text \(SAFETY\)/);
-  const err = async () => ({ ok: false, status: 429, text: async () => 'quota' });
+  const err = async (u) => listing(u) ?? { ok: false, status: 429, text: async () => 'quota' };
   await assert.rejects(geminiChat({ GEMINI_API_KEY: 'g' }, [{ role: 'user', content: 'x' }], {}, err), /429: quota/);
 });
 
@@ -416,6 +430,7 @@ test('photo health check: Gemini flags clear problems, ignores unsure ones, neve
   let health = { label: 'pest', confidence: 0.9, reason: 'Spotted lanternfly egg masses on the trunk.' };
   let geminiBody = null;
   const fake = async (url, opts) => {
+    if (listing(url)) return listing(url);
     if (url.includes('plantnet')) return { ok: true, status: 200, json: async () => ({ results: [{ score: 0.7, species: { scientificNameWithoutAuthor: 'Acer rubrum', commonNames: ['Red maple'] } }] }) };
     geminiBody = JSON.parse(opts.body);
     if (health === 'boom') return { ok: false, status: 500, text: async () => 'down' };
@@ -440,4 +455,25 @@ test('photo health check: Gemini flags clear problems, ignores unsure ones, neve
 
   const { healthProvider } = await import('../server/lib/vision.js');
   assert.equal(healthProvider({ GEMINI_API_KEY: 'g', CUSTOM_VISION_ENDPOINT: 'e', CUSTOM_VISION_KEY: 'k', CUSTOM_VISION_HEALTH_PROJECT_ID: 'h' }), 'Azure Custom Vision', 'a trained model still wins');
+});
+
+test('Gemini model picking: newest stable Flash, Flash image model, 1536-capable embeddings, .env overrides win', async () => {
+  const { pickModels, geminiModels } = await import('../server/lib/gemini.js');
+  const list = MODEL_LIST.models.map((m) => ({ name: m.name.replace('models/', ''), methods: m.supportedGenerationMethods }));
+  assert.deepEqual(pickModels(list), { chat: 'gemini-3.7-flash', image: 'gemini-3.1-flash-image', embed: 'gemini-embedding-001' });
+  assert.deepEqual(pickModels(list.filter((m) => m.name !== 'gemini-embedding-001')).embed, 'gemini-embedding-2');
+  assert.equal(pickModels([{ name: 'gemini-9.0-flash-preview', methods: ['generateContent'] }]).chat, 'gemini-9.0-flash-preview');
+  const m = await geminiModels({ GEMINI_API_KEY: 'other-key', GEMINI_CHAT_MODEL: 'my-model' }, async (u) => listing(u));
+  assert.equal(m.chat, 'my-model');
+  assert.equal(m.image, 'gemini-3.1-flash-image');
+});
+
+test('TigerData connection: sslmode=require encrypts without strict certificate checks', async () => {
+  const { pgConfig } = await import('../server/lib/tiger.js');
+  const req = pgConfig('postgres://u:p@abc.tsdb.cloud.timescale.com:33333/tsdb?sslmode=require');
+  assert.deepEqual(req.ssl, { rejectUnauthorized: false });
+  assert.doesNotMatch(req.connectionString, /sslmode/);
+  assert.deepEqual(pgConfig('postgres://u:p@h/db').ssl, { rejectUnauthorized: false });
+  assert.equal(pgConfig('postgres://u:p@h/db?sslmode=verify-full').ssl, undefined, 'verify-full keeps full checks');
+  assert.equal(pgConfig('postgres://u:p@h/db?sslmode=disable').ssl, false);
 });

@@ -30,7 +30,7 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 
 ## Google Gemini
 
-Writing (stories and "Ask me something"), fact search and the time-lapse images use Azure OpenAI when it's set up, and Google Gemini otherwise (`gemini-2.5-flash`, `gemini-embedding-001` and `gemini-2.5-flash-image`, which can also redraw a real reference photo). Each job picks on its own, so you can mix them. Get a key at [aistudio.google.com](https://aistudio.google.com) and put it in `GEMINI_API_KEY`.
+Writing (stories and "Ask me something"), fact search and the time-lapse images use Azure OpenAI when it's set up, and Google Gemini otherwise. The app asks Google which models your key can use and picks the newest Flash model for writing, a Flash image model for pictures (it can also redraw a real reference photo), and an embedding model for fact search. Each job picks on its own, so you can mix them. Get a key at [aistudio.google.com](https://aistudio.google.com) and put it in `GEMINI_API_KEY`.
 
 ## ElevenLabs
 

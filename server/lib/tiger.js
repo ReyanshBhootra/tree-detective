@@ -64,6 +64,19 @@ export const SQL = {
 
 export const toVector = (arr) => `[${arr.join(',')}]`;
 
+// Tiger Cloud's connection strings say sslmode=require: encrypt the connection
+// without checking the certificate chain (Postgres's standard meaning). Newer
+// versions of the Node driver treat it as "verify everything", which fails on
+// many laptops with "self-signed certificate in certificate chain". We keep
+// require's real meaning; verify-ca / verify-full still verify fully.
+export function pgConfig(url) {
+  const u = new URL(url);
+  const mode = u.searchParams.get('sslmode') ?? 'require';
+  if (mode === 'verify-ca' || mode === 'verify-full') return { connectionString: url };
+  u.searchParams.delete('sslmode');
+  return { connectionString: u.toString(), ssl: mode === 'disable' ? false : { rejectUnauthorized: false } };
+}
+
 export function createTiger(env = process.env, { pool } = {}) {
   if (!env.TIGER_DATABASE_URL && !pool) return null;
   let db = pool;
@@ -72,7 +85,7 @@ export function createTiger(env = process.env, { pool } = {}) {
   async function getPool() {
     if (!db) {
       const { default: pg } = await import('pg');
-      db = new pg.Pool({ connectionString: env.TIGER_DATABASE_URL, max: 4 });
+      db = new pg.Pool({ ...pgConfig(env.TIGER_DATABASE_URL), max: 4 });
     }
     return db;
   }
