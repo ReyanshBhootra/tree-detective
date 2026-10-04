@@ -74,6 +74,16 @@ test('iMessage-only commands', async () => {
   assert.equal(p('story').query, null);
   // questions go to the tree, not to commands
   for (const q of ['where did you come from?', 'have you seen a squirrel?', 'who lived here first?']) assert.equal(p(q).intent, 'chat', q);
-  assert.match(wakeText({ name: 'Old Oakley' }, { firstVisit: true, pointsEarned: 10, visited: [1], totalTrees: 6 }), /You woke Old Oakley! \+10 points\. 1 of 6/);
+  assert.match(wakeText({ name: 'Old Oakley' }, { firstVisit: true, pointsEarned: 10, visited: [1], totalTrees: 6 }), /You woke Old Oakley! \+10 pts · 1\/6 trees awake/);
   assert.match(reportText({ name: 'Whisper' }, { species: { guess: 'Pin oak', confidence: 0.82 }, flag: { flagType: 'pest', status: 'possible', reporters: 2 } }), /Pin oak \(82% sure\).*possible pests \(2 of 5/);
+});
+
+test('story texts are a short teaser with a tidy source line', async () => {
+  const { storyText } = await import('../photon/commands.js');
+  const story = 'Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston. In 1960 it was torn down.';
+  const t = storyText({ name: 'Professor Plane', verified: true, sourceUrl: 'https://www.njit.edu/about/history-njit' }, { emoji: '📚' }, story);
+  assert.match(t, /^📚 Professor Plane\n/);
+  assert.ok(t.split('\n')[1].length < 240);
+  assert.match(t, /🎧 Play the voice note for the full story/);
+  assert.match(t, /📖 Source: njit\.edu$/);
 });

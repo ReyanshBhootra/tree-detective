@@ -70,7 +70,7 @@ export const NO_TAG =
 export function wakeText(tree, result) {
   const n = result.visited?.length ?? 0;
   return result.firstVisit
-    ? `✨ You woke ${tree.name}! +${result.pointsEarned} points. ${n} of ${result.totalTrees} trees awake.`
+    ? `✨ You woke ${tree.name}! +${result.pointsEarned} pts · ${n}/${result.totalTrees} trees awake`
     : `${tree.name} is already awake and happy to see you again. ${n} of ${result.totalTrees} trees awake.`;
 }
 
@@ -104,6 +104,28 @@ export function reportText(tree, r) {
 
 export const NOT_LINKED =
   'I don\'t know which explorer you are yet. Open the Tree Detective site, tap "Text me", and send me the 6-letter code you see.';
+
+// The story as a text: a two-sentence teaser, then where to hear the rest and
+// a short source. The voice note that comes with it tells the whole thing.
+export function storyText(tree, persona, story, { withVoice = true } = {}) {
+  const sentences = story.match(/[^.!?]+[.!?]+["')]?/g) ?? [story];
+  let teaser = '';
+  for (const s of sentences) {
+    if (teaser && (teaser + s).length > 230) break;
+    teaser += s;
+    if (teaser.length > 120 && sentences.indexOf(s) >= 1) break;
+  }
+  teaser = teaser.trim();
+  const more = teaser.length < story.trim().length;
+  const lines = [`${persona?.emoji ?? '🌳'} ${tree.name}`, teaser];
+  const extra = [];
+  if (more) extra.push(withVoice ? '🎧 Play the voice note for the full story' : '…text "story" again any time');
+  let host = null;
+  try { host = tree.sourceUrl ? new URL(tree.sourceUrl).hostname.replace(/^www\./, '') : null; } catch { /* not a link */ }
+  if (host) extra.push(`📖 ${tree.verified ? 'Source' : 'Draft, not yet checked'}: ${host}`);
+  else if (tree.label === 'Local Legend') extra.push('📖 A local legend');
+  return [...lines, ...(extra.length ? ['', ...extra] : [])].join('\n');
+}
 
 export function shortStory(tree, maxChars = 320) {
   const sentences = tree.story.match(/[^.!?]+[.!?]+/g) ?? [tree.story];

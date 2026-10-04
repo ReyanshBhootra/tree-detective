@@ -3,7 +3,7 @@
 // notes, ask them questions, report problems with photos, switch language.
 // Pure logic around an `api` function, so it can be tested without Photon.
 import {
-  parse, reply, findTree, shortStory, LANG_WORDS,
+  parse, reply, findTree, storyText, LANG_WORDS,
   HELP, MORE, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText, signed,
 } from './commands.js';
 
@@ -55,7 +55,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
 
   async function tellStory(tree, me) {
     const [text, v] = await Promise.all([storyIn(tree, me.lang), storyVoice(tree, me.lang)]);
-    return [together(say(shortStory({ ...tree, story: text }, 600)), v)];
+    return [together(say(storyText(tree, personaOf(tree), text, { withVoice: Boolean(v) })), v)];
   }
 
   // The tree's spot through time: real aerial photo, drawn eras, real photo today.
@@ -84,6 +84,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     if (!r.ok) return [say('The grove is a little sleepy right now. Try again in a minute.')];
     // Say "you woke it" right away; the story and voice note follow.
     const woke = say(wakeText(tree, r.json));
+    // (wake line, then story + voice as one message, then one line on what to do next)
     const early = me.emit ? (await me.emit(woke), []) : [woke];
     await prefs(senderId, { currentTree: tree.code });
     me.currentTree = tree.code;

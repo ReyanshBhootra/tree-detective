@@ -74,7 +74,7 @@ test('a brand-new texter gets a welcome, no website needed', async () => {
 test('a photo of the QR tag wakes the tree and it starts talking', async () => {
   const out = await send({ type: 'image', buffer: await tagPhoto('TD-001'), mimeType: 'image/jpeg' });
   const t = texts(out);
-  assert.match(t, /You woke Old Oakley! \+10 points\. 1 of 2/);
+  assert.match(t, /You woke Old Oakley! \+10 pts · 1\/2 trees awake/);
   assert.match(t, /I stand by a castle/);
   assert.match(t, /Why do you look like a castle\?/);
 });
