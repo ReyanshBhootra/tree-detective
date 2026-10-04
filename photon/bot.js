@@ -4,7 +4,7 @@
 // Pure logic around an `api` function, so it can be tested without Photon.
 import {
   parse, reply, findTree, shortStory, LANG_WORDS,
-  HELP, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText,
+  HELP, MORE, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText,
 } from './commands.js';
 
 const LANG_NAMES = { en: 'English', es: 'Español', zh: '中文', hi: 'हिन्दी', gu: 'ગુજરાતી' };
@@ -169,7 +169,9 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       case 'route':
         return [say(reply(intent, me, trees))];
       case 'help':
-        return [say(HELP)];
+        return [say(me.currentTree ? `${treeByCode(me.currentTree)?.name ?? 'Your tree'} is listening. Ask it anything, or text "more".` : HELP)];
+      case 'more':
+        return [say(MORE)];
       default:
         return ask(me, senderId, text);
     }
@@ -191,7 +193,6 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     if (contents.some((c) => c.type === 'voice')) {
       out.push(say('I can\'t listen to voice notes yet. Type your question and the tree will answer out loud!'));
     }
-    if (me.isNew && out.length === 1) out.push(say(HELP));
     return out;
   }
 

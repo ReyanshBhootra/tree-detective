@@ -63,8 +63,10 @@ const send = (...contents) => bot.handle({ senderId: PHONE, spaceId: 'sp1', cont
 
 test('a brand-new texter gets a welcome, no website needed', async () => {
   const out = await send({ type: 'text', text: 'hi' });
-  assert.match(texts(out), /Hi, explorer/);
-  assert.match(texts(out), /photo of the tag/);
+  assert.equal(out.length, 1, 'one short message, not a wall of text');
+  assert.match(texts(out), /^Hi! I'm Tree Detective/);
+  assert.match(texts(out), /photo of a tree's QR tag/);
+  assert.match(texts(await send({ type: 'text', text: 'more' })), /"points" or "next"/);
 });
 
 test('a photo of the QR tag wakes the tree and it starts talking', async () => {
@@ -112,5 +114,5 @@ test('typed tag codes, points, language and talk-to', async () => {
 
 test('a photo with no tag and no tree yet gets a helpful answer', async () => {
   const other = await bot.handle({ senderId: '+15550000000', spaceId: 'sp2', contents: [{ type: 'image', buffer: Buffer.from([0xff, 0xd8, 0xff, 0xd9]), mimeType: 'image/jpeg' }] });
-  assert.match(texts(other), /couldn't find a tree tag/);
+  assert.match(texts(other), /can't see a tag/);
 });

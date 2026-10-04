@@ -43,25 +43,27 @@ export function parse(input) {
   // Kept narrow so questions for a tree ("where did you come from?") reach the tree.
   if (/^next\b|\bnext tree\b|\bshould i (find|go|visit)\b|\bwhere (should|do) i go\b/.test(lower)) return { intent: 'next' };
   if (/\b(visited|my trees|which trees|my book|badges?)\b|^book$/.test(lower)) return { intent: 'visited' };
-  if (/^(help|menu|commands|options|hi|hello|hey|yo|\?)\b/.test(lower) || lower === '?') return { intent: 'help' };
+  if (/^(more|menu|commands|options|what else|what can you do)\b/.test(lower)) return { intent: 'more' };
+  if (/^(help|hi|hello|hey|yo|\?)\b/.test(lower) || lower === '?') return { intent: 'help' };
   return { intent: 'chat', text };
 }
 
+// Short on purpose: one next step at a time. "more" shows the rest.
 export const HELP =
-  'Tree Detective here 🌳 No app needed, it all works right here:\n' +
-  '📷 Send a photo of a tree\'s QR tag to wake it (or type the code under the QR)\n' +
-  '💬 Then just text the tree a question\n' +
-  '🚩 "report pest", "report damage" or "report dying", then send a photo\n' +
-  '🌍 "spanish", "chinese", "hindi", "gujarati" or "english"\n' +
-  '⭐ "points", "visited", "next", "route", "story", "talk to <tree>"\n' +
-  'Text "stop" to pause reminders.';
+  'Send me a photo of a tree\'s QR tag to wake it up 🌳 Text "more" to see what else I can do.';
+
+export const MORE =
+  'You can text me:\n' +
+  '• a question for the tree you\'re with\n' +
+  '• "points" or "next"\n' +
+  '• "report", then a photo of a sick tree\n' +
+  '• "spanish", "hindi", "gujarati", "chinese" or "english"';
 
 export const WELCOME =
-  'Hi, explorer! I\'m Tree Detective. The trees around campus are asleep, and each one has a true story. ' +
-  'Find a tree with a QR tag and send me a photo of the tag to wake it up. No app or sign-in needed.';
+  'Hi! I\'m Tree Detective 🌳 The trees on campus are asleep. Send me a photo of a tree\'s QR tag to wake one up.';
 
 export const NO_TAG =
-  'I couldn\'t find a tree tag in that photo. Get close so the QR code fills most of the picture, or type the code printed under it (like TD-001-AB12CD).';
+  'Hmm, I can\'t see a tag in that photo. Try again up close, so the QR code fills the picture.';
 
 export function wakeText(tree, result) {
   const n = result.visited?.length ?? 0;
@@ -72,7 +74,7 @@ export function wakeText(tree, result) {
 
 export function askTip(tree) {
   const q = tree.questions?.[0];
-  return `Text me anything and ${tree.name} will answer${q ? `. Try: "${q}"` : '.'}`;
+  return q ? `Ask me anything! Like: "${q}"` : 'Ask me anything!';
 }
 
 const FLAG_WORDS = { pest: 'pests', damage: 'damage', dying: 'a dying tree' };
