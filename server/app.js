@@ -373,6 +373,7 @@ export function createApp({
         : null,
       speciesNote: analysis.speciesGuess ? null : analysis.error ?? 'species check is not configured on this server',
       flag,
+      photoCheck: analysis.suggestedFlag ? { flag: analysis.suggestedFlag, confidence: analysis.flagConfidence, reason: analysis.flagReason, by: analysis.healthProvider } : null,
       pestReport: flagType === 'pest' ? { url: PEST_REPORT_URL, hotline: PEST_HOTLINE } : null,
       rescueBonus: rescue,
     });

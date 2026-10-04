@@ -423,3 +423,34 @@ test('Gemini: an empty or blocked answer is an error, not a blank tree', async (
   const err = async () => ({ ok: false, status: 429, text: async () => 'quota' });
   await assert.rejects(geminiChat({ GEMINI_API_KEY: 'g' }, [{ role: 'user', content: 'x' }], {}, err), /429: quota/);
 });
+
+test('photo health check: Gemini flags clear problems, ignores unsure ones, never breaks species', async () => {
+  const env = { GEMINI_API_KEY: 'g', PLANTNET_API_KEY: 'p' };
+  let health = { label: 'pest', confidence: 0.9, reason: 'Spotted lanternfly egg masses on the trunk.' };
+  let geminiBody = null;
+  const fake = async (url, opts) => {
+    if (url.includes('plantnet')) return { ok: true, status: 200, json: async () => ({ results: [{ score: 0.7, species: { scientificNameWithoutAuthor: 'Acer rubrum', commonNames: ['Red maple'] } }] }) };
+    geminiBody = JSON.parse(opts.body);
+    if (health === 'boom') return { ok: false, status: 500, text: async () => 'down' };
+    return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(health) }] } }] }) };
+  };
+  let r = await analyzePhoto(Buffer.from('img'), env, fake, 'image/jpeg');
+  assert.equal(r.healthProvider, 'Gemini');
+  assert.equal(r.suggestedFlag, 'pest');
+  assert.equal(r.flagReason, 'Spotted lanternfly egg masses on the trunk.');
+  assert.equal(r.speciesGuess, 'Red maple (Acer rubrum)');
+  assert.equal(geminiBody.generationConfig.responseMimeType, 'application/json');
+  assert.equal(geminiBody.contents[0].parts[1].inlineData.mimeType, 'image/jpeg');
+
+  health = { label: 'damage', confidence: 0.4, reason: 'Maybe a crack.' };
+  assert.equal((await analyzePhoto(Buffer.from('img'), env, fake)).suggestedFlag, null, 'too unsure to flag');
+  health = { label: 'unclear', confidence: 0.95, reason: 'No tree in the photo.' };
+  assert.equal((await analyzePhoto(Buffer.from('img'), env, fake)).suggestedFlag, null);
+  health = 'boom';
+  r = await analyzePhoto(Buffer.from('img'), env, fake);
+  assert.equal(r.suggestedFlag, null);
+  assert.equal(r.speciesGuess, 'Red maple (Acer rubrum)', 'species survives a failed health check');
+
+  const { healthProvider } = await import('../server/lib/vision.js');
+  assert.equal(healthProvider({ GEMINI_API_KEY: 'g', CUSTOM_VISION_ENDPOINT: 'e', CUSTOM_VISION_KEY: 'k', CUSTOM_VISION_HEALTH_PROJECT_ID: 'h' }), 'Azure Custom Vision', 'a trained model still wins');
+});

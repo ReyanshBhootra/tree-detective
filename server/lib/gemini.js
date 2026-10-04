@@ -70,3 +70,48 @@ export async function geminiImage(env, prompt, photo = null, fetchImpl = fetch) 
   if (!img) throw new Error(`Gemini returned no image (${json.candidates?.[0]?.finishReason ?? 'unknown'})`);
   return Buffer.from((img.inlineData ?? img.inline_data).data, 'base64');
 }
+
+// Looks at a tree photo and says whether it shows a problem. No training
+// needed: Gemini already knows what spotted lanternflies, broken limbs and
+// dead trees look like. Anything uncertain comes back "unclear" (no flag).
+export const HEALTH_LABELS = ['healthy', 'pest', 'damage', 'dying', 'unclear'];
+
+export async function geminiHealth(env, buffer, mime, fetchImpl = fetch) {
+  const json = await call(env, models(env).chat, 'generateContent', {
+    contents: [{
+      role: 'user',
+      parts: [
+        {
+          text:
+            'You check photos of campus trees for a tree-care team. Pick one label:\n' +
+            '- pest: insects or signs of them clearly on the tree (spotted lanternfly adults, red-and-black nymphs, grey mud-like egg masses, webs, bore holes)\n' +
+            '- damage: broken, split or hanging limbs, trunk wounds, missing bark from injury\n' +
+            '- dying: mostly dead or bare canopy in growing season, large dead sections, fungus conks at the base\n' +
+            '- healthy: the tree is clearly visible and none of the above\n' +
+            '- unclear: no tree visible, too blurry, too far away, or you are not sure\n' +
+            'Only choose pest, damage or dying when you can clearly see it. Confidence is 0 to 1. Reason is one short sentence.',
+        },
+        { inlineData: { mimeType: mime, data: buffer.toString('base64') } },
+      ],
+    }],
+    generationConfig: {
+      temperature: 0,
+      maxOutputTokens: 200,
+      thinkingConfig: { thinkingBudget: 0 },
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'OBJECT',
+        properties: {
+          label: { type: 'STRING', enum: HEALTH_LABELS },
+          confidence: { type: 'NUMBER' },
+          reason: { type: 'STRING' },
+        },
+        required: ['label', 'confidence', 'reason'],
+      },
+    },
+  }, fetchImpl);
+  const text = (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('');
+  const out = JSON.parse(text);
+  if (!HEALTH_LABELS.includes(out.label)) throw new Error(`Gemini gave an unknown label: ${out.label}`);
+  return { label: out.label, confidence: Math.max(0, Math.min(1, Number(out.confidence) || 0)), reason: String(out.reason ?? '').slice(0, 200) };
+}

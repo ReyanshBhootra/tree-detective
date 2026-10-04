@@ -23,7 +23,7 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 
 - Speech for each tree's voice
 - OpenAI (or Gemini as the backup) for writing the stories and time-lapse images ahead of time, and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
-- Custom Vision for spotting pests and damage in photos (species guesses use the free [Pl@ntNet API](https://my.plantnet.org) if you add a key)
+- Custom Vision for spotting pests and damage in photos, if you train a model. Without one, Gemini checks the photo with no training. Species guesses use the free [Pl@ntNet API](https://my.plantnet.org)
 - Translator to tell each story in Spanish, Chinese, Hindi and Gujarati, with Speech as the backup voice
 - Communication Services Email for the weekly grounds summary
 - Table Storage and Blob Storage for visits, reports and photos

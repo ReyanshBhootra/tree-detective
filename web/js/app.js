@@ -750,6 +750,7 @@ function showReportResult(tree, r) {
     html += `<div><p style="margin:0 0 6px">Flag: <strong>${escapeHtml(label)}</strong> is
       <strong>${f.status === 'confirmed' ? 'CONFIRMED' : 'possible'}</strong>
       (${f.reporters} of ${f.needed} independent reports${r.report.flagSource === 'vision' ? ', spotted by the photo check' : ''})</p>
+      ${r.photoCheck?.reason ? `<p class="muted small" style="margin:0 0 6px">📷 ${escapeHtml(r.photoCheck.by)} saw: ${escapeHtml(r.photoCheck.reason)}</p>` : ''}
       <div class="meter ${f.status === 'confirmed' ? 'danger' : 'warn'}"><div style="width:${pct(Math.min(1, f.reporters / f.needed))}"></div></div>
       ${r.report.photoUrl ? '' : '<p class="muted small" style="margin:6px 0 0">Only reports with a photo count toward confirming it. Add one next time you pass by.</p>'}</div>`;
   }
