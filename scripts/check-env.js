@@ -107,6 +107,16 @@ async function liveChecks() {
 }
 
 if (live) await liveChecks();
+{
+  const { createAI } = await import('../server/lib/ai.js');
+  const { healthProvider, speciesProvider } = await import('../server/lib/vision.js');
+  const { createVoice } = await import('../server/lib/voice.js');
+  const p = createAI(env).providers;
+  const azureOnNoQuota = Object.entries(p).filter(([, v]) => v === 'Azure OpenAI').map(([k]) => k);
+  add(azureOnNoQuota.length ? '!' : 'i', 'Who does what',
+    `writing: ${p.chat ?? 'none'} · images: ${p.image ?? 'none'} · fact search: ${p.embed ?? 'none'} · voices: ${createVoice(env)?.provider ?? 'browser'} · species: ${speciesProvider(env) ?? 'none'} · photo health: ${healthProvider(env) ?? 'none'}`);
+  if (azureOnNoQuota.length) add('!', 'Azure OpenAI', `a deployment name is set for ${azureOnNoQuota.join(', ')}, so those use Azure OpenAI. Empty the AZURE_OPENAI_*_DEPLOYMENT lines if your account has no quota`);
+}
 const w = Math.max(...rows.map((r) => r.name.length));
 for (const r of rows) console.log(`${r.status}  ${r.name.padEnd(w)}  ${r.note}`);
 const bad = rows.filter((r) => r.status === '✘').length;
