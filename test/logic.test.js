@@ -477,3 +477,33 @@ test('TigerData connection: sslmode=require encrypts without strict certificate 
   assert.equal(pgConfig('postgres://u:p@h/db?sslmode=verify-full').ssl, undefined, 'verify-full keeps full checks');
   assert.equal(pgConfig('postgres://u:p@h/db?sslmode=disable').ssl, false);
 });
+
+test('ElevenLabs: a retired preset voice is swapped for one on the account', async () => {
+  const { createVoice, pickReplacement } = await import('../server/lib/voice.js');
+  const voices = [
+    { voice_id: 'm1', name: 'Brian', labels: { gender: 'male', age: 'middle aged' } },
+    { voice_id: 'f1', name: 'Sarah', labels: { gender: 'female', age: 'young' } },
+    { voice_id: 'f2', name: 'Alice', labels: { gender: 'female', age: 'middle aged' } },
+  ];
+  assert.equal(pickReplacement(voices, { id: 'sprout', gender: 'female' }).voice_id, 'f1');
+  assert.equal(pickReplacement(voices, { id: 'elder', gender: 'male' }).voice_id, 'm1');
+  const used = [];
+  const fake = async (url) => {
+    if (url.endsWith('/v1/voices')) return { ok: true, json: async () => ({ voices }) };
+    const id = url.match(/text-to-speech\/([^?]+)/)[1];
+    used.push(id);
+    if (id === 'gone') return { ok: false, status: 404, text: async () => '{"detail":{"code":"voice_not_found"}}' };
+    return { ok: true, arrayBuffer: async () => new Uint8Array([7]).buffer };
+  };
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    const v = createVoice({ ELEVENLABS_API_KEY: 'k' }, { fetchImpl: fake });
+    const sprout = { id: 'sprout', name: 'The Sprout', gender: 'female', elevenVoiceId: 'gone' };
+    assert.deepEqual([...await v.speak('Hi', sprout, 'en')], [7]);
+    await v.speak('Hola', sprout, 'es');
+    assert.deepEqual(used, ['gone', 'f1', 'f1'], 'remembers the replacement');
+  } finally {
+    console.warn = warn;
+  }
+});

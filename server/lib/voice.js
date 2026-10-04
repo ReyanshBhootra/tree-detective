@@ -23,11 +23,35 @@ export async function elevenSpeak(env, text, voiceId, { lang = 'en', fetchImpl =
   return Buffer.from(await res.arrayBuffer());
 }
 
+// ElevenLabs retires preset voices now and then. When a persona's voice is
+// gone, pick the closest voice this account does have (same gender, and young
+// for the sprout), remember it, and say which one so it can be pinned in .env.
+export function pickReplacement(voices, persona) {
+  const label = (v, k) => String(v.labels?.[k] ?? '').toLowerCase();
+  const want = persona.gender === 'male' ? 'male' : 'female';
+  const sameGender = voices.filter((v) => label(v, 'gender') === want);
+  const young = sameGender.filter((v) => /young|child|teen/.test(label(v, 'age')));
+  return (persona.id === 'sprout' && young[0]) || sameGender[0] || voices[0] || null;
+}
+
 // Returns null when no voice service is configured.
 export function createVoice(env = process.env, { fetchImpl = fetch } = {}) {
   const eleven = Boolean(env.ELEVENLABS_API_KEY);
   const azure = Boolean(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION);
   if (!eleven && !azure) return null;
+  const replaced = new Map();
+  let accountVoices;
+  async function replacementFor(persona) {
+    if (!replaced.has(persona.id)) {
+      accountVoices ??= fetchImpl('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': env.ELEVENLABS_API_KEY } })
+        .then(async (r) => (r.ok ? (await r.json()).voices ?? [] : []));
+      const pick = pickReplacement(await accountVoices, persona);
+      if (!pick) throw new Error(`no ElevenLabs voices available for ${persona.name}`);
+      console.warn(`ElevenLabs voice for ${persona.name} is gone, using "${pick.name}" instead. To keep it, add ELEVENLABS_VOICE_${persona.id.toUpperCase()}=${pick.voice_id} to .env`);
+      replaced.set(persona.id, pick.voice_id);
+    }
+    return replaced.get(persona.id);
+  }
   return {
     provider: eleven ? 'ElevenLabs' : 'Azure Speech',
     // Can this persona be voiced in this language at all?
@@ -40,8 +64,13 @@ export function createVoice(env = process.env, { fetchImpl = fetch } = {}) {
     },
     async speak(text, persona, lang = 'en') {
       if (eleven) {
-        const id = env[`ELEVENLABS_VOICE_${persona.id.toUpperCase()}`] || persona.elevenVoiceId;
-        return elevenSpeak(env, text, id, { lang, fetchImpl });
+        const id = replaced.get(persona.id) || env[`ELEVENLABS_VOICE_${persona.id.toUpperCase()}`] || persona.elevenVoiceId;
+        try {
+          return await elevenSpeak(env, text, id, { lang, fetchImpl });
+        } catch (e) {
+          if (!/voice_not_found/.test(e.message)) throw e;
+          return elevenSpeak(env, text, await replacementFor(persona), { lang, fetchImpl });
+        }
       }
       return azureSpeak(env, text, persona, voiceFor(persona, lang));
     },

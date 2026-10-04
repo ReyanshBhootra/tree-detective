@@ -87,6 +87,7 @@ for (const tree of trees) {
     } catch (e) {
       const msg = e.message.match(/"message":\s*"([^"]+)/)?.[1] ?? e.message;
       console.log(`failed: ${msg.split('\\n')[0].slice(0, 160)}`);
+      process.exitCode = 1;
       if (/\b429\b/.test(e.message) && /quota|billing|limit: 0/i.test(e.message)) {
         console.log(`
 Stopping: your ${ai.providers.image} key has no quota for image generation.

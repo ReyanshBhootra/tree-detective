@@ -47,7 +47,8 @@ for (const tree of trees) {
       tree.audio[l] = `/audio/${name}`;
       console.log(`  ${l} narration by ${voice.provider}`);
     } catch (e) {
-      console.log(`  ${l} narration failed: ${e.message}`);
+      console.log(`  ${l} narration failed: ${e.message.slice(0, 200)}`);
+      process.exitCode = 1;
     }
   }
 }

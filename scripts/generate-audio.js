@@ -36,7 +36,8 @@ for (const tree of trees) {
     made++;
     console.log('done');
   } catch (e) {
-    console.log(`failed: ${e.message}`);
+    console.log(`failed: ${e.message.slice(0, 200)}`);
+    process.exitCode = 1;
   }
 }
 saveTrees(trees);
