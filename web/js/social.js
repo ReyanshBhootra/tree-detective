@@ -25,8 +25,8 @@ async function loadAccount() {
   } catch {
     d.state.account = { loggedIn: false };
   }
-  const btn = $('btn-link');
-  btn.textContent = d.state.account.loggedIn ? `📱 ${d.state.account.phone}` : '📱 Log in';
+  const label = $('btn-link').querySelector('span') ?? $('btn-link');
+  label.textContent = d.state.account.loggedIn ? d.state.account.phone.replace('•••• ', '••') : 'Log in';
 }
 
 function showLoginStep(step) {

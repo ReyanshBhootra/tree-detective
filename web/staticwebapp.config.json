@@ -1,5 +1,5 @@
 {
-  "navigationFallback": { "rewrite": "/index.html", "exclude": ["/css/*", "/js/*", "/audio/*", "/timelapse/*", "*.{png,jpg,svg,mp3,json}"] },
+  "navigationFallback": { "rewrite": "/index.html", "exclude": ["/css/*", "/js/*", "/vendor/*", "/audio/*", "/timelapse/*", "*.{png,jpg,svg,mp3,json}"] },
   "mimeTypes": { ".json": "application/json", ".mp3": "audio/mpeg" },
   "globalHeaders": {
     "Permissions-Policy": "camera=(self), geolocation=(self), microphone=()",

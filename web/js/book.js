@@ -58,7 +58,7 @@ export function openBook() {
     const v = visited.get(t.code);
     const p = persona(t);
     if (!v) {
-      return `<li class="card sleeping"><div class="card-art" aria-hidden="true">🌑</div>
+      return `<li class="card sleeping"><div class="card-art" aria-hidden="true">💤</div>
         <b>???</b><small>Still asleep somewhere on campus</small></li>`;
     }
     return `<li class="card" style="--card-glow:${p.glow}">

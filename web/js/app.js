@@ -94,7 +94,14 @@ const persona = (tree) => state.personas.get(tree.persona) ?? { name: 'Tree', gl
 
 let map;
 
-function treeSvg(glow) {
+function treeSvg(glow, awake = false) {
+  // A little face: closed eyes while asleep, blinking eyes and a smile once awake.
+  const face = awake
+    ? `<g class="face"><g class="eyes"><ellipse cx="23" cy="25" rx="2.1" ry="2.6" fill="#1f2a1f"/><ellipse cx="33" cy="25" rx="2.1" ry="2.6" fill="#1f2a1f"/>
+        <circle cx="23.7" cy="24.1" r=".7" fill="#fff"/><circle cx="33.7" cy="24.1" r=".7" fill="#fff"/></g>
+        <circle cx="19.5" cy="29.5" r="2.2" fill="#ff9fb0" opacity=".55"/><circle cx="36.5" cy="29.5" r="2.2" fill="#ff9fb0" opacity=".55"/>
+        <path d="M25 30 Q28 33 31 30" stroke="#1f2a1f" stroke-width="1.4" fill="none" stroke-linecap="round"/></g>`
+    : `<g class="face"><path d="M20.5 25 Q23 27 25.5 25 M30.5 25 Q33 27 35.5 25" stroke="#1f2a1f" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/></g>`;
   return `<svg viewBox="0 0 56 64" aria-hidden="true">
     <ellipse cx="28" cy="60" rx="16" ry="3.5" fill="rgba(0,0,0,.35)"/>
     <path d="M24 60 Q25 44 26 36 h4 Q31 44 32 60 Z" fill="#8a5a35"/>
@@ -102,9 +109,10 @@ function treeSvg(glow) {
     <circle cx="18" cy="28" r="10" fill="#56b878"/>
     <circle cx="38" cy="28" r="10" fill="#4aa86c"/>
     <circle cx="28" cy="14" r="11" fill="#67c587"/>
-    <circle cx="22" cy="20" r="2.4" fill="${glow}" opacity=".9"/>
-    <circle cx="35" cy="18" r="1.8" fill="${glow}" opacity=".8"/>
-    <circle cx="30" cy="30" r="2" fill="${glow}" opacity=".7"/>
+    <circle cx="20" cy="12" r="2.4" fill="${glow}" opacity=".9"/>
+    <circle cx="37" cy="16" r="1.8" fill="${glow}" opacity=".8"/>
+    <circle cx="42" cy="32" r="2" fill="${glow}" opacity=".7"/>
+    ${face}
   </svg>`;
 }
 
@@ -115,8 +123,8 @@ function treeIcon(tree, { justWoke = false } = {}) {
     className: 'tree-marker',
     iconSize: [56, 64],
     iconAnchor: [28, 62],
-    html: `<div class="tree ${awake ? 'awake' : 'sleeping'} ${justWoke ? 'just-woke' : ''}" style="--tree-glow:${glow}">
-      ${treeSvg(awake ? glow : '#556')}
+    html: `<div class="tree ${awake ? 'awake' : 'sleeping'} ${justWoke ? 'just-woke' : ''}" style="--tree-glow:${glow};--blink-delay:${([...tree.code].reduce((n, c) => n + c.charCodeAt(0), 0) % 7) * 0.7}s">
+      ${treeSvg(awake ? glow : '#556', awake)}
       ${awake ? '' : '<span class="zzz">z z</span>'}
     </div>
     ${state.status?.[tree.code] && state.status[tree.code] !== 'ok'
@@ -161,6 +169,7 @@ function applySummary(summary) {
   $('points').textContent = state.points;
   $('awake').textContent = state.visited.size;
   $('total').textContent = state.trees.length;
+  $('score-fill').style.width = pct(state.trees.length ? state.visited.size / state.trees.length : 0);
   renderStatusLine();
 }
 
@@ -865,7 +874,7 @@ function showReportResult(tree, r) {
       <p class="small" style="margin:8px 0 0">Guesses are sometimes wrong. Does it look right?
         <button class="btn" data-fb="agree" style="min-height:34px">Yes</button>
         <button class="btn" data-fb="disagree" style="min-height:34px">Not sure</button></p></div>`;
-  } else if (r.speciesNote && r.report.photoUrl) {
+  } else if (r.speciesNote && r.report.photoUrl && (state.config.features.speciesVision || state.config.features.speciesProvider)) {
     html += `<p class="muted small" style="margin:0">Species guess skipped: ${escapeHtml(r.speciesNote)}.</p>`;
   }
   if (r.flag) {
@@ -903,6 +912,47 @@ function showReportResult(tree, r) {
 }
 
 // ---------- walking route ----------
+
+// ---------- the owl ----------
+
+// A little owl on the map that hoots a hint when you tap it.
+const OWL_TIPS = [
+  'Trees remember you. Tap an awake tree any time to hear it again.',
+  'Slide the time travel bar to see campus from the air in 1930.',
+  'Seen a spotted lanternfly? Report it from any awake tree.',
+  'Leave a note on a tree. The next detective will read it.',
+  'Wake a tree after dark for a secret badge. Hoo hoo.',
+];
+let owlTurn = 0;
+$('owl').addEventListener('click', async () => {
+  const owl = $('owl');
+  owl.classList.remove('hoot');
+  void owl.offsetWidth;
+  owl.classList.add('hoot');
+  const asleep = state.trees.filter((t) => !state.visited.has(t.code));
+  let tip;
+  if (asleep.length && owlTurn % 2 === 0) {
+    const t = asleep[Math.floor(Math.random() * asleep.length)];
+    tip = `Hoo! ${t.name} is snoozing${t.place ? ` ${t.place.charAt(0).toLowerCase()}${t.place.slice(1)}` : ' somewhere nearby'}.`;
+  } else if (!asleep.length && owlTurn % 2 === 0) {
+    tip = 'Hoo hoo! Every tree is awake. The whole grove is singing.';
+  } else {
+    tip = OWL_TIPS[Math.floor(owlTurn / 2) % OWL_TIPS.length];
+  }
+  owlTurn++;
+  toast(`🦉 ${tip}`, 5000);
+});
+
+// ---------- how to play ----------
+
+function openWelcome() {
+  storageSet('td-welcomed', '1');
+  $('welcome-dialog').showModal();
+}
+$('btn-help').addEventListener('click', openWelcome);
+$('btn-brand').addEventListener('click', openWelcome);
+$('welcome-scan').addEventListener('click', () => { $('welcome-dialog').close(); openScanner(); });
+$('welcome-route').addEventListener('click', () => { $('welcome-dialog').close(); openRoute(); });
 
 // ---------- boot ----------
 
@@ -945,6 +995,7 @@ async function boot() {
   if (code || params.has('route')) history.replaceState(null, '', location.pathname);
   if (tag) wakeTree(tag);
   else if (params.has('route')) openRoute();
+  else if (!state.visited.size && !storageGet('td-welcomed')) openWelcome();
   else if (!state.visited.size) toast('The trees are asleep. Find a tagged tree on campus and scan it to wake it up.', 6000);
 }
 

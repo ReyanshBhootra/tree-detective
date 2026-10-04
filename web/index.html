@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -18,29 +18,101 @@
   <canvas id="fireflies" aria-hidden="true"></canvas>
 
   <header class="hud">
-    <div class="brand">
+    <button type="button" class="brand" id="btn-brand" aria-label="How to play">
       <span class="brand-mark" aria-hidden="true">🌳</span>
       <span class="brand-name">Tree Detective</span>
-    </div>
+    </button>
     <div class="score" aria-live="polite">
       <span class="score-points"><strong id="points">0</strong> pts</span>
       <span class="score-trees"><strong id="awake">0</strong>/<span id="total">0</span> awake</span>
+      <span class="score-bar" aria-hidden="true"><span id="score-fill"></span></span>
     </div>
   </header>
 
   <p class="status-line" id="status-line" hidden aria-live="polite"></p>
 
-  <nav class="actions">
-    <button id="btn-scan" class="btn btn-primary">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
-      Scan a tree
+  <button id="owl" class="owl" type="button" aria-label="Ask the owl for a hint" title="Hoo? Tap me for a hint">
+    <svg viewBox="0 0 64 72" aria-hidden="true">
+      <path d="M4 66 Q32 58 60 66" stroke="#6b4a2b" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g class="owl-body">
+        <path d="M14 22 L18 8 L25 17 Q32 14 39 17 L46 8 L50 22 Q56 34 52 50 Q48 62 32 63 Q16 62 12 50 Q8 34 14 22 Z" fill="#7a5a3c"/>
+        <path d="M20 40 Q32 34 44 40 Q46 56 32 59 Q18 56 20 40 Z" fill="#c9a77c"/>
+        <path d="M24 46 l3 2 l3 -2 M34 46 l3 2 l3 -2 M29 52 l3 2 l3 -2" stroke="#8f6c47" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <circle cx="24" cy="28" r="8.5" fill="#fbf3df"/><circle cx="40" cy="28" r="8.5" fill="#fbf3df"/>
+        <g class="owl-eyes"><circle cx="24" cy="28" r="4.2" fill="#2d2416"/><circle cx="40" cy="28" r="4.2" fill="#2d2416"/>
+          <circle cx="25.4" cy="26.6" r="1.4" fill="#fff"/><circle cx="41.4" cy="26.6" r="1.4" fill="#fff"/></g>
+        <path d="M30 34 L32 39 L34 34 Z" fill="#f2c55c"/>
+        <path d="M26 62 v4 M30 62 v4 M34 62 v4 M38 62 v4" stroke="#f2c55c" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <span class="owl-bubble" id="owl-bubble" aria-hidden="true">Hoo?</span>
+  </button>
+
+  <nav class="actions" aria-label="Main">
+    <button id="btn-book" class="btn btn-tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v16H7.5a1.5 1.5 0 0 0 0 3H19v1H7.5A2.5 2.5 0 0 1 5 19.5z" fill="currentColor"/></svg>
+      <span>Book</span>
     </button>
-    <button id="btn-book" class="btn">Book</button>
-    <button id="btn-quests" class="btn">🎯 Quests</button>
-    <button id="btn-route" class="btn">Route</button>
-    <button id="btn-link" class="btn" hidden>📱 Log in</button>
-    <a class="btn" href="grounds.html">Grounds</a>
+    <button id="btn-route" class="btn btn-tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3a3 3 0 0 1 3 3c0 2.2-3 5.5-3 5.5S3 8.2 3 6a3 3 0 0 1 3-3zm12 8a3 3 0 0 1 3 3c0 2.2-3 5.5-3 5.5S15 16.2 15 14a3 3 0 0 1 3-3zM6 13v3a3 3 0 0 0 3 3h4v-2H9a1 1 0 0 1-1-1v-3zm5-8h4a3 3 0 0 1 3 3v1h-2V8a1 1 0 0 0-1-1h-4z" fill="currentColor"/></svg>
+      <span>Route</span>
+    </button>
+    <button id="btn-quests" class="btn btn-tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1.5 2H20a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3.5zm3 5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zm0 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
+      <span>Quests</span>
+    </button>
+    <button id="btn-scan" class="btn btn-primary btn-scan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
+      <span>Scan<span class="tab-long"> a tree</span></span>
+    </button>
+    <button id="btn-link" class="btn btn-tab" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 3v13h10V5zm5 14.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="currentColor"/></svg>
+      <span>Log in</span>
+    </button>
+    <a class="btn btn-tab tab-extra" href="grounds.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h3v10zm6 0V4h3v16zm6 0v-7h3v7z" fill="currentColor"/></svg>
+      <span>Grounds</span>
+    </a>
+    <button id="btn-help" class="btn btn-tab tab-extra" aria-label="How to play">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 14.5a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5zM12 6a3.5 3.5 0 0 0-3.5 3.5h2a1.5 1.5 0 1 1 2.2 1.3c-1 .6-1.7 1.3-1.7 2.7v.5h2v-.4c0-.6.3-.9 1-1.4A3.5 3.5 0 0 0 12 6z" fill="currentColor"/></svg>
+      <span>Help</span>
+    </button>
   </nav>
+
+  <!-- First visit: how to play -->
+  <dialog id="welcome-dialog" class="sheet welcome">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <div class="welcome-art" aria-hidden="true">
+      <svg viewBox="0 0 120 90">
+        <circle cx="24" cy="22" r="11" fill="#ffe08a"/><circle cx="29" cy="18" r="10" fill="#fbf3df"/>
+        <path class="twinkle" d="M108 40 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5z" fill="#f2c55c"/>
+        <path class="twinkle t2" d="M70 8 l1 2.6 2.6 1 -2.6 1 -1 2.6 -1 -2.6 -2.6 -1 2.6 -1z" fill="#f2c55c"/>
+        <ellipse cx="60" cy="84" rx="34" ry="5" fill="#e6d6ad"/>
+        <path d="M55 84 Q56 66 57 58 h6 Q64 66 65 84 Z" fill="#8a5a35"/>
+        <g class="sleepy">
+          <circle cx="60" cy="44" r="24" fill="#3f9a62"/><circle cx="46" cy="50" r="14" fill="#56b878"/>
+          <circle cx="74" cy="50" r="14" fill="#4aa86c"/><circle cx="60" cy="30" r="15" fill="#67c587"/>
+          <path d="M50 46 Q54 49 58 46 M62 46 Q66 49 70 46" stroke="#1f2a1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <circle cx="47" cy="52" r="3" fill="#ff9fb0" opacity=".5"/><circle cx="73" cy="52" r="3" fill="#ff9fb0" opacity=".5"/>
+        </g>
+        <text class="zz z1" x="82" y="38">z</text><text class="zz z2" x="90" y="30">z</text><text class="zz z3" x="99" y="22">Z</text>
+      </svg>
+    </div>
+    <p class="persona">Welcome, detective</p>
+    <h2>The trees of campus are asleep</h2>
+    <p class="muted">Each tagged tree has a name, a voice and a true story about this place. Wake them all.</p>
+    <ol class="steps">
+      <li><span class="step-icon" aria-hidden="true">🔍</span><span><b>Find a tag.</b> Look for a small QR tag on a tree trunk.</span></li>
+      <li><span class="step-icon" aria-hidden="true">📱</span><span><b>Scan it.</b> The tree wakes up and tells you its story out loud.</span></li>
+      <li><span class="step-icon" aria-hidden="true">🕰️</span><span><b>Travel back.</b> See the spot in 1930, then ask the tree anything.</span></li>
+      <li><span class="step-icon" aria-hidden="true">🩺</span><span><b>Look after it.</b> Snap pests or damage so the grounds team can help.</span></li>
+    </ol>
+    <div class="welcome-actions">
+      <button type="button" class="btn btn-primary" id="welcome-scan" autofocus>Scan my first tree</button>
+      <button type="button" class="btn btn-ghost" id="welcome-route">Show me where they are</button>
+    </div>
+    <p class="muted small welcome-foot">Tap the 🌳 up top to see this again · <a href="grounds.html">Grounds team dashboard</a></p>
+  </dialog>
 
   <div id="timetravel" class="timetravel" hidden>
     <label for="tt-range">Time travel</label>
@@ -89,6 +161,14 @@
     <p id="story-visit" class="visit-note"></p>
     <p id="story-status" class="status-note" hidden></p>
 
+    <div class="narration">
+      <button id="btn-play" class="btn btn-primary btn-round" aria-label="Play story">▶</button>
+      <div class="narration-main">
+        <div class="narration-bar"><div id="narration-progress"></div></div>
+        <span class="muted small" id="voice-note"></span>
+      </div>
+    </div>
+
     <figure class="timelapse">
       <div class="tl-frame">
         <div class="timelapse-stage" id="tl-stage"></div>
@@ -105,12 +185,6 @@
       <div class="tl-dots" id="tl-dots" role="tablist" aria-label="Eras of this tree's life"></div>
       <button type="button" class="btn btn-small" id="btn-compare" hidden aria-pressed="false">Compare with today</button>
     </figure>
-
-    <div class="narration">
-      <button id="btn-play" class="btn btn-primary btn-round" aria-label="Play story">▶</button>
-      <div class="narration-bar"><div id="narration-progress"></div></div>
-      <span class="muted small" id="voice-note"></span>
-    </div>
 
     <p id="story-text" class="story-text"></p>
     <p class="source small" id="story-source"></p>
@@ -248,7 +322,7 @@
   </dialog>
 
   <script src="config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
