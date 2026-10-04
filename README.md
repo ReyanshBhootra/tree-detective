@@ -25,7 +25,6 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 - OpenAI (or Gemini as the backup) for writing the stories and time-lapse images ahead of time, and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
 - Custom Vision for spotting pests and damage in photos, if you train a model. Without one, Gemini checks the photo with no training. Species guesses use the free [Pl@ntNet API](https://my.plantnet.org)
 - Translator to tell each story in Spanish, Chinese, Hindi and Gujarati, with Speech as the backup voice
-- Communication Services Email for the weekly grounds summary
 - Table Storage and Blob Storage for visits, reports and photos
 - App Service / Static Web Apps for hosting
 
@@ -87,7 +86,3 @@ To show what a tree does for campus each year, look it up on [i-Tree MyTree](htt
 There's an optional iMessage bot that answers stuff like "points", "next" or "story Old Oakley" and reminds people to go find more trees. Get keys from app.photon.codes, add them to `.env`, and run `npm run photon`.
 
 Put the grounds team's numbers in `GROUNDS_ALERT_TO` and they get a text within a minute of a problem being confirmed, with a map pin and a link to the photos.
-
-## Weekly email
-
-`npm run digest` sends the grounds team a summary of the week. It uses Azure Communication Services Email if `ACS_CONNECTION_STRING`, `DIGEST_FROM` and `DIGEST_TO` are set, otherwise it saves `print/digest.html`. Run it once a week with a scheduled job.

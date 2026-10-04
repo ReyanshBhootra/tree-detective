@@ -193,19 +193,6 @@ test('1930 aerial helpers', async () => {
   assert.ok(wide > 210 && wide < 230, `width ${wide}`);
 });
 
-test('weekly digest sorts confirmed from possible and counts the week', async () => {
-  const { buildDigest } = await import('../server/lib/digest.js');
-  const trees = [{ code: 'A', name: 'Oak' }, { code: 'B', name: 'Elm' }];
-  const reports = [
-    ...[1, 2, 3, 4, 5].map((i) => ({ treeCode: 'A', flagType: 'pest', reporterHash: `p${i}`, photoUrl: '/x', timestamp: '2026-10-02T00:00:00Z' })),
-    { treeCode: 'B', flagType: 'damage', reporterHash: 'q', photoUrl: '/y', timestamp: '2026-09-01T00:00:00Z' },
-  ];
-  const d = buildDigest(trees, reports, '2026-09-26T00:00:00Z');
-  assert.equal(d.recentCount, 5);
-  assert.deepEqual(d.confirmed.map((f) => f.tree.name), ['Oak']);
-  assert.deepEqual(d.possible.map((f) => f.tree.name), ['Elm']);
-});
-
 test('ask prompt keeps the tree to its own facts', async () => {
   const { buildAskMessages } = await import('../server/lib/ask.js');
   const m = buildAskMessages(
