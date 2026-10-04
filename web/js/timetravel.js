@@ -34,7 +34,7 @@ export async function initTimeTravel(map, historic, toast, api) {
   function layerFor(i) {
     if (layers.has(i)) return layers.get(i);
     const s = stops[i];
-    const opts = { pane: 'timeline', opacity: 0, maxZoom: 20, attribution: s.attribution, zIndex: i + 1 };
+    const opts = { pane: 'timeline', opacity: 0, maxZoom: 20, zIndex: i + 1 };
     const layer = s.kind === 'wms'
       ? L.tileLayer.wms(s.url, { ...opts, layers: s.layer, format: 'image/jpeg', transparent: false, version: '1.1.1' })
       : L.tileLayer(s.url, { ...opts, maxNativeZoom: 19 });
@@ -50,6 +50,15 @@ export async function initTimeTravel(map, historic, toast, api) {
     return layer;
   }
 
+  // Only credit the photos you can actually see.
+  let credited = null;
+  function credit(text) {
+    if (text === credited) return;
+    if (credited) map.attributionControl.removeAttribution(credited);
+    if (text) map.attributionControl.addAttribution(text);
+    credited = text;
+  }
+
   function show(p) {
     const i = Math.floor(p);
     const frac = p - i;
@@ -63,6 +72,7 @@ export async function initTimeTravel(map, historic, toast, api) {
     });
     const near = Math.round(p);
     yearLabel.textContent = near >= last ? 'Today' : stops[near].label;
+    credit(near >= last ? null : stops[near].attribution);
     box.classList.toggle('past', p < last - 0.5);
   }
 
