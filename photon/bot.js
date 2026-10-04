@@ -11,7 +11,7 @@ const LANG_NAMES = { en: 'English', es: 'Español', zh: '中文', hi: 'हिन
 const REPORT_WINDOW_MS = 10 * 60 * 1000;
 
 export const say = (text) => ({ type: 'text', text });
-export const sound = (buffer, mimeType = 'audio/mpeg') => ({ type: 'voice', buffer, mimeType });
+export const sound = (buffer, mimeType = 'audio/mpeg', name = 'Tree Detective') => ({ type: 'voice', buffer, mimeType, name });
 
 // api(path, { method, body, form, raw }) -> { ok, status, json, buffer }
 // readTag(buffer, mime) -> { code, key } | null
@@ -42,7 +42,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
 
   async function storyVoice(tree, lang) {
     const r = await api(`/api/trees/${tree.code}/audio/${lang}`, { raw: true });
-    if (r.ok && r.buffer?.length) return sound(r.buffer, r.mimeType || 'audio/mpeg');
+    if (r.ok && r.buffer?.length) return sound(r.buffer, r.mimeType || 'audio/mpeg', `${tree.name}'s story`);
     if (lang !== 'en') return storyVoice(tree, 'en');
     return null;
   }
@@ -87,7 +87,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     const out = [say(`${tree.name}: ${r.json.answer}`)];
     if (r.json.audio?.startsWith('data:')) {
       const [head, b64] = r.json.audio.split(',');
-      out.push(sound(Buffer.from(b64, 'base64'), head.match(/data:([^;]+)/)?.[1] ?? 'audio/mpeg'));
+      out.push(sound(Buffer.from(b64, 'base64'), head.match(/data:([^;]+)/)?.[1] ?? 'audio/mpeg', tree.name));
     }
     return out;
   }

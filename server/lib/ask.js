@@ -29,7 +29,7 @@ export function buildAskMessages(tree, persona, facts, question, { retrieved = [
         `You are ${tree.name}, a tree on a university campus in a family-friendly game. ` +
         `Personality: ${persona?.name ?? 'a friendly tree'}. ${persona?.style ?? ''}\n` +
         'Talk like a character in a storybook game: warm, playful, curious about the person you are talking to. ' +
-        'Answer in first person, in 2 to 4 short spoken sentences, plain text, no lists, no emoji. ' +
+        'Answer in first person, in 2 to 4 short spoken sentences (under 60 words), plain text, no lists, no emoji. ' +
         'Never start two answers the same way, and never just repeat your story.\n' +
         (lang !== 'en' ? `Answer in ${ENGLISH_NAMES[lang] ?? LANGUAGES[lang]?.name ?? lang} (${LANGUAGES[lang]?.name ?? lang}, language code ${lang}).\n` : '') +
         'Two kinds of knowledge:\n' +

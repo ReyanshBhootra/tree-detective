@@ -54,9 +54,9 @@ async function sendAll(space, parts, { text, voice, attachment }) {
     } else if (p.type === 'voice') {
       const ext = p.mimeType.includes('wav') ? 'wav' : 'mp3';
       try {
-        await space.send(voice(p.buffer, { mimeType: p.mimeType, name: `tree.${ext}` }));
+        await space.send(voice(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` }));
       } catch {
-        await space.send(attachment(p.buffer, { mimeType: p.mimeType, name: `tree-story.${ext}` }));
+        await space.send(attachment(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` }));
       }
     }
   }
