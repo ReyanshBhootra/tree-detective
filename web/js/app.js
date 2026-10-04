@@ -47,7 +47,7 @@ async function api(path, opts = {}) {
     headers: opts.body && !(opts.body instanceof FormData) ? { 'content-type': 'application/json', ...opts.headers } : opts.headers,
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || `request failed (${res.status})`);
+  if (!res.ok) throw Object.assign(new Error(json.error || `request failed (${res.status})`), { status: res.status });
   return json;
 }
 
@@ -197,7 +197,7 @@ async function wakeTree({ code, key }) {
   try {
     result = await api('/api/visits', { method: 'POST', body: JSON.stringify({ playerId, treeCode: code, locationVerified, treeKey: key }) });
   } catch (e) {
-    return toast(`Couldn't reach the grove: ${e.message}`);
+    return toast(e.status === 403 ? e.message : `Couldn't reach the grove: ${e.message}`);
   }
   applySummary(result);
   refreshMarker(code, { justWoke: result.firstVisit });

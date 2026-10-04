@@ -37,3 +37,5 @@ fs.writeFileSync(path.join(outDir, 'qr-tags.html'), `<!doctype html><html><head>
   .code { margin: 1mm 0 0; color: #555; }
 </style></head><body><div class="grid">${tags.join('\n')}</div></body></html>`);
 console.log(`Wrote ${tags.length} tags to print/qr-tags.html (open it and print). Links point at ${base}.`);
+console.log('\nTest links (Ctrl+click to open):');
+for (const tree of loadTrees()) console.log(`  ${tree.name.padEnd(18)} ${treeLink(base, tree.code, secret)}`);
