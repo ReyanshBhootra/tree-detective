@@ -24,37 +24,82 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-001.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-001-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "before",
         "year": 1855,
         "caption": "Just before the asylum was built.",
         "details": "An open lot on High Street in Newark in the mid-1850s, before any building stood here.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-001-1-before.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1857",
         "year": 1857,
         "caption": "The Newark Orphan Asylum opens.",
         "details": "A new Gothic Victorian building with castle-like towers, the Newark Orphan Asylum, children in 1850s clothing on the lawn, gas lamps.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-001-2-1857.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1948",
         "year": 1948,
         "caption": "The college turns the old asylum into offices.",
         "details": "The same Gothic castle-like building, now college offices in 1948, students in late-1940s clothing, 1940s cars on the street.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-001-3-1948.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "Eberhardt Hall today, and me beside it.",
         "details": "The same Gothic castle-like building today, restored, with a mature oak tree beside it and modern students walking past.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-001-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "Bueno, ahora. Acércate, no grito. ¿Ves ese edificio a mi lado, el que parece un pequeño castillo? Ese es Eberhardt Hall, el edificio más antiguo de este campus. Se construyó en 1857 y no fue construido para estudiantes. Era el Asilo de Huérfanos de Newark, un hogar para niños de la ciudad que no tenían a nadie. Y era elegante para su época: luz de gas, calefacción de vapor, agua caliente y fría corriente. Incluso la mayoría de las familias acomodadas no tenían todo eso. La universidad lo compró más tarde, y en 1948 las antiguas habitaciones se convirtieron en oficinas. En 1973 fue añadido al Registro Nacional de Lugares Históricos. Así que cuando pases por allí, recuerda: antes de estar lleno de papeleo, era la casa de alguien.",
+        "source": "Well now. Come closer, I don't shout. See that building beside me, the one that looks like a little castle? That's Eberhardt Hall, the oldest building on this campus. It went up in 1857, and it wasn't built for students at all. It was the Newark Orphan Asylum, a home for the city's children who had no one. And it was fancy for its day: gaslight, steam heat, hot and cold running water. Even most well-off families didn't have all that. The college bought it later, and in 1948 the old rooms were turned into offices. In 1973 it was added to the National Register of Historic Places. So when you walk past, remember: before it was full of paperwork, it was somebody's home.",
+        "machine": true
+      },
+      "zh": {
+        "story": "好了。靠近点，我不喊。看到我旁边那栋楼了吗，看起来像个小城堡？那是埃伯哈特大厅，校园里最古老的建筑。建于1857年，根本不是为学生建的。那是纽瓦克孤儿院，是为无家可归的城市儿童设立的家。在当时来说，这里很豪华：煤气灯、蒸汽暖气、冷热自来水。即使是大多数富裕家庭也没有这些。后来学院买下了它，1948年旧房间改成了办公室。1973年它被列入国家历史名录。所以当你路过时，请记住：在堆满文件之前，这里是某人的家。",
+        "source": "Well now. Come closer, I don't shout. See that building beside me, the one that looks like a little castle? That's Eberhardt Hall, the oldest building on this campus. It went up in 1857, and it wasn't built for students at all. It was the Newark Orphan Asylum, a home for the city's children who had no one. And it was fancy for its day: gaslight, steam heat, hot and cold running water. Even most well-off families didn't have all that. The college bought it later, and in 1948 the old rooms were turned into offices. In 1973 it was added to the National Register of Historic Places. So when you walk past, remember: before it was full of paperwork, it was somebody's home.",
+        "machine": true
+      },
+      "hi": {
+        "story": "अब ठीक है। करीब आओ, मैं चिल्लाता नहीं हूं। मेरे बगल में उस इमारत को देखें, जो एक छोटे से महल की तरह दिखती है? वह एबरहार्ट हॉल है, जो इस परिसर की सबसे पुरानी इमारत है। यह 1857 में ऊपर चला गया, और यह छात्रों के लिए बिल्कुल भी नहीं बनाया गया था। यह नेवार्क अनाथ शरण था, जो शहर के बच्चों के लिए एक घर था जिनके पास कोई नहीं था। और यह अपने दिन के लिए फैंसी था: गैसलाइट, भाप की गर्मी, गर्म और ठंडा बहता पानी। यहां तक कि अधिकांश संपन्न परिवारों के पास भी यह सब नहीं था। कॉलेज ने इसे बाद में खरीदा और 1948 में पुराने कमरों को कार्यालयों में बदल दिया गया। 1973 में इसे ऐतिहासिक स्थानों के राष्ट्रीय रजिस्टर में जोड़ा गया था। इसलिए जब आप अतीत में चलते हैं, तो याद रखें: इससे पहले कि यह कागजी कार्रवाई से भरा होता, यह किसी का घर था।",
+        "source": "Well now. Come closer, I don't shout. See that building beside me, the one that looks like a little castle? That's Eberhardt Hall, the oldest building on this campus. It went up in 1857, and it wasn't built for students at all. It was the Newark Orphan Asylum, a home for the city's children who had no one. And it was fancy for its day: gaslight, steam heat, hot and cold running water. Even most well-off families didn't have all that. The college bought it later, and in 1948 the old rooms were turned into offices. In 1973 it was added to the National Register of Historic Places. So when you walk past, remember: before it was full of paperwork, it was somebody's home.",
+        "machine": true
+      },
+      "gu": {
+        "story": "ઠીક છે. નજીક આવો, હું બૂમ પાડતો નથી. મારી બાજુમાં તે ઇમારત જુઓ, જે એક નાનો કિલ્લો જેવો દેખાય છે? તે એબરહાર્ટ હોલ છે, આ કેમ્પસની સૌથી જૂની ઇમારત. તે 1857 માં વધ્યું હતું, અને તે વિદ્યાર્થીઓ માટે બિલકુલ બનાવવામાં આવ્યું ન હતું. તે નેવાર્ક અનાથ આશ્રય હતું, શહેરના બાળકો માટેનું ઘર જેમની પાસે કોઈ નહોતું. અને તે તેના દિવસ માટે ફેન્સી હતું: ગેસલાઇટ, વરાળ ગરમી, ગરમ અને ઠંડુ વહેતું પાણી. મોટાભાગના સંપન્ન પરિવારો પાસે પણ તે બધું ન હતું. કોલેજે તેને પછીથી ખરીદ્યું, અને 1948 માં જૂના ઓરડાઓને officeફિસમાં ફેરવવામાં આવ્યા. 1973 માં તે ઐતિહાસિક સ્થળોના રાષ્ટ્રીય રજિસ્ટરમાં ઉમેરવામાં આવ્યું હતું. તેથી જ્યારે તમે પસાર થાઓ છો, ત્યારે યાદ રાખો: તે કાગળથી ભરેલું હતું તે પહેલાં, તે કોઈનું ઘર હતું.",
+        "source": "Well now. Come closer, I don't shout. See that building beside me, the one that looks like a little castle? That's Eberhardt Hall, the oldest building on this campus. It went up in 1857, and it wasn't built for students at all. It was the Newark Orphan Asylum, a home for the city's children who had no one. And it was fancy for its day: gaslight, steam heat, hot and cold running water. Even most well-off families didn't have all that. The college bought it later, and in 1948 the old rooms were turned into offices. In 1973 it was added to the National Register of Historic Places. So when you walk past, remember: before it was full of paperwork, it was somebody's home.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-001.es.mp3",
+      "zh": "/audio/TD-001.zh.mp3",
+      "hi": "/audio/TD-001.hi.mp3",
+      "gu": "/audio/TD-001.gu.mp3",
+      "en": "/audio/TD-001.mp3"
+    }
   },
   {
     "code": "TD-002",
@@ -81,37 +126,82 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-002.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-002-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "1912",
         "year": 1912,
         "caption": "The Central Commercial and Manual Training School is dedicated.",
         "details": "A brand-new seven-story Jacobean brick and terra cotta school building with four corner towers, 1912, students in 1910s clothing, horse carts and early cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-002-1-1912.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1960s",
         "year": 1965,
         "caption": "Central High School in its busy years.",
         "details": "The same towered brick school building in the 1960s as Central High School, students in 1960s clothing, 1960s cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-002-2-1960s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "2017",
         "year": 2017,
         "caption": "Reopened by NJIT as the Central King Building.",
         "details": "The same towered brick building freshly renovated in 2017, a ribbon-cutting crowd outside.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-002-3-2017.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "Today, with me keeping an eye on things.",
         "details": "The same towered brick building today with a leafy street tree in front and students passing.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-002-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "¡Oh! Has venido. Vale, tienes que oír hablar del gran edificio de enfrente. Se inauguró en 1912 como la Escuela Central de Formación Comercial y Manual. Siete plantas, cuatro torres en las esquinas, ladrillo y terracota, muy elegante. ¿Y por dentro? Una fragua. Una fundición. Una sala de costura, una sala de chapa, un taller de carpintería y un auditorio con mil quinientas butacas. ¿Te imaginas el ruido? Durante casi cien años fue un colegio, y luego Central High School. Luego, en 2010, la universidad lo compró, lo arregló todo y en abril de 2017 más de doscientas personas acudieron a la inauguración. Ahora se llama el Edificio Central King. Lo vi todo. Bueno. Oí hablar de ello. Lo mismo.",
+        "source": "Oh! You came over. Okay, you have to hear about the big building across the way. It opened in 1912 as the Central Commercial and Manual Training School. Seven stories, four towers on the corners, brick and terra cotta, very fancy. And inside? A forge. A foundry. A sewing room, a sheet-metal room, a wood shop, and an auditorium with fifteen hundred seats. Can you imagine the noise? For almost a hundred years it was a school, and later Central High School. Then in 2010 the university bought it, fixed it all up, and in April 2017 more than two hundred people came out for the ribbon cutting. Now it's called the Central King Building. I saw every bit of it. Well. I heard about it. Same thing.",
+        "machine": true
+      },
+      "zh": {
+        "story": "哦！你过来了。好吧，你得听听对面那栋大楼。它于1912年以中央商业与手工培训学校的名义开办。七层楼，四座塔楼分别位于角落，砖石和陶土，非常豪华。里面呢？一个锻造厂。一个铸造厂。一个缝纫室、一个鈑金房、一个木工车间，还有一个可容纳一千五百个座位的礼堂。你能想象那种喧闹吗？它曾经是一所学校，近百年来是一所学校，后来是中央高中。然后在2010年，大学买下了它，全部修缮了，2017年4月有两百多人来参加剪彩仪式。现在它叫中央国王大楼。我看到了它的每一个细节。嗯。我听说过它。还是一样的事。",
+        "source": "Oh! You came over. Okay, you have to hear about the big building across the way. It opened in 1912 as the Central Commercial and Manual Training School. Seven stories, four towers on the corners, brick and terra cotta, very fancy. And inside? A forge. A foundry. A sewing room, a sheet-metal room, a wood shop, and an auditorium with fifteen hundred seats. Can you imagine the noise? For almost a hundred years it was a school, and later Central High School. Then in 2010 the university bought it, fixed it all up, and in April 2017 more than two hundred people came out for the ribbon cutting. Now it's called the Central King Building. I saw every bit of it. Well. I heard about it. Same thing.",
+        "machine": true
+      },
+      "hi": {
+        "story": "ओह! आप आ गए। ठीक है, आपको रास्ते में बड़ी इमारत के बारे में सुनना होगा। यह 1912 में सेंट्रल कमर्शियल एंड मैनुअल ट्रेनिंग स्कूल के रूप में खोला गया था। सात मंजिलें, कोनों पर चार टावर, ईंट और टेरा कोटा, बहुत फैंसी। और अंदर? एक फोर्ज। एक फाउंड्री। एक सिलाई कमरा, एक शीट-मेटल रूम, एक लकड़ी की दुकान और पंद्रह सौ सीटों वाला एक सभागार। क्या आप शोर की कल्पना कर सकते हैं? लगभग सौ वर्षों तक यह एक स्कूल था, और बाद में सेंट्रल हाई स्कूल। फिर 2010 में विश्वविद्यालय ने इसे खरीदा, इसे ठीक कर दिया, और अप्रैल 2017 में दो सौ से अधिक लोग रिबन काटने के लिए बाहर आए। अब इसे सेंट्रल किंग बिल्डिंग कहा जाता है। मैंने इसका हर टुकड़ा देखा। अच्छा। मैंने इसके बारे में सुना। वही बात।",
+        "source": "Oh! You came over. Okay, you have to hear about the big building across the way. It opened in 1912 as the Central Commercial and Manual Training School. Seven stories, four towers on the corners, brick and terra cotta, very fancy. And inside? A forge. A foundry. A sewing room, a sheet-metal room, a wood shop, and an auditorium with fifteen hundred seats. Can you imagine the noise? For almost a hundred years it was a school, and later Central High School. Then in 2010 the university bought it, fixed it all up, and in April 2017 more than two hundred people came out for the ribbon cutting. Now it's called the Central King Building. I saw every bit of it. Well. I heard about it. Same thing.",
+        "machine": true
+      },
+      "gu": {
+        "story": "ઓહ! તમે આવ્યા. ઠીક છે, તમારે રસ્તાની આજુબાજુની મોટી ઇમારત વિશે સાંભળવું પડશે. તે 1912 માં સેન્ટ્રલ કમર્શિયલ એન્ડ મેન્યુઅલ ટ્રેનિંગ સ્કૂલ તરીકે ખુલ્યું. સાત માળ, ખૂણા પર ચાર ટાવર, ઇંટ અને ટેરા કોટા, ખૂબ જ ફેન્સી છે. અને અંદર? એક ફોર્જ. એક ફાઉન્ડ્રી. એક સીવણ રૂમ, શીટ-મેટલ રૂમ, લાકડાની દુકાન અને પંદરસો બેઠકો સાથેનું ઓડિટોરિયમ. શું તમે અવાજની કલ્પના કરી શકો છો? લગભગ સો વર્ષ સુધી તે એક શાળા હતી, અને પછી સેન્ટ્રલ હાઇ સ્કૂલ હતી. પછી 2010 માં યુનિવર્સિટીએ તેને ખરીદ્યું, તે બધું ઠીક કર્યું, અને એપ્રિલ 2017 માં બસોથી વધુ લોકો રિબન કાપવા માટે બહાર આવ્યા. હવે તેને સેન્ટ્રલ કિંગ બિલ્ડિંગ કહેવામાં આવે છે. મેં તેનો દરેક ભાગ જોયો. સારું. મેં તેના વિશે સાંભળ્યું. તે જ વસ્તુ.",
+        "source": "Oh! You came over. Okay, you have to hear about the big building across the way. It opened in 1912 as the Central Commercial and Manual Training School. Seven stories, four towers on the corners, brick and terra cotta, very fancy. And inside? A forge. A foundry. A sewing room, a sheet-metal room, a wood shop, and an auditorium with fifteen hundred seats. Can you imagine the noise? For almost a hundred years it was a school, and later Central High School. Then in 2010 the university bought it, fixed it all up, and in April 2017 more than two hundred people came out for the ribbon cutting. Now it's called the Central King Building. I saw every bit of it. Well. I heard about it. Same thing.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-002.es.mp3",
+      "zh": "/audio/TD-002.zh.mp3",
+      "hi": "/audio/TD-002.hi.mp3",
+      "gu": "/audio/TD-002.gu.mp3",
+      "en": "/audio/TD-002.mp3"
+    }
   },
   {
     "code": "TD-003",
@@ -142,37 +232,82 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-003.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-003-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "1886",
         "year": 1886,
         "caption": "The cornerstone of the first Weston Hall is laid.",
         "details": "A three-story brick technical school building going up in 1886 at a Newark street corner, workers, horse carts, 1880s clothing.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-003-1-1886.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1920s",
         "year": 1925,
         "caption": "The old three-story Weston Hall in use.",
         "details": "The same three-story brick school building in the 1920s, students in 1920s clothing, early automobiles.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-003-2-1920s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1960",
         "year": 1960,
         "caption": "A new seven-story Weston Hall replaces the old one.",
         "details": "A new seven-story modern 1960 college building, students in 1960 clothing, 1960 cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-003-3-1960.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "Weston Hall today, with me out front.",
         "details": "The seven-story college building today, a plane tree with peeling bark in front, students walking.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-003-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "Buenas tardes. Tomad notas. En 1886, se colocó una piedra angular en High Street y Summit Place para un edificio de tres plantas. Más tarde se llamó Weston Hall, en honor a Edward Weston, uno de los fideicomisarios fundadores del colegio, y a su hijo. En 1960, dos años después de que se construyera Cullimore Hall, el antiguo Weston Hall fue demolido y reemplazado por el edificio de siete plantas que ahora se encuentra allí. Por cierto, el señor Weston no era un donante cualquiera. Obtuvo más de trescientas patentes, y su compañía de iluminación eléctrica ganó el contrato para iluminar el Puente de Brooklyn. Una nota más: la calle que antes se llamaba High Street es ahora Martin Luther King Jr. Boulevard. Mis fuentes están listadas a continuación. Habrá un concurso.",
+        "source": "Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston, one of the school's founding trustees, and his son. In 1960, two years after Cullimore Hall went up, the old Weston Hall was torn down and replaced with the seven-story building that stands there now. Mr. Weston, by the way, was no ordinary donor. He earned more than three hundred patents, and his electric light company won the contract to light the Brooklyn Bridge. One more footnote: the street once called High Street is now Martin Luther King Jr. Boulevard. My sources are listed below. There will be a quiz.",
+        "machine": true
+      },
+      "zh": {
+        "story": "下午好。记笔记。1886年，在高街和峰会广场为一座三层楼楼奠基。后来这座建筑被命名为韦斯顿楼，以纪念学校创始受托人之一爱德华·韦斯顿及其儿子。1960年，卡利莫尔楼建成两年后，旧韦斯顿楼被拆除，取而代之的是现在矗立的七层楼楼。顺便说一句，韦斯顿先生并非普通捐赠者。他获得了三百多项专利，他的电灯公司赢得了布鲁克林大桥照明的合同。还有一个脚注：曾经称为高街的街道现在是马丁·路德·金大道。我的资料来源列在下方。将会有一个测验。",
+        "source": "Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston, one of the school's founding trustees, and his son. In 1960, two years after Cullimore Hall went up, the old Weston Hall was torn down and replaced with the seven-story building that stands there now. Mr. Weston, by the way, was no ordinary donor. He earned more than three hundred patents, and his electric light company won the contract to light the Brooklyn Bridge. One more footnote: the street once called High Street is now Martin Luther King Jr. Boulevard. My sources are listed below. There will be a quiz.",
+        "machine": true
+      },
+      "hi": {
+        "story": "नमस्कार। नोट ले लो। 1886 में, हाई स्ट्रीट और समिट प्लेस में तीन मंजिला इमारत के लिए एक आधारशिला रखी गई थी। बाद में इसका नाम वेस्टन हॉल रखा गया, जो स्कूल के संस्थापक ट्रस्टियों में से एक एडवर्ड वेस्टन और उनके बेटे के नाम पर था। 1960 में, कलिमोर हॉल के ऊपर जाने के दो साल बाद, पुराने वेस्टन हॉल को तोड़ दिया गया और सात मंजिला इमारत के साथ बदल दिया गया जो अब वहां खड़ा है। वैसे, श्री वेस्टन कोई साधारण दाता नहीं थे। उन्होंने तीन सौ से अधिक पेटेंट अर्जित किए, और उनकी इलेक्ट्रिक लाइट कंपनी ने ब्रुकलिन ब्रिज को रोशन करने का अनुबंध जीता। एक और फुटनोट: जिस सड़क को कभी हाई स्ट्रीट कहा जाता था, वह अब मार्टिन लूथर किंग जूनियर बुलेवार्ड है। मेरे स्रोत नीचे सूचीबद्ध हैं। एक प्रश्नोत्तरी होगी।",
+        "source": "Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston, one of the school's founding trustees, and his son. In 1960, two years after Cullimore Hall went up, the old Weston Hall was torn down and replaced with the seven-story building that stands there now. Mr. Weston, by the way, was no ordinary donor. He earned more than three hundred patents, and his electric light company won the contract to light the Brooklyn Bridge. One more footnote: the street once called High Street is now Martin Luther King Jr. Boulevard. My sources are listed below. There will be a quiz.",
+        "machine": true
+      },
+      "gu": {
+        "story": "શુભ બપોર. નોંધો લો. 1886 માં, ત્રણ માળની ઇમારત માટે હાઇ સ્ટ્રીટ અને સમિટ પ્લેસ પર પાયાનો પથ્થર નાખવામાં આવ્યો હતો. પાછળથી તેનું નામ વેસ્ટન હોલ રાખવામાં આવ્યું હતું, જે શાળાના સ્થાપક ટ્રસ્ટીઓમાંના એક એડવર્ડ વેસ્ટન અને તેના પુત્રના નામ પરથી રાખવામાં આવ્યું હતું. 1960 માં, કલિમોર હોલ ઉપર જ્યાના બે વર્ષ પછી, જૂના વેસ્ટન હોલને તોડી પાડવામાં આવ્યો હતો અને તેની જગ્યાએ સાત માળની ઇમારત બનાવવામાં આવી હતી જે હવે ત્યાં ઉભી છે. શ્રી વેસ્ટન, માર્ગ દ્વારા, કોઈ સામાન્ય દાતા ન હતા. તેમણે ત્રણસોથી વધુ પેટન્ટ મેળવ્યા, અને તેમની ઇલેક્ટ્રિક લાઇટ કંપનીએ બ્રુકલિન બ્રિજને પ્રકાશિત કરવાનો કરાર જીત્યો. વધુ એક ફૂટનોટ: એક સમયે હાઇ સ્ટ્રીટ તરીકે ઓળખાતી શેરી હવે માર્ટિન લ્યુથર કિંગ જુનિયર બુલવર્ડ છે. મારા સ્ત્રોતો નીચે સૂચિબદ્ધ છે. ક્વિઝ હશે.",
+        "source": "Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston, one of the school's founding trustees, and his son. In 1960, two years after Cullimore Hall went up, the old Weston Hall was torn down and replaced with the seven-story building that stands there now. Mr. Weston, by the way, was no ordinary donor. He earned more than three hundred patents, and his electric light company won the contract to light the Brooklyn Bridge. One more footnote: the street once called High Street is now Martin Luther King Jr. Boulevard. My sources are listed below. There will be a quiz.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-003.es.mp3",
+      "zh": "/audio/TD-003.zh.mp3",
+      "hi": "/audio/TD-003.hi.mp3",
+      "gu": "/audio/TD-003.gu.mp3",
+      "en": "/audio/TD-003.mp3"
+    }
   },
   {
     "code": "TD-004",
@@ -199,37 +334,82 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-004.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-004-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "1880s",
         "year": 1883,
         "caption": "Electric light is brand new in Newark.",
         "details": "A Newark street at dusk in the early 1880s with a few early electric arc lamps glowing, gas lamps, horse carts.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-004-1-1880s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1888",
         "year": 1888,
         "caption": "Weston's instrument company is founded in Newark.",
         "details": "A small 1888 Newark workshop with brass electrical measuring instruments on benches, warm lamplight.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-004-2-1888.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1950s",
         "year": 1955,
         "caption": "The campus grows around this spot.",
         "details": "A small city college lawn in the 1950s with young trees and lamp posts along brick paths, students in 1950s clothing.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-004-3-1950s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "The green today, lamps on, and me.",
         "details": "A city campus green at dusk today with lamp posts glowing along the paths and a graceful tree, students on the grass.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-004-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "Mm. Me has encontrado. Me gusta pensar en la luz. Hace mucho tiempo, un inventor que trabajaba en Newark llamado Edward Weston estaba ocupado con la electricidad. Su empresa de iluminación eléctrica ganó el trabajo de iluminar el puente de Brooklyn. Más tarde fundó otra empresa aquí que fabricó algunos de los primeros contadores portátiles precisos para medir electricidad, e incluso el primer medidor portátil. También ayudó a sentar las bases de la pequeña escuela técnica que se convirtió en esta universidad. Así que en una noche despejada, cuando las lámparas se encienden por estos caminos, me gusta imaginar que le están dando las gracias. Esa parte es solo mi sueño. El resto es cierto, y puedes leer de dónde viene abajo.",
+        "source": "Mm. You found me. I like to think about light. Long ago, an inventor working in Newark named Edward Weston was busy with electricity. His electric light company won the job of lighting the Brooklyn Bridge. Later he founded another company here that made some of the first accurate portable meters for measuring electricity, and even the first portable light meter. He also helped lay the foundation for the small technical school that grew into this university. So on a clear evening, when the lamps come on along these paths, I like to imagine they're saying thank you to him. That part is only my dream. The rest is true, and you can read where it comes from below.",
+        "machine": true
+      },
+      "zh": {
+        "story": "嗯。你找到了我。我喜欢思考光。很久以前，一位名叫爱德华·韦斯顿的发明家在纽瓦克忙于电力工作。他的电灯公司赢得了布鲁克林大桥照明的工作。后来他在这里创办了另一家公司，制造了最早的精确便携式电表，甚至还有第一台便携式光度计。他还帮助奠定了后来发展成这所大学的小型技术学校的基础。所以在晴朗的傍晚，当这些小路的灯亮起时，我喜欢想象他们是在向他表示感谢。这只是我的梦想。其他的都是真的，你可以在下面看到它的来源。",
+        "source": "Mm. You found me. I like to think about light. Long ago, an inventor working in Newark named Edward Weston was busy with electricity. His electric light company won the job of lighting the Brooklyn Bridge. Later he founded another company here that made some of the first accurate portable meters for measuring electricity, and even the first portable light meter. He also helped lay the foundation for the small technical school that grew into this university. So on a clear evening, when the lamps come on along these paths, I like to imagine they're saying thank you to him. That part is only my dream. The rest is true, and you can read where it comes from below.",
+        "machine": true
+      },
+      "hi": {
+        "story": "एमएम। तुमने मुझे ढूंढ लिया। मुझे प्रकाश के बारे में सोचना पसंद है। बहुत पहले, नेवार्क में काम करने वाला एक आविष्कारक एडवर्ड वेस्टन बिजली में व्यस्त था। उनकी इलेक्ट्रिक लाइट कंपनी ने ब्रुकलिन ब्रिज को रोशन करने का काम जीता। बाद में उन्होंने यहां एक और कंपनी की स्थापना की, जिसने बिजली को मापने के लिए कुछ पहले सटीक पोर्टेबल मीटर बनाए, और यहां तक कि पहला पोर्टेबल लाइट मीटर भी। उन्होंने इस विश्वविद्यालय में विकसित हुए छोटे तकनीकी स्कूल की नींव रखने में भी मदद की। इसलिए एक स्पष्ट शाम को, जब इन रास्तों पर लैंप जलते हैं, तो मुझे यह कल्पना करना अच्छा लगता है कि वे उन्हें धन्यवाद कह रहे हैं। वह हिस्सा केवल मेरा सपना है। बाकी सच है, और आप पढ़ सकते हैं कि यह नीचे से कहां से आता है।",
+        "source": "Mm. You found me. I like to think about light. Long ago, an inventor working in Newark named Edward Weston was busy with electricity. His electric light company won the job of lighting the Brooklyn Bridge. Later he founded another company here that made some of the first accurate portable meters for measuring electricity, and even the first portable light meter. He also helped lay the foundation for the small technical school that grew into this university. So on a clear evening, when the lamps come on along these paths, I like to imagine they're saying thank you to him. That part is only my dream. The rest is true, and you can read where it comes from below.",
+        "machine": true
+      },
+      "gu": {
+        "story": "તમે મને શોધી કાઢ્યો. મને પ્રકાશ વિશે વિચારવું ગમે છે. ઘણા સમય પહેલાં, નેવાર્કમાં કામ કરતા એડવર્ડ વેસ્ટન નામનો એક શોધક વીજળીમાં વ્યસ્ત હતો. તેની ઇલેક્ટ્રિક લાઇટ કંપનીએ બ્રુકલિન બ્રિજને પ્રકાશિત કરવાની નોકરી જીતી લીધી. પાછળથી તેણે અહીં બીજી કંપનીની સ્થાપના કરી જેણે વીજળી માપવા માટે કેટલાક પ્રથમ સચોટ પોર્ટેબલ મીટર બનાવ્યા, અને પ્રથમ પોર્ટેબલ લાઇટ મીટર પણ. તેમણે આ યુનિવર્સિટીમાં વિકસેલી નાની તકનીકી શાળાનો પાયો નાખવામાં પણ મદદ કરી. તેથી એક સ્પષ્ટ સાંજે, જ્યારે આ રસ્તાઓ પર દીવા આવે છે, ત્યારે મને કલ્પના કરવી ગમે છે કે તેઓ તેનો આભાર માને છે. તે ભાગ ફક્ત મારું સ્વપ્ન છે. બાકીનું સાચું છે, અને તમે વાંચી શકો છો કે તે નીચેથી આવે છે.",
+        "source": "Mm. You found me. I like to think about light. Long ago, an inventor working in Newark named Edward Weston was busy with electricity. His electric light company won the job of lighting the Brooklyn Bridge. Later he founded another company here that made some of the first accurate portable meters for measuring electricity, and even the first portable light meter. He also helped lay the foundation for the small technical school that grew into this university. So on a clear evening, when the lamps come on along these paths, I like to imagine they're saying thank you to him. That part is only my dream. The rest is true, and you can read where it comes from below.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-004.es.mp3",
+      "zh": "/audio/TD-004.zh.mp3",
+      "hi": "/audio/TD-004.hi.mp3",
+      "gu": "/audio/TD-004.gu.mp3",
+      "en": "/audio/TD-004.mp3"
+    }
   },
   {
     "code": "TD-005",
@@ -256,37 +436,82 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-005.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-005-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "1881",
         "year": 1881,
         "caption": "Newark Technical School opens with 88 students.",
         "details": "A modest 1881 Newark street with a small brick building, a few students in 1880s clothing carrying books, horse carts.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-005-1-1881.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1930",
         "year": 1930,
         "caption": "It becomes the Newark College of Engineering.",
         "details": "A busy 1930 college street in Newark with brick buildings, students in 1930s clothing, 1930s cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-005-2-1930.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1975",
         "year": 1975,
         "caption": "It becomes the New Jersey Institute of Technology.",
         "details": "A 1975 city college campus with concrete and brick buildings, students in 1970s clothing and hairstyles, 1970s cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-005-3-1975.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "Today: a big university, and little me.",
         "details": "A lively modern university campus today with a very young sapling tree with a support stake in the foreground.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-005-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "¡Hola! ¡Hola! ¿Sabías que toda esta universidad empezó muy pequeña? El nueve de febrero de 1881, comenzó como la Escuela Técnica de Newark, y cuando abrió solo tenía ochenta y ocho estudiantes. ¡Ochenta y ocho! Eso son como unas cuantas aulas. Luego creció y cambió de nombre, como voy a hacer yo. En 1930 se convirtió en el Colegio de Ingeniería de Newark. Luego se unió una Escuela de Arquitectura en 1973, y la escuela creció tanto que necesitaba un nombre más grande. Así que el primero de enero de 1975 se convirtió en el Instituto de Tecnología de Nueva Jersey. ¡Son tres nombres! ¿Cuántos nombres crees que tendré cuando sea mayor? Espero al menos dos.",
+        "source": "Hi! Hi! Did you know this whole university started really small? On February ninth, 1881, it began as the Newark Technical School, and when it opened it had just eighty-eight students. Eighty-eight! That's like a few classrooms. Then it grew up and changed its name, like I'm going to. In 1930 it became the Newark College of Engineering. Then a School of Architecture joined in 1973, and the school got so big it needed a bigger name. So on January first, 1975, it became the New Jersey Institute of Technology. That's three names! How many names do you think I'll have when I'm old? I'm hoping for at least two.",
+        "machine": true
+      },
+      "zh": {
+        "story": "嗨！嗨！你知道这所大学最初非常小吗？1881年2月9日，它最初叫做纽瓦克技术学校，开学时只有88名学生。88人！那就只有几个教室了。后来它长大了，改了名字，就像我要改的一样。1930年它变成了纽瓦克工程学院。1973年又加入了一个建筑学院，学校规模大到需要更大的名字。所以在1975年1月1日，它变成了新泽西理工学院。那是三个名字！你觉得我老了会有多少个名字？我希望至少有两个。",
+        "source": "Hi! Hi! Did you know this whole university started really small? On February ninth, 1881, it began as the Newark Technical School, and when it opened it had just eighty-eight students. Eighty-eight! That's like a few classrooms. Then it grew up and changed its name, like I'm going to. In 1930 it became the Newark College of Engineering. Then a School of Architecture joined in 1973, and the school got so big it needed a bigger name. So on January first, 1975, it became the New Jersey Institute of Technology. That's three names! How many names do you think I'll have when I'm old? I'm hoping for at least two.",
+        "machine": true
+      },
+      "hi": {
+        "story": "नमस्ते! नमस्ते! क्या आप जानते हैं कि यह पूरा विश्वविद्यालय वास्तव में छोटा शुरू हुआ था? नौ फरवरी, 1881 को, यह नेवार्क तकनीकी स्कूल के रूप में शुरू हुआ, और जब यह खोला गया तो इसमें सिर्फ अट्ठासी छात्र थे। अट्ठासी! यह कुछ कक्षाओं की तरह है। फिर यह बड़ा हुआ और अपना नाम बदल दिया, जैसे मैं जा रहा हूं। 1930 में यह नेवार्क कॉलेज ऑफ इंजीनियरिंग बन गया। फिर 1973 में एक स्कूल ऑफ आर्किटेक्चर शामिल हो गया, और स्कूल इतना बड़ा हो गया कि उसे एक बड़े नाम की जरूरत थी। तो पहली जनवरी, 1975 को यह न्यू जर्सी इंस्टीट्यूट ऑफ टेक्नोलॉजी बन गया। यह तीन नाम हैं! आपको क्या लगता है कि जब मैं बूढ़ा हो जाऊंगा तो मेरे पास कितने नाम होंगे? मैं कम से कम दो की उम्मीद कर रहा हूं।",
+        "source": "Hi! Hi! Did you know this whole university started really small? On February ninth, 1881, it began as the Newark Technical School, and when it opened it had just eighty-eight students. Eighty-eight! That's like a few classrooms. Then it grew up and changed its name, like I'm going to. In 1930 it became the Newark College of Engineering. Then a School of Architecture joined in 1973, and the school got so big it needed a bigger name. So on January first, 1975, it became the New Jersey Institute of Technology. That's three names! How many names do you think I'll have when I'm old? I'm hoping for at least two.",
+        "machine": true
+      },
+      "gu": {
+        "story": "હાય! હાય! શું તમે જાણો છો કે આ આખી યુનિવર્સિટી ખરેખર નાની શરૂ થઈ હતી? નવમી ફેબ્રુઆરી, 1881 ના રોજ, તે નેવાર્ક ટેક્નિકલ સ્કૂલ તરીકે શરૂ થઈ, અને જ્યારે તે ખુલ્યું ત્યારે તેમાં ફક્ત અઠ્યાસી વિદ્યાર્થીઓ હતા. અઠ્યાસી! તે થોડા વર્ગખંડો જેવું છે. પછી તે મોટો થયો અને તેનું નામ બદલ્યું, જેમ કે હું જઇ રહ્યો છું. 1930 માં તે નેવાર્ક કોલેજ ઓફ એન્જિનિયરિંગ બન્યું. પછી 1973 માં એક સ્કૂલ ઓફ આર્કિટેક્ચર જોડાયા, અને શાળા એટલી મોટી થઈ ગઈ કે તેને મોટા નામની જરૂર હતી. તેથી જાન્યુઆરી પહેલી, 1975 ના રોજ, તે ન્યૂ જર્સી ઇન્સ્ટિટ્યૂટ ઓફ ટેકનોલોજી બની ગઈ. તે ત્રણ નામો છે! જ્યારે હું વૃદ્ધ હોઉં ત્યારે તમને લાગે છે કે મારી પાસે કેટલા નામ હશે? હું ઓછામાં ઓછા બેની આશા રાખું છું.",
+        "source": "Hi! Hi! Did you know this whole university started really small? On February ninth, 1881, it began as the Newark Technical School, and when it opened it had just eighty-eight students. Eighty-eight! That's like a few classrooms. Then it grew up and changed its name, like I'm going to. In 1930 it became the Newark College of Engineering. Then a School of Architecture joined in 1973, and the school got so big it needed a bigger name. So on January first, 1975, it became the New Jersey Institute of Technology. That's three names! How many names do you think I'll have when I'm old? I'm hoping for at least two.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-005.es.mp3",
+      "zh": "/audio/TD-005.zh.mp3",
+      "hi": "/audio/TD-005.hi.mp3",
+      "gu": "/audio/TD-005.gu.mp3",
+      "en": "/audio/TD-005.mp3"
+    }
   },
   {
     "code": "TD-006",
@@ -313,36 +538,81 @@
     ],
     "verified": true,
     "handWritten": true,
-    "audioUrl": null,
+    "audioUrl": "/audio/TD-006.mp3",
     "timelapse": [
+      {
+        "era": "aerial-1930",
+        "year": 1930,
+        "caption": "This exact spot from the air, in the 1930s survey of New Jersey. The glowing ring is where I stand now.",
+        "imageUrl": "/historic/TD-006-1930.jpg",
+        "real": true,
+        "credit": "1930s aerial photography of New Jersey, NJ Office of GIS"
+      },
       {
         "era": "1920s",
         "year": 1925,
         "caption": "Allan Cullimore has just taken charge of the school.",
         "details": "A Newark street corner in the 1920s near a small technical school, students in 1920s clothing, early cars.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-006-1-1920s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1958",
         "year": 1958,
         "caption": "Cullimore Hall goes up.",
         "details": "A new 1958 brick college building on a city street corner, construction just finished, 1950s cars and clothing.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-006-2-1958.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "1990s",
         "year": 1995,
         "caption": "Students rushing between classes.",
         "details": "The same brick college building in the 1990s, students in 1990s clothing with backpacks.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-006-3-1990s.png",
+        "generated": true,
+        "fromReference": false
       },
       {
         "era": "today",
         "year": 2026,
         "caption": "Today, with me guarding the corner.",
         "details": "The same brick college building today on a street corner with a mischievous-looking leafy tree in front.",
-        "imageUrl": null
+        "imageUrl": "/timelapse/TD-006-4-today.png",
+        "generated": true,
+        "fromReference": false
       }
-    ]
+    ],
+    "translations": {
+      "es": {
+        "story": "Enigma esto: ¿qué tiene un nombre de hombre en la portada, se construyó en 1958 y está donde Bleeker Street se une con Summit Street? Ese es Cullimore Hall, justo allí. Está nombrado en honor al Dr. Allan R. Cullimore, que dirigió esta escuela de 1920 a 1949. Aquí va el giro. Cuando llegó, era la Escuela Técnica de Newark. Cuando se fue, era la Facultad de Ingeniería de Newark. Bajo su dirección la escuela recibió un nuevo nombre, y luego la escuela dio su nombre a un edificio. Un trato justo, si me preguntas. Ahora aquí va un acertijo para llevarte: ¿cuál edificio de este campus es el más antiguo? Pista: solía ser un hogar para niños. Ve a buscar el castillo.",
+        "source": "Riddle me this: what has a man's name on the front, went up in 1958, and stands where Bleeker Street meets Summit Street? That's Cullimore Hall, right over there. It's named for Dr. Allan R. Cullimore, who led this school from 1920 to 1949. Here's the twist. When he arrived, it was the Newark Technical School. By the time he left, it was the Newark College of Engineering. Under him the school got a new name, and then the school gave his name to a building. Fair trade, if you ask me. Now here's a riddle to take with you: which building on this campus is the oldest? Hint: it used to be a home for children. Go find the castle.",
+        "machine": true
+      },
+      "zh": {
+        "story": "猜猜看：什么东西正面写着男人的名字，建于1958年，并且矗立在布利克街与峰会街交汇处？那是卡利莫尔大厅，就在那边。它以艾伦·R·卡利莫尔博士命名，他从1920年到1949年领导这所学校。这里有个转折。他刚到的时候，学校是纽瓦克技术学校。等他离开时，学校已经变成了纽瓦克工程学院。在他任内，学校取了新名字，后来学校也用他的名字命名了一栋建筑。如果你问我，这就是公平贸易。现在给你一个谜语：这个校园里哪栋楼最古老？提示：它曾经是孩子们的家。去找城堡吧。",
+        "source": "Riddle me this: what has a man's name on the front, went up in 1958, and stands where Bleeker Street meets Summit Street? That's Cullimore Hall, right over there. It's named for Dr. Allan R. Cullimore, who led this school from 1920 to 1949. Here's the twist. When he arrived, it was the Newark Technical School. By the time he left, it was the Newark College of Engineering. Under him the school got a new name, and then the school gave his name to a building. Fair trade, if you ask me. Now here's a riddle to take with you: which building on this campus is the oldest? Hint: it used to be a home for children. Go find the castle.",
+        "machine": true
+      },
+      "hi": {
+        "story": "मुझे यह पहेली बनाओ: सामने एक आदमी का नाम क्या है, जो 1958 में ऊपर गया था, और जहां ब्लीकर स्ट्रीट समिट स्ट्रीट से मिलता है? वह कलिमोर हॉल है, वहीं पर। इसका नाम डॉ. एलन आर. कलिमोर के नाम पर रखा गया है, जिन्होंने 1920 से 1949 तक इस स्कूल का नेतृत्व किया था। यहाँ मोड़ है। जब वह पहुंचे, तो यह नेवार्क तकनीकी स्कूल था। जब तक वह चला गया, तब तक यह नेवार्क कॉलेज ऑफ इंजीनियरिंग था। उसके अधीन स्कूल को एक नया नाम मिला, और फिर स्कूल ने एक इमारत को उसका नाम दिया। निष्पक्ष व्यापार, अगर आप मुझसे पूछें। अब यहां आपके साथ ले जाने के लिए एक पहेली है: इस परिसर की कौन सी इमारत सबसे पुरानी है? संकेत: यह बच्चों के लिए एक घर हुआ करता था। जाओ महल का पता लगाओ।",
+        "source": "Riddle me this: what has a man's name on the front, went up in 1958, and stands where Bleeker Street meets Summit Street? That's Cullimore Hall, right over there. It's named for Dr. Allan R. Cullimore, who led this school from 1920 to 1949. Here's the twist. When he arrived, it was the Newark Technical School. By the time he left, it was the Newark College of Engineering. Under him the school got a new name, and then the school gave his name to a building. Fair trade, if you ask me. Now here's a riddle to take with you: which building on this campus is the oldest? Hint: it used to be a home for children. Go find the castle.",
+        "machine": true
+      },
+      "gu": {
+        "story": "મને આ કોયડો કરો: આગળના ભાગમાં માણસનું નામ શું છે, 1958 માં ઉપર ગયું હતું, અને જ્યાં બ્લીકર સ્ટ્રીટ સમિટ સ્ટ્રીટને મળે છે ત્યાં ઉભું છે? તે કુલિમોર હોલ છે, ત્યાં જ. તેનું નામ ડો. એલન આર કલીમોરના નામ પર રાખવામાં આવ્યું છે, જેમણે 1920 થી 1949 સુધી આ શાળાનું નેતૃત્વ કર્યું હતું. અહીં ટ્વિસ્ટ છે. જ્યારે તે પહોંચ્યો, ત્યારે તે નેવાર્ક ટેક્નિકલ સ્કૂલ હતી. તે ગયો ત્યાં સુધીમાં, તે નેવાર્ક કોલેજ ઓફ એન્જિનિયરિંગ હતું. તેના હેઠળ શાળાને એક નવું નામ મળ્યું, અને પછી શાળાએ તેનું નામ એક બિલ્ડિંગને આપ્યું. વાજબી વેપાર, જો તમે મને પૂછો તો. હવે તમારી સાથે લઈ જવા માટે અહીં એક કોયડો છે: આ કેમ્પસમાં કઈ ઇમારત સૌથી જૂની છે? સંકેત: તે બાળકો માટેનું ઘર હતું. કિલ્લો શોધવા જાઓ.",
+        "source": "Riddle me this: what has a man's name on the front, went up in 1958, and stands where Bleeker Street meets Summit Street? That's Cullimore Hall, right over there. It's named for Dr. Allan R. Cullimore, who led this school from 1920 to 1949. Here's the twist. When he arrived, it was the Newark Technical School. By the time he left, it was the Newark College of Engineering. Under him the school got a new name, and then the school gave his name to a building. Fair trade, if you ask me. Now here's a riddle to take with you: which building on this campus is the oldest? Hint: it used to be a home for children. Go find the castle.",
+        "machine": true
+      }
+    },
+    "audio": {
+      "es": "/audio/TD-006.es.mp3",
+      "zh": "/audio/TD-006.zh.mp3",
+      "hi": "/audio/TD-006.hi.mp3",
+      "gu": "/audio/TD-006.gu.mp3",
+      "en": "/audio/TD-006.mp3"
+    }
   }
 ]
