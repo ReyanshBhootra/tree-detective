@@ -22,6 +22,11 @@ export function parse(input) {
   if (code) return { intent: 'link', code: code[1].toUpperCase(), text };
   const tag = text.match(TAG_CODE);
   if (tag) return { intent: 'wake', code: tag[1].toUpperCase(), key: tag[2]?.toUpperCase() ?? null };
+  if (/^(yes|yep|yeah|yup|ya|y|yess+|confirm|it was me|that was me|si|sí|haan|ha)[!. ]*$/.test(lower)) return { intent: 'yes', text };
+  const adopt = lower.match(/^(?:i(?:'ll| will| want to)? )?adopt(?: (?:this tree|the tree|me|you|this|it))?(?: (.+?))?[!.?]*$/);
+  if (adopt) return { intent: 'adopt', query: adopt[1]?.replace(/^the\s+/, '') ?? null };
+  if (/^(quests?|challenges?|missions?|games?|play)\b/.test(lower)) return { intent: 'quests' };
+  if (/^[1-9]$/.test(lower)) return { intent: 'pick', n: Number(lower) };
   if (/^(stop|unsubscribe|quiet|mute)\b/.test(lower)) return { intent: 'nudges-off' };
   if (/^(start|resume|unmute)\b/.test(lower)) return { intent: 'nudges-on' };
   for (const [lang, words] of Object.entries(LANG_WORDS)) {
@@ -57,6 +62,9 @@ export const MORE =
   'You can text me:\n' +
   '• a question for the tree you\'re with\n' +
   '• "pictures" to see the tree\'s spot through time\n' +
+  '• "adopt" so your tree texts you 💚\n' +
+  '• "quest" for photo challenges 📸\n' +
+  '• a voice note to leave a memory at the tree 🎙️\n' +
   '• "points" or "next"\n' +
   '• "report", then a photo of a sick tree\n' +
   '• "spanish", "hindi", "gujarati", "chinese" or "english"';
@@ -76,7 +84,7 @@ export function wakeText(tree, result) {
 
 export function askTip(tree) {
   const q = tree.questions?.[0];
-  return `${q ? `Ask me anything, like "${q}"` : 'Ask me anything'}, or text "pictures" 📸`;
+  return `💬 ${q ? `Ask me anything, like "${q}"` : 'Ask me anything'}\n📸 "pictures"  ·  💚 "adopt"`;
 }
 
 // How a tree signs its texts, so you always know who's talking.

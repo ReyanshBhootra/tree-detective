@@ -21,6 +21,8 @@ export const together = (...items) => ({ type: 'group', items: items.filter(Bool
 export function createBot({ api, readTag, publicUrl = '' }) {
   const pending = new Map(); // senderId -> { flag, until } waiting for a problem photo
   const history = new Map(); // senderId:tree -> last questions and answers
+  const questMenus = new Map(); // senderId -> { list, until } after "quest"
+  const questPending = new Map(); // senderId -> { quest, until } waiting for the photo
   let trees = [];
   let personas = [];
 
@@ -90,7 +92,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     await prefs(senderId, { currentTree: tree.code });
     me.currentTree = tree.code;
     if (!me.visited?.some((v) => v.code === tree.code)) me.visited = [...(me.visited ?? []), { code: tree.code, name: tree.name }];
-    return [...early, ...(await tellStory(tree, me)), say(askTip(tree))];
+    return [...early, ...(await tellStory(tree, me)), say(askTip(tree)), ...(await memoryAt(tree, senderId))];
   }
 
   async function ask(me, senderId, question) {
@@ -133,9 +135,79 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     return [say(reportText(tree, r.json))];
   }
 
+  // The newest voice memory someone else left here, played after the story.
+  async function memoryAt(tree, senderId) {
+    const m = await api(`/api/photon/trees/${tree.code}/memory?senderId=${encodeURIComponent(senderId)}`);
+    if (!m.ok) return [];
+    const a = await api(m.json.audioUrl, { raw: true });
+    const words = m.json.text && m.json.text !== 'A voice memory' ? `\n"${m.json.text}"` : '';
+    return [together(say(`🎙️ Someone left a memory here${m.json.name ? ` (${m.json.name})` : ''}:${words}`), a.ok && a.buffer?.length ? sound(a.buffer, 'audio/mp4', 'Memory') : null)];
+  }
+
+  async function adoptTree(me, senderId, query) {
+    const code = query ? findTree(trees, query)?.code : me.currentTree;
+    const tree = code && treeByCode(code);
+    if (!tree) return [say(query ? `I couldn't find a tree called "${query}".` : 'Wake a tree first, then text "adopt" to adopt it 💚')];
+    if (!me.visited?.some((v) => v.code === tree.code)) return [say(`${tree.name} is still asleep. Wake it first, then you can adopt it.`)];
+    const r = await api(`/api/photon/links/${encodeURIComponent(senderId)}/adopt`, { method: 'POST', body: { code: tree.code } });
+    if (!r.ok) return [say('Adopting didn\'t work right now. Try again in a minute.')];
+    me.currentTree = tree.code;
+    return [
+      say(`💚 You adopted ${tree.name}! It'll text you when it needs you, like on a scorching day or if someone spots a problem.`),
+      say(signed(tree, personaOf(tree), r.json.text)),
+    ];
+  }
+
+  async function questList(me, senderId) {
+    const r = await api(`/api/quests?playerId=${encodeURIComponent(me.playerId)}`);
+    const list = r.ok ? r.json : [];
+    if (!list.length) return [say('No photo quests right now. Check back soon!')];
+    const open = list.filter((q) => !q.done);
+    if (!open.length) return [say('🏆 You finished every photo quest this season! New ones come with the next season.')];
+    questMenus.set(senderId, { list: open, until: Date.now() + REPORT_WINDOW_MS });
+    const lines = open.map((q, i) => `${i + 1}. ${q.emoji} ${q.title} (+${q.points})`);
+    return [say(`📸 Photo quests\n${lines.join('\n')}\n\nReply with a number to start one.`)];
+  }
+
+  function pickQuest(senderId, n) {
+    const menu = questMenus.get(senderId);
+    const quest = menu && menu.until > Date.now() ? menu.list[n - 1] : null;
+    if (!quest) return null;
+    questMenus.delete(senderId);
+    questPending.set(senderId, { quest, until: Date.now() + REPORT_WINDOW_MS });
+    return [say(`${quest.emoji} ${quest.title}!\n${quest.hint} Send me the photo.`)];
+  }
+
+  async function questPhoto(me, senderId, photo, quest) {
+    const form = new FormData();
+    form.append('playerId', me.playerId);
+    if (me.currentTree) form.append('treeCode', me.currentTree);
+    form.append('photo', new Blob([photo.buffer], { type: photo.mimeType }), photo.name || 'quest.jpg');
+    const r = await api(`/api/quests/${quest.id}`, { method: 'POST', form });
+    if (r.status === 409) return [say(r.json.error)];
+    if (!r.ok) return [say(r.json?.error ?? 'That photo didn\'t go through. Try again?')];
+    if (!r.json.ok) return [say(`Hmm, not quite. ${r.json.reason}\nTry another photo!`)];
+    questPending.delete(senderId);
+    return [say(`🎉 Quest done: ${quest.emoji} ${quest.title}! +${r.json.points} pts\n${r.json.reason}\nYou have ${r.json.totalPoints} points. Text "quest" for another.`)];
+  }
+
+  async function onVoice(me, senderId, clip) {
+    const tree = treeByCode(me.currentTree);
+    if (!tree) return [say('Wake a tree first, then send a voice note to leave a memory there 🎙️')];
+    if (!clip.buffer?.length) return [say('I couldn\'t open that voice note. Try again?')];
+    const form = new FormData();
+    form.append('playerId', me.playerId);
+    form.append('audio', new Blob([clip.buffer], { type: clip.mimeType || 'audio/x-caf' }), clip.name || 'memory.caf');
+    const r = await api(`/api/trees/${tree.code}/memories`, { method: 'POST', form });
+    if (!r.ok) return [say(r.json?.error ?? 'I couldn\'t save that memory. Try again?')];
+    return [say(`🎙️ Saved at ${tree.name}! The next person who wakes it will hear your memory.`)];
+  }
+
   async function onPhoto(me, senderId, photo) {
     const tag = await readTag(photo.buffer, photo.mimeType);
     if (tag) return wake(me, senderId, tag.code, tag.key);
+    const q = questPending.get(senderId);
+    if (q && q.until > Date.now()) return questPhoto(me, senderId, photo, q.quest);
     if (me.currentTree) return report(me, senderId, photo);
     return [say(NO_TAG)];
   }
@@ -152,6 +224,17 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     switch (intent.intent) {
       case 'wake':
         return wake(me, senderId, intent.code, intent.key);
+      case 'yes': {
+        const r = await api('/api/photon/logins/confirm', { method: 'POST', body: { senderId, spaceId: me.spaceId } });
+        if (r.ok) return [say(`✅ You're logged in on the website! ${r.json.totalPoints} points and ${r.json.visited.length} trees, synced with this chat.`)];
+        return ask(me, senderId, text);
+      }
+      case 'adopt':
+        return adoptTree(me, senderId, intent.query);
+      case 'quests':
+        return questList(me, senderId);
+      case 'pick':
+        return pickQuest(senderId, intent.n) ?? ask(me, senderId, text);
       case 'nudges-off':
       case 'nudges-on': {
         const on = intent.intent === 'nudges-on';
@@ -225,13 +308,17 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       out.push(...(await onText(me, senderId, c.text)));
     }
     for (const c of contents.filter((x) => x.type === 'image')) out.push(...(await onPhoto(me, senderId, c)));
-    if (contents.some((c) => c.type === 'voice')) {
-      out.push(say('I can\'t listen to voice notes yet. Type your question and the tree will answer out loud!'));
-    }
+    for (const c of contents.filter((x) => x.type === 'voice')) out.push(...(await onVoice(me, senderId, c)));
     return out;
   }
 
-  return { handle, loadTrees };
+  // Signs a text a tree sends on its own (adopted-tree texts).
+  const sign = (code, text) => {
+    const tree = treeByCode(code);
+    return tree ? signed(tree, personaOf(tree), text) : text;
+  };
+
+  return { handle, loadTrees, sign };
 }
 
 export { LANG_WORDS, NOT_LINKED };

@@ -19,7 +19,9 @@ const INTERVAL_H = Number(process.env.NUDGE_INTERVAL_HOURS || 24);
 async function api(path, { method = 'GET', body, form, raw } = {}) {
   const headers = { 'x-photon-key': KEY };
   if (body) headers['content-type'] = 'application/json';
-  const res = await fetch(`${API}${path}`, { method, headers, body: form ?? (body ? JSON.stringify(body) : undefined) });
+  // Photos and memories in Azure Blob have full URLs; everything else lives on the API.
+  const url = /^https?:\/\//.test(path) ? path : `${API}${path}`;
+  const res = await fetch(url, { method, headers: url.startsWith(API) ? headers : {}, body: form ?? (body ? JSON.stringify(body) : undefined) });
   if (raw) {
     return { status: res.status, ok: res.ok, buffer: res.ok ? Buffer.from(await res.arrayBuffer()) : null, mimeType: res.headers.get('content-type') };
   }
@@ -43,7 +45,10 @@ async function contentsOf(content) {
   if (content.type === 'attachment' && /^image\//.test(content.mimeType ?? '')) {
     return [{ type: 'image', buffer: await content.read(), mimeType: content.mimeType, name: content.name }];
   }
-  if (content.type === 'voice' || (content.type === 'attachment' && /^audio\//.test(content.mimeType ?? ''))) return [{ type: 'voice' }];
+  if (content.type === 'voice' || (content.type === 'attachment' && /^audio\//.test(content.mimeType ?? ''))) {
+    const buffer = await content.read().catch(() => null);
+    return [{ type: 'voice', buffer, mimeType: content.mimeType, name: content.name }];
+  }
   return [];
 }
 
@@ -172,6 +177,44 @@ export async function startPhoton({ standalone = false } = {}) {
   setInterval(() => sendNudges(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 60 * 1000);
   // Confirmed problems go out within a minute.
   setInterval(() => sendAlerts(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 1000);
+  // "Log in with iMessage": text people who asked to log in on the website.
+  let loginBusy = false;
+  setInterval(async () => {
+    if (loginBusy) return;
+    loginBusy = true;
+    try {
+      const r = await api('/api/photon/logins');
+      for (const l of r.ok ? r.json : []) {
+        try {
+          const space = await imessage(spectrum).space.create(l.phone);
+          await space.send(text('🌳 Tree Detective: someone is logging in on the website with your number. Was that you? Reply YES to log in.'));
+          await api(`/api/photon/logins/${l.id}/sent`, { method: 'POST' });
+        } catch (e) {
+          console.warn(`login text to ${l.phone} failed:`, e.message);
+        }
+      }
+    } finally {
+      loginBusy = false;
+    }
+  }, 3000);
+  // Adopted trees text their person first.
+  setInterval(async () => {
+    try {
+      const r = await api('/api/photon/tree-texts');
+      for (const t of r.ok ? r.json : []) {
+        try {
+          const im = imessage(spectrum);
+          const space = t.spaceId ? await im.space.get(t.spaceId) : await im.space.create(t.senderId);
+          await space.send(text(bot.sign(t.code, t.text)));
+          console.log(`tree text (${t.reason}) sent for ${t.code}`);
+        } catch (e) {
+          console.warn('tree text failed:', e.message);
+        }
+      }
+    } catch (e) {
+      console.warn('tree texts:', e.message);
+    }
+  }, 30 * 1000);
   if (GROUNDS.length) console.log(`Grounds alerts go to ${GROUNDS.length} contact(s).`);
   console.log('Photon companion listening for iMessages.');
 

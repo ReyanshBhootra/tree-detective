@@ -14,7 +14,7 @@ import { readTag } from '../server/lib/qrread.js';
 import { createBot } from '../photon/bot.js';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'td-im-'));
-const env = { PUBLIC_URL: 'https://td.example', PHOTON_API_KEY: 'bot-key-123', REPORT_SALT: 's', QR_SECRET: 'tag-secret', UPLOAD_DIR: path.join(tmp, 'up') };
+const env = { PUBLIC_URL: 'https://td.example', PHOTON_API_KEY: 'bot-key-123', PHOTON_PROJECT_ID: 'p', PHOTON_PROJECT_SECRET: 's', REPORT_SALT: 's', QR_SECRET: 'tag-secret', UPLOAD_DIR: path.join(tmp, 'up') };
 const trees = [
   { code: 'TD-001', name: 'Old Oakley', persona: 'elder', lat: 40.742, lng: -74.179, story: 'Well now. I stand by a castle. It was an orphanage once.', label: 'Fact', verified: true, questions: ['Why do you look like a castle?'],
     timelapse: [{ era: 'aerial-1930', year: 1930, imageUrl: '/historic/TD-001-1930.jpg', real: true }, { era: '1857', year: 1857, imageUrl: '/timelapse/TD-001-2-1857.png', caption: 'A new castle.' }] },
@@ -24,7 +24,7 @@ const asked = [];
 const app = createApp({
   env, trees, personas: [{ id: 'elder', name: 'The Elder', emoji: '🌳', texting: 'Texts like a grandparent, signs off ~ O.' }, { id: 'gossip', name: 'The Gossip' }],
   store: new JsonStore(path.join(tmp, 'data')),
-  photos: { kind: 'local', dir: env.UPLOAD_DIR, save: async (name) => `/uploads/${name}` },
+  photos: { kind: 'local', dir: env.UPLOAD_DIR, save: async (name, buf) => { const f = path.join(env.UPLOAD_DIR, name); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, buf); return `/uploads/${name}`; } },
   vision: async () => ({ available: true, speciesGuess: 'Pin oak', confidence: 0.81, alternatives: [], suggestedFlag: null }),
   askEnabled: true,
   askModel: async (messages) => { asked.push(messages); return 'The castle was built in 1857.'; },
@@ -174,4 +174,38 @@ test('after linking a fresh website player, the bot does not get stuck on an old
     assert.doesNotMatch(out, /Wake this tree first/, t);
     assert.match(out, /photo of a tree's QR tag/, t);
   }
+});
+
+test('adopt, quests, voice memories and logging in, all from iMessage', async () => {
+  const PH = '+15551112222';
+  const go = (...contents) => bot.handle({ senderId: PH, spaceId: 'sp5', contents });
+  await go({ type: 'text', text: typedCode('TD-002', env.QR_SECRET) });
+
+  let out = texts(await go({ type: 'text', text: 'adopt' }));
+  assert.match(out, /You adopted Whisper/);
+  assert.match(out, /^💚/);
+
+  out = texts(await go({ type: 'text', text: 'quest' }));
+  assert.match(out, /📸 Photo quests\n1\. /);
+  const n = out.split('\n').findIndex((l) => /Bark detective/.test(l));
+  out = texts(await go({ type: 'text', text: String(n) }));
+  assert.match(out, /Bark detective!/);
+  out = texts(await go({ type: 'image', buffer: Buffer.from([0xff, 0xd8, 0xff, 0xd9]), mimeType: 'image/jpeg' }));
+  assert.match(out, /Quest done: 🔍 Bark detective! \+10 pts/);
+
+  out = texts(await go({ type: 'voice', buffer: Buffer.from('pretend voice note'), mimeType: 'audio/x-caf', name: 'Audio Message.caf' }));
+  assert.match(out, /Saved at Whisper/);
+  // someone else wakes Whisper and hears it
+  const other = await bot.handle({ senderId: '+15553334444', spaceId: 'sp6', contents: [{ type: 'text', text: typedCode('TD-002', env.QR_SECRET) }] });
+  assert.match(texts(other), /Someone left a memory here/);
+  assert.ok(flat(other).some((p) => p.type === 'voice' && p.name === 'Memory'));
+
+  // log in on the website with this number, then reply YES
+  const web = 'web-player-for-yes1';
+  const { loginId } = await (await fetch(`${base}/api/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ playerId: web, phone: '555-111-2222' }) })).json();
+  await api(`/api/photon/logins/${loginId}/sent`, { method: 'POST' });
+  out = texts(await go({ type: 'text', text: 'Yes' }));
+  assert.match(out, /logged in on the website/);
+  const status = await (await fetch(`${base}/api/login/${loginId}`)).json();
+  assert.equal(status.status, 'done');
 });
