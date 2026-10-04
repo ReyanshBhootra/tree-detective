@@ -27,8 +27,9 @@ export function createPhotoStore(env = process.env) {
     kind: 'local',
     dir,
     async save(name, buffer) {
-      fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(path.join(dir, name), buffer);
+      const file = path.join(dir, name);
+      fs.mkdirSync(path.dirname(file), { recursive: true }); // photos go in a folder per tree
+      fs.writeFileSync(file, buffer);
       return `/uploads/${name}`;
     },
   };

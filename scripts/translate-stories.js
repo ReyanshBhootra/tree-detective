@@ -7,9 +7,11 @@ import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees, loadPersonas } from '../server/lib/trees.js';
 import { LANGUAGES } from '../server/lib/languages.js';
 import { translate } from '../server/lib/azure.js';
+import { requireKeys } from './azure.js';
 import { createVoice } from '../server/lib/voice.js';
 
 loadEnv();
+requireKeys(['AZURE_TRANSLATOR_KEY', 'AZURE_TRANSLATOR_REGION'], 'Translating stories');
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--'));

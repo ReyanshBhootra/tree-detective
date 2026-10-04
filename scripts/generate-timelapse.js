@@ -5,12 +5,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees } from '../server/lib/trees.js';
-import { image, imageFromPhoto } from './azure.js';
+import { image, imageFromPhoto, requireKeys } from './azure.js';
 
 loadEnv();
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const dry = args.includes('--dry-run');
+if (!dry) requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_IMAGE_DEPLOYMENT'], 'Making time-lapse images');
 const only = args.filter((a) => !a.startsWith('--'));
 const outDir = path.join(ROOT, 'web', 'timelapse');
 fs.mkdirSync(outDir, { recursive: true });

@@ -283,3 +283,12 @@ test('notes: only after waking, filtered, hidden after two reports', async () =>
   notes = (await json('GET', '/api/trees/TD-001/notes')).body;
   assert.equal(notes.length, 0);
 });
+
+test('the real local photo store saves into a folder per tree', async () => {
+  const { createPhotoStore } = await import('../server/lib/blob.js');
+  const dir = path.join(tmp, 'real-uploads');
+  const store = createPhotoStore({ UPLOAD_DIR: dir });
+  const url = await store.save('TD-009/abc.jpg', Buffer.from('jpg'));
+  assert.equal(url, '/uploads/TD-009/abc.jpg');
+  assert.equal(fs.readFileSync(path.join(dir, 'TD-009', 'abc.jpg'), 'utf8'), 'jpg');
+});

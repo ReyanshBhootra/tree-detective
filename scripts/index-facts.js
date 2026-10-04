@@ -9,8 +9,10 @@ import crypto from 'node:crypto';
 import { loadEnv, ROOT } from '../server/config.js';
 import { createTiger } from '../server/lib/tiger.js';
 import { embed } from '../server/lib/azure.js';
+import { requireKeys } from './azure.js';
 
 loadEnv();
+requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT'], 'Loading facts into TigerData');
 const tiger = createTiger();
 if (!tiger) {
   console.error('Set TIGER_DATABASE_URL (from console.cloud.timescale.com) first.');

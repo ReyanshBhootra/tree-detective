@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees, loadPersonas } from '../server/lib/trees.js';
-import { chat } from './azure.js';
+import { chat, requireKeys } from './azure.js';
 
 loadEnv();
 const args = process.argv.slice(2);
 const dry = args.includes('--dry-run');
+if (!dry) requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_CHAT_DEPLOYMENT'], 'Writing stories');
 const only = args.filter((a) => !a.startsWith('--'));
 const trees = loadTrees();
 const personas = new Map(loadPersonas().map((p) => [p.id, p]));
