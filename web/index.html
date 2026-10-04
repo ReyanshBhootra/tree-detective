@@ -31,6 +31,23 @@
 
   <p class="status-line" id="status-line" hidden aria-live="polite"></p>
 
+  <button id="owl" class="owl" type="button" aria-label="Ask the owl for a hint" title="Hoo? Tap me for a hint">
+    <svg viewBox="0 0 64 72" aria-hidden="true">
+      <path d="M4 66 Q32 58 60 66" stroke="#6b4a2b" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g class="owl-body">
+        <path d="M14 22 L18 8 L25 17 Q32 14 39 17 L46 8 L50 22 Q56 34 52 50 Q48 62 32 63 Q16 62 12 50 Q8 34 14 22 Z" fill="#7a5a3c"/>
+        <path d="M20 40 Q32 34 44 40 Q46 56 32 59 Q18 56 20 40 Z" fill="#c9a77c"/>
+        <path d="M24 46 l3 2 l3 -2 M34 46 l3 2 l3 -2 M29 52 l3 2 l3 -2" stroke="#8f6c47" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <circle cx="24" cy="28" r="8.5" fill="#fbf3df"/><circle cx="40" cy="28" r="8.5" fill="#fbf3df"/>
+        <g class="owl-eyes"><circle cx="24" cy="28" r="4.2" fill="#2d2416"/><circle cx="40" cy="28" r="4.2" fill="#2d2416"/>
+          <circle cx="25.4" cy="26.6" r="1.4" fill="#fff"/><circle cx="41.4" cy="26.6" r="1.4" fill="#fff"/></g>
+        <path d="M30 34 L32 39 L34 34 Z" fill="#f2c55c"/>
+        <path d="M26 62 v4 M30 62 v4 M34 62 v4 M38 62 v4" stroke="#f2c55c" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <span class="owl-bubble" id="owl-bubble" aria-hidden="true">Hoo?</span>
+  </button>
+
   <nav class="actions" aria-label="Main">
     <button id="btn-book" class="btn btn-tab">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v16H7.5a1.5 1.5 0 0 0 0 3H19v1H7.5A2.5 2.5 0 0 1 5 19.5z" fill="currentColor"/></svg>
@@ -61,6 +78,22 @@
   <!-- First visit: how to play -->
   <dialog id="welcome-dialog" class="sheet welcome">
     <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <div class="welcome-art" aria-hidden="true">
+      <svg viewBox="0 0 120 90">
+        <circle cx="24" cy="22" r="11" fill="#ffe08a"/><circle cx="29" cy="18" r="10" fill="#fbf3df"/>
+        <path class="twinkle" d="M108 40 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5z" fill="#f2c55c"/>
+        <path class="twinkle t2" d="M70 8 l1 2.6 2.6 1 -2.6 1 -1 2.6 -1 -2.6 -2.6 -1 2.6 -1z" fill="#f2c55c"/>
+        <ellipse cx="60" cy="84" rx="34" ry="5" fill="#e6d6ad"/>
+        <path d="M55 84 Q56 66 57 58 h6 Q64 66 65 84 Z" fill="#8a5a35"/>
+        <g class="sleepy">
+          <circle cx="60" cy="44" r="24" fill="#3f9a62"/><circle cx="46" cy="50" r="14" fill="#56b878"/>
+          <circle cx="74" cy="50" r="14" fill="#4aa86c"/><circle cx="60" cy="30" r="15" fill="#67c587"/>
+          <path d="M50 46 Q54 49 58 46 M62 46 Q66 49 70 46" stroke="#1f2a1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <circle cx="47" cy="52" r="3" fill="#ff9fb0" opacity=".5"/><circle cx="73" cy="52" r="3" fill="#ff9fb0" opacity=".5"/>
+        </g>
+        <text class="zz z1" x="82" y="38">z</text><text class="zz z2" x="90" y="30">z</text><text class="zz z3" x="99" y="22">Z</text>
+      </svg>
+    </div>
     <p class="persona">Welcome, detective</p>
     <h2>The trees of campus are asleep</h2>
     <p class="muted">Each tagged tree has a name, a voice and a true story about this place. Wake them all.</p>
