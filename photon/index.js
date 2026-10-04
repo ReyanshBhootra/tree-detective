@@ -4,6 +4,7 @@
 //
 //   npm run photon              run the chat loop + daily nudges
 //   npm run photon:nudge        send any due nudges once and exit
+import { pathToFileURL } from 'node:url';
 import { loadEnv } from '../server/config.js';
 import { parse, reply, nudgeText, dueForNudge, alertText, NOT_LINKED } from './commands.js';
 
@@ -102,6 +103,7 @@ async function main() {
   }
   const { Spectrum, text } = await import('spectrum-ts');
   const { imessage } = await import('spectrum-ts/providers/imessage');
+  console.log('Connecting to Photon…');
   const spectrum = await Spectrum({
     projectId: process.env.PHOTON_PROJECT_ID,
     projectSecret: process.env.PHOTON_PROJECT_SECRET,
@@ -114,7 +116,13 @@ async function main() {
     return;
   }
 
-  const trees = await (await fetch(`${API}/api/trees`)).json();
+  let trees;
+  try {
+    trees = await (await fetch(`${API}/api/trees`)).json();
+  } catch {
+    console.error(`Can't reach the app at ${API}. Start it first with "npm start" in another window.`);
+    process.exit(1);
+  }
   setInterval(() => sendNudges(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 60 * 1000);
   // Confirmed problems go out within a minute.
   setInterval(() => sendAlerts(spectrum, imessage, text).catch((e) => console.warn(e.message)), 60 * 1000);
@@ -133,4 +141,10 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// Run only when started directly (works on Windows paths too).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((e) => {
+    console.error('Photon companion stopped:', e.message);
+    process.exit(1);
+  });
+}
