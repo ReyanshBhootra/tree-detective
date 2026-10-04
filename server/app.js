@@ -582,7 +582,7 @@ export function createApp({
     await store.remove('linkcodes', 'code', code);
     await store.upsert('links', {
       partitionKey: 'link', rowKey: senderId, playerId: row.playerId, spaceId: spaceId ?? '',
-      linkedAt: new Date().toISOString(), lastNudgedAt: '', nudges: 'on',
+      linkedAt: new Date().toISOString(), lastNudgedAt: '', nudges: 'on', currentTree: '', // new player: start fresh
     });
     res.json(await playerSummary(row.playerId));
   }));

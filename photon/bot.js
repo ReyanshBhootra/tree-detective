@@ -88,13 +88,15 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     const early = me.emit ? (await me.emit(woke), []) : [woke];
     await prefs(senderId, { currentTree: tree.code });
     me.currentTree = tree.code;
+    if (!me.visited?.some((v) => v.code === tree.code)) me.visited = [...(me.visited ?? []), { code: tree.code, name: tree.name }];
     return [...early, ...(await tellStory(tree, me)), say(askTip(tree))];
   }
 
   async function ask(me, senderId, question) {
-    let code = me.currentTree;
-    if (!code && me.visited?.length) code = me.visited.at(-1).code;
-    if (!code) return [say(WELCOME)];
+    // Only talk as a tree this player has actually woken.
+    const awake = (c) => me.visited?.some((v) => v.code === c);
+    let code = awake(me.currentTree) ? me.currentTree : me.visited?.at(-1)?.code;
+    if (!code) return [say(HELP)];
     const tree = treeByCode(code);
     if (!tree) return [say(HELP)];
     const key = `${senderId}:${code}`;
@@ -103,6 +105,7 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       method: 'POST', body: { playerId: me.playerId, question, lang: me.lang, history: past, channel: 'text' },
     });
     if (r.status === 503) return [say('Trees can\'t answer questions on this server yet. Text "story" to hear my story instead.')];
+    if (r.status === 403) return [say(HELP)];
     if (!r.ok) return [say(r.json?.error ?? 'I didn\'t catch that. Try asking again.')];
     history.set(key, [...past, { q: question, a: r.json.answer }].slice(-3));
     let v = null;
@@ -180,7 +183,8 @@ export function createBot({ api, readTag, publicUrl = '' }) {
         return tellStory(tree, me);
       }
       case 'pictures': {
-        const tree = treeByCode(me.currentTree) ?? (me.visited?.length ? treeByCode(me.visited.at(-1).code) : null);
+        const code = me.visited?.some((v) => v.code === me.currentTree) ? me.currentTree : me.visited?.at(-1)?.code;
+        const tree = code && treeByCode(code);
         if (!tree) return [say('Wake a tree first and it\'ll show you its pictures. Send me a photo of a QR tag!')];
         return pictures(tree);
       }
@@ -193,8 +197,10 @@ export function createBot({ api, readTag, publicUrl = '' }) {
       case 'next':
       case 'route':
         return [say(reply(intent, me, trees))];
-      case 'help':
-        return [say(me.currentTree ? `${treeByCode(me.currentTree)?.name ?? 'Your tree'} is listening. Ask it anything, or text "more".` : HELP)];
+      case 'help': {
+        const t = me.visited?.some((v) => v.code === me.currentTree) && treeByCode(me.currentTree);
+        return [say(t ? `${t.name} is listening. Ask it anything, or text "more".` : HELP)];
+      }
       case 'more':
         return [say(MORE)];
       default:
@@ -207,6 +213,8 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   async function handle({ senderId, spaceId, contents, emit }) {
     if (!trees.length) await loadTrees();
     const me = { ...(await start(senderId, spaceId)), spaceId, emit };
+    // A tree this player hasn't woken (say, after linking a fresh website player) is never "current".
+    if (!me.visited?.some((v) => v.code === me.currentTree)) me.currentTree = me.visited?.at(-1)?.code ?? null;
     const out = [];
     const firstIsCode = contents.some((c) => c.type === 'text' && /^(link|wake)$/.test(parse(c.text).intent));
     if (me.isNew && !firstIsCode) out.push(say(WELCOME));

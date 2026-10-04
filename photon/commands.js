@@ -45,7 +45,7 @@ export function parse(input) {
   if (/^next\b|\bnext tree\b|\bshould i (find|go|visit)\b|\bwhere (should|do) i go\b/.test(lower)) return { intent: 'next' };
   if (/\b(visited|my trees|which trees|my book|badges?)\b|^book$/.test(lower)) return { intent: 'visited' };
   if (/^(more|menu|commands|options|what else|what can you do)\b/.test(lower)) return { intent: 'more' };
-  if (/^(help|hi|hello|hey|yo|\?)\b/.test(lower) || lower === '?') return { intent: 'help' };
+  if (/^(help|h+i+|hey+|hello+|heyo|yo+|sup|hola|namaste|good (morning|afternoon|evening))\b/.test(lower) || lower === '?') return { intent: 'help' };
   return { intent: 'chat', text };
 }
 

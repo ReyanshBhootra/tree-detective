@@ -161,3 +161,17 @@ test('trees text in their own style and can send their pictures', async () => {
   assert.match(texts(out), /c\. 1930 \(real photo\)/);
   assert.equal(out.length, 1, 'text and photos arrive as one message');
 });
+
+test('after linking a fresh website player, the bot does not get stuck on an old tree', async () => {
+  const PH = '+15557770000';
+  const go = (text) => bot.handle({ senderId: PH, spaceId: 'sp4', contents: [{ type: 'text', text }] });
+  await go(typedCode('TD-001', env.QR_SECRET)); // talking to Old Oakley
+  const fresh = 'fresh-web-player-0001';
+  const code = (await (await fetch(`${base}/api/link-codes`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ playerId: fresh }) })).json()).code;
+  assert.match(texts(await go(code)), /Linked/);
+  for (const t of ['Hii', 'What tree?']) {
+    const out = texts(await go(t));
+    assert.doesNotMatch(out, /Wake this tree first/, t);
+    assert.match(out, /photo of a tree's QR tag/, t);
+  }
+});
