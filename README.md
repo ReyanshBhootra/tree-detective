@@ -58,7 +58,7 @@ Inside a tree's story you can switch language, compare "then" with "today", ask 
 
 ## Adding trees and stories
 
-Trees live in `data/trees.json` and the 9 tree personalities are in `data/personas.json`. The 6 trees in there right now are placeholders.
+Trees live in `data/trees.json` and the 9 tree personalities are in `data/personas.json`. The 6 trees in there are samples with real, sourced NJIT history (Eberhardt Hall, the Central King Building, Weston Hall, Cullimore Hall and the school's founding). Their map spots are approximate, so move them to the real tagged trees.
 
 To write a tree's story, put the facts and sources in `data/facts/<code>.json` (there's an example file) and run:
 
