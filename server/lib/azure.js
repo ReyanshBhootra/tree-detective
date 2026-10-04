@@ -66,10 +66,11 @@ export async function embed(env, input) {
   return Array.isArray(input) ? data.map((d) => d.embedding) : data[0].embedding;
 }
 
-// Azure AI Translator. Haitian Creole is "ht".
-export async function translate(env, text, to) {
+// Azure AI Translator. Haitian Creole is "ht", Simplified Chinese is "zh-Hans".
+// `to` uses our codes; `codeMap` maps any that Translator spells differently.
+export async function translate(env, text, to, codeMap = {}) {
   need(env, 'AZURE_TRANSLATOR_KEY', 'AZURE_TRANSLATOR_REGION');
-  const res = await fetch(`https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en${to.map((t) => `&to=${t}`).join('')}`, {
+  const res = await fetch(`https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en${to.map((t) => `&to=${codeMap[t] ?? t}`).join('')}`, {
     method: 'POST',
     headers: {
       'Ocp-Apim-Subscription-Key': env.AZURE_TRANSLATOR_KEY,
@@ -79,7 +80,8 @@ export async function translate(env, text, to) {
     body: JSON.stringify([{ text }]),
   });
   if (!res.ok) throw new Error(`Azure Translator ${res.status}: ${await res.text()}`);
-  return Object.fromEntries((await res.json())[0].translations.map((t) => [t.to, t.text]));
+  const back = Object.fromEntries(to.map((t) => [(codeMap[t] ?? t).toLowerCase(), t]));
+  return Object.fromEntries((await res.json())[0].translations.map((t) => [back[t.to.toLowerCase()] ?? t.to, t.text]));
 }
 
 const xml = (s) => String(s).replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]);

@@ -165,7 +165,7 @@ test('asking a tree: only after waking it, answer comes from the model', async (
   const r = await json('POST', '/api/trees/TD-001/ask', { playerId: P1, question: 'what was here?', lang: 'es' });
   assert.equal(r.status, 200);
   assert.match(askedWith[0].content, /The trolley ran past here/);
-  assert.match(askedWith[0].content, /Answer in Español/);
+  assert.match(askedWith[0].content, /Answer in Spanish \(Español/);
   assert.deepEqual(r.body.sources, [{ url: 'https://campus-src', label: 'Fact' }]);
   assert.equal(r.body.answer, 'I remember the old well. That is all I know.');
   assert.equal(r.body.audio, null);

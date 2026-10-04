@@ -1,5 +1,6 @@
 // npm run translate [-- TD-001] [--force]
-// Translates each story into Spanish, Portuguese and Haitian Creole with Azure
+// Translates each story into Spanish, Portuguese, Haitian Creole, Chinese,
+// Hindi and Gujarati with Azure
 // AI Translator, then records narration in each language (ElevenLabs covers
 // all of them; Azure Speech has no Kreyòl voice, so with Azure, Kreyòl is text only).
 import fs from 'node:fs';
@@ -15,6 +16,7 @@ const args = process.argv.slice(2);
 const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--'));
 const targets = Object.keys(LANGUAGES).filter((l) => l !== 'en');
+const codeMap = Object.fromEntries(Object.entries(LANGUAGES).filter(([, l]) => l.translator).map(([c, l]) => [c, l.translator]));
 const personas = new Map(loadPersonas().map((p) => [p.id, p]));
 const voice = createVoice();
 fs.mkdirSync(path.join(ROOT, 'web', 'audio'), { recursive: true });
@@ -27,7 +29,7 @@ for (const tree of trees) {
   const todo = targets.filter((l) => force || tree.translations[l]?.source !== tree.story);
   if (todo.length) {
     process.stdout.write(`${tree.code} ${tree.name}: translating to ${todo.join(', ')}… `);
-    const out = await translate(process.env, tree.story, todo);
+    const out = await translate(process.env, tree.story, todo, codeMap);
     for (const l of todo) {
       // `source` remembers which English text this came from, so edits re-translate.
       tree.translations[l] = { story: out[l], source: tree.story, machine: true };

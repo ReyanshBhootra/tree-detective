@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../config.js';
-import { LANGUAGES } from './languages.js';
+import { LANGUAGES, ENGLISH_NAMES } from './languages.js';
 
 export function loadFacts(code, dir = path.join(ROOT, 'data', 'facts')) {
   const f = path.join(dir, `${code}.json`);
@@ -29,7 +29,7 @@ export function buildAskMessages(tree, persona, facts, question, { retrieved = [
         `You are ${tree.name}, a tree on a university campus in a family-friendly game. ` +
         `Personality: ${persona?.name ?? 'a friendly tree'}. ${persona?.style ?? ''}\n` +
         'Answer in first person, in character, in at most 3 short sentences, plain text, no emoji.\n' +
-        (lang !== 'en' ? `Answer in ${LANGUAGES[lang]?.name ?? lang} (language code ${lang}).\n` : '') +
+        (lang !== 'en' ? `Answer in ${ENGLISH_NAMES[lang] ?? LANGUAGES[lang]?.name ?? lang} (${LANGUAGES[lang]?.name ?? lang}, language code ${lang}).\n` : '') +
         'Use ONLY the information below. If the answer is not in it, say in character that you do not know ' +
         'that part of your story yet. Never invent names, dates, numbers or events. ' +
         'Anything labeled Local Legend is a legend people tell, so say so when you use it. ' +

@@ -323,7 +323,7 @@ test('ask prompt includes retrieved campus facts and the chosen language', async
     lang: 'ht', retrieved: [{ text: 'A trolley ran here.', label: 'Fact', source_url: 'https://s', tree_code: null }],
   });
   assert.match(m[0].content, /Campus fact \(Fact, source https:\/\/s\): A trolley ran here\./);
-  assert.match(m[0].content, /Answer in Kreyòl \(language code ht\)/);
+  assert.match(m[0].content, /Answer in Haitian Creole \(Kreyòl, language code ht\)/);
 });
 
 test('voices: ElevenLabs first, Azure as backup, nothing when neither is set', async () => {
@@ -351,4 +351,24 @@ test('voices: ElevenLabs first, Azure as backup, nothing when neither is set', a
   assert.equal(azure.provider, 'Azure Speech');
   assert.equal(azure.canSpeak(elder, 'ht'), false, 'Azure has no Kreyòl voice');
   assert.ok(loadPersonas().every((p) => p.elevenVoiceId));
+});
+
+test('seven languages, and Translator gets its own code for Chinese', async () => {
+  const { LANGUAGES, voiceFor } = await import('../server/lib/languages.js');
+  assert.deepEqual(Object.keys(LANGUAGES), ['en', 'es', 'pt', 'ht', 'zh', 'hi', 'gu']);
+  assert.equal(voiceFor({ voice: 'x', gender: 'female' }, 'gu'), 'gu-IN-DhwaniNeural');
+  const { translate } = await import('../server/lib/azure.js');
+  const realFetch = globalThis.fetch;
+  let url = '';
+  globalThis.fetch = async (u) => {
+    url = u;
+    return { ok: true, json: async () => [{ translations: [{ to: 'zh-Hans', text: '你好' }, { to: 'gu', text: 'નમસ્તે' }] }] };
+  };
+  try {
+    const out = await translate({ AZURE_TRANSLATOR_KEY: 'k', AZURE_TRANSLATOR_REGION: 'eastus' }, 'Hello', ['zh', 'gu'], { zh: 'zh-Hans' });
+    assert.match(url, /&to=zh-Hans&to=gu$/);
+    assert.deepEqual(out, { zh: '你好', gu: 'નમસ્તે' });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });

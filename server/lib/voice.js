@@ -4,8 +4,9 @@
 import { speak as azureSpeak } from './azure.js';
 import { voiceFor } from './languages.js';
 
-// eleven_multilingual_v2 covers English, Spanish and Portuguese; Kreyòl needs eleven_v3.
-const ELEVEN_MODEL_FOR = { ht: 'eleven_v3' };
+// eleven_multilingual_v2 covers English, Spanish, Portuguese, Chinese and Hindi;
+// Kreyòl and Gujarati need the newer eleven_v3.
+const ELEVEN_MODEL_FOR = { ht: 'eleven_v3', gu: 'eleven_v3' };
 
 export async function elevenSpeak(env, text, voiceId, { lang = 'en', fetchImpl = fetch } = {}) {
   const model = ELEVEN_MODEL_FOR[lang] ?? env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2';
