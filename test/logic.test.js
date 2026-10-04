@@ -190,7 +190,7 @@ test('1930 aerial helpers', async () => {
   const [w, s, e, n] = bbox(40.742, -74.179).split(',').map(Number);
   assert.ok(w < -74.179 && e > -74.179 && s < 40.742 && n > 40.742);
   const wide = distanceMeters({ lat: 40.742, lng: w }, { lat: 40.742, lng: e });
-  assert.ok(wide > 210 && wide < 230, `width ${wide}`);
+  assert.ok(wide > 460 && wide < 500, `width ${wide}`);
 });
 
 test('ask prompt keeps the tree to its own facts', async () => {
@@ -201,7 +201,10 @@ test('ask prompt keeps the tree to its own facts', async () => {
     { label: 'Local Legend', facts: [{ text: 'A well stood here.', sourceUrl: 'https://src' }] },
     'what was here?',
   );
-  assert.match(m[0].content, /Use ONLY the information below/);
+  assert.match(m[0].content, /use ONLY the facts below/);
+  assert.match(m[0].content, /answer freely and playfully from common knowledge/);
+  const withHistory = buildAskMessages({ name: 'X', story: 's' }, null, null, 'and then?', { history: [{ q: 'hi', a: 'hello there' }] });
+  assert.deepEqual(withHistory.slice(1).map((x) => x.role), ['user', 'assistant', 'user']);
   assert.match(m[0].content, /A well stood here\./);
   assert.match(m[0].content, /Local Legend is a legend/);
   assert.equal(m[1].content, 'what was here?');
@@ -506,4 +509,12 @@ test('ElevenLabs: a retired preset voice is swapped for one on the account', asy
   } finally {
     console.warn = warn;
   }
+});
+
+test('time-lapse eras look like real photos from their period', async () => {
+  const { periodLook } = await import('../server/lib/period.js');
+  assert.match(periodLook(1857), /sepia/);
+  assert.match(periodLook(1948), /black and white/);
+  assert.match(periodLook(1985), /faded color/);
+  assert.match(periodLook(2026), /modern/);
 });

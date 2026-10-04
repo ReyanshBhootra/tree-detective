@@ -7,7 +7,7 @@ export function pickLayer(capabilitiesXml, wanted) {
 }
 
 // Bounding box (lng/lat) around a point, sized in meters, for WMS 1.1.1 EPSG:4326.
-export function bbox(lat, lng, halfWidthM = 110, halfHeightM = 82) {
+export function bbox(lat, lng, halfWidthM = 240, halfHeightM = 180) {
   const dLat = halfHeightM / 111320;
   const dLng = halfWidthM / (111320 * Math.cos((lat * Math.PI) / 180));
   return [lng - dLng, lat - dLat, lng + dLng, lat + dLat].map((v) => v.toFixed(6)).join(',');

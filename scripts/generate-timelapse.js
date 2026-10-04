@@ -1,11 +1,12 @@
 // npm run timelapse [-- TD-001] [--force] [--dry-run]
-// Pre-generates each tree's life-in-pictures with Azure OpenAI image generation.
+// Pre-generates each tree's life-in-pictures (Azure OpenAI or Gemini images).
 // Every image is an impression of an era, and the site always labels it that way.
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees } from '../server/lib/trees.js';
 import { createAI, requireAI } from '../server/lib/ai.js';
+import { periodLook } from '../server/lib/period.js';
 
 loadEnv();
 const args = process.argv.slice(2);
@@ -17,38 +18,38 @@ const only = args.filter((a) => !a.startsWith('--'));
 const outDir = path.join(ROOT, 'web', 'timelapse');
 fs.mkdirSync(outDir, { recursive: true });
 
-const STYLE =
-  'Whimsical storybook illustration, soft watercolor and gouache, warm light, gentle textures, ' +
-  'same fixed camera angle at ground level looking at one spot. No text, no lettering, no logos, no recognizable real people.';
+const RULES = 'Photorealistic, believable as a real archival photo. Eye-level view from the sidewalk. ' +
+  'No text, no captions, no watermarks, no logos, no recognizable real people, no fantasy elements.';
 
 export function eraPrompt(tree, era) {
   const stage = {
-    before: 'The tree has not been planted yet; show the empty spot where it will one day grow.',
+    before: 'The tree has not been planted yet; the spot where it will grow is empty ground.',
     sapling: 'A young sapling, recently planted, with a support stake.',
     midlife: 'The same tree, now medium-sized and established.',
     today: 'The same tree, fully grown, as it stands today.',
   }[era.era];
-  // Eras with their own sourced description draw exactly that scene.
-  if (era.details) {
-    return `${STYLE} Scene in Newark, New Jersey, around the year ${era.year}: ${era.details}. ` +
-      'Clothing, vehicles and buildings should match that period in a general way.';
-  }
-  return `${STYLE} Scene: a city university campus spot in Newark, New Jersey, around the year ${era.year}. ${stage ?? ''} ` +
-    'Clothing, vehicles and buildings, if any appear, should match that period in a general way.';
+  const scene = era.details
+    ? era.details.replace(/\.+$/, '')
+    : `a city university campus spot in Newark, New Jersey. ${stage ?? ''}`;
+  return `${periodLook(era.year)} of this scene in Newark, New Jersey, around ${era.year}: ${scene}. ` +
+    `Clothing, vehicles, street lamps and storefronts match ${era.year} exactly. ${RULES}`;
 }
 
-// With a reference photo (taken from the "stand here" spot), every era is drawn
-// from that same photo so the then-and-now slider lines up.
+// With a reference photo (a real photo of the spot), every era is redrawn from
+// that same photo so the building, angle and street stay put and only time changes.
 export function eraFromPhotoPrompt(era) {
   const stage = {
-    before: 'before this tree was planted, so the spot where the tree stands is empty ground',
+    before: 'before this tree was planted, so where the tree stands is empty ground',
     sapling: 'when this tree was a young sapling with a support stake',
     midlife: 'when this tree was medium-sized',
     today: 'today',
-  }[era.era] ?? `during the "${era.era}" era`;
-  return `Re-imagine this exact photo, keeping the same camera position, angle and framing, as this spot in Newark, New Jersey looked around ${era.year}, ${stage}. ` +
-    'Change buildings, ground, vehicles and clothing to fit that period. Soft storybook watercolor style. No text, no logos, no recognizable real people.' +
-    (era.details ? ` Details from historical sources: ${era.details}.` : '');
+  }[era.era] ?? '';
+  return `Edit this photo to show the same place around ${era.year}${stage ? `, ${stage}` : ''}. ` +
+    'Keep the exact camera position, angle, framing and the shape of any building that already existed then. ' +
+    'If a building in the photo was not built yet by that year, replace it with what stood there instead. ' +
+    `Change cars, people's clothing, signs, street surface and trees to match ${era.year}. ` +
+    `Make it look like ${periodLook(era.year)}. ${RULES}` +
+    (era.details ? ` What historical sources say was here: ${era.details.replace(/\.+$/, '')}.` : '');
 }
 
 function referencePhoto(tree) {
