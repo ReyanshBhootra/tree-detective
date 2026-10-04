@@ -47,17 +47,43 @@ async function contentsOf(content) {
   return [];
 }
 
-async function sendAll(space, parts, { text, voice, attachment }) {
+function build(p, { text, voice, attachment }) {
+  if (p.type === 'text') return text(p.text);
+  if (p.type === 'voice') {
+    // Photon turns this into a real iMessage voice bubble (needs ffmpeg-static).
+    const ext = p.mimeType.includes('wav') ? 'wav' : 'mp3';
+    return voice(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` });
+  }
+  if (p.type === 'file') return attachment(p.buffer, { mimeType: p.mimeType, name: p.name });
+  return null;
+}
+
+async function sendOne(space, p, content) {
+  try {
+    await space.send(build(p, content));
+  } catch (e) {
+    if (p.type !== 'voice') throw e;
+    // No converter available: send the audio as a normal file instead.
+    await space.send(content.attachment(p.buffer, { mimeType: p.mimeType, name: `${p.name}.mp3` }));
+  }
+}
+
+async function sendAll(space, parts, content) {
   for (const p of parts) {
-    if (p.type === 'text') {
-      await space.send(text(p.text));
-    } else if (p.type === 'voice') {
-      const ext = p.mimeType.includes('wav') ? 'wav' : 'mp3';
-      try {
-        await space.send(voice(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` }));
-      } catch {
-        await space.send(attachment(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` }));
-      }
+    if (p.type !== 'group') {
+      await sendOne(space, p, content);
+      continue;
+    }
+    const items = p.items.filter(Boolean);
+    if (items.length === 1) {
+      await sendOne(space, items[0], content);
+      continue;
+    }
+    try {
+      await space.send(content.group(...items.map((i) => build(i, content))));
+    } catch (e) {
+      console.warn('sending as one message failed, sending one by one:', e.message);
+      for (const i of items) await sendOne(space, i, content);
     }
   }
 }
@@ -119,7 +145,7 @@ async function main() {
     console.error('Set PHOTON_API_KEY to the same value the API server uses.');
     process.exit(1);
   }
-  const { Spectrum, text, voice, attachment } = await import('spectrum-ts');
+  const { Spectrum, text, voice, attachment, group } = await import('spectrum-ts');
   const { imessage } = await import('spectrum-ts/providers/imessage');
   console.log('Connecting to Photon…');
   const spectrum = await Spectrum({
@@ -154,7 +180,7 @@ async function main() {
         const contents = await contentsOf(message.content);
         if (!contents.length) return;
         await space.responding(async () => {
-          const content = { text, voice, attachment };
+          const content = { text, voice, attachment, group };
           const emit = (part) => sendAll(space, [part], content);
           const parts = await bot.handle({ senderId: message.sender.id, spaceId: space.id, contents, emit });
           await sendAll(space, parts, content);

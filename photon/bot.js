@@ -4,7 +4,7 @@
 // Pure logic around an `api` function, so it can be tested without Photon.
 import {
   parse, reply, findTree, shortStory, LANG_WORDS,
-  HELP, MORE, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText,
+  HELP, MORE, WELCOME, NO_TAG, NOT_LINKED, wakeText, askTip, reportText, signed,
 } from './commands.js';
 
 const LANG_NAMES = { en: 'English', es: 'Español', zh: '中文', hi: 'हिन्दी', gu: 'ગુજરાતી' };
@@ -12,6 +12,9 @@ const REPORT_WINDOW_MS = 10 * 60 * 1000;
 
 export const say = (text) => ({ type: 'text', text });
 export const sound = (buffer, mimeType = 'audio/mpeg', name = 'Tree Detective') => ({ type: 'voice', buffer, mimeType, name });
+export const file = (buffer, mimeType, name) => ({ type: 'file', buffer, mimeType, name });
+// One iMessage made of a text plus voice notes or photos, so they arrive together.
+export const together = (...items) => ({ type: 'group', items: items.filter(Boolean) });
 
 // api(path, { method, body, form, raw }) -> { ok, status, json, buffer }
 // readTag(buffer, mime) -> { code, key } | null
@@ -19,12 +22,15 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   const pending = new Map(); // senderId -> { flag, until } waiting for a problem photo
   const history = new Map(); // senderId:tree -> last questions and answers
   let trees = [];
+  let personas = [];
 
   async function loadTrees() {
-    const r = await api('/api/trees');
+    const [r, p] = await Promise.all([api('/api/trees'), api('/api/personas')]);
     if (r.ok) trees = r.json;
+    if (p.ok) personas = p.json;
     return trees;
   }
+  const personaOf = (tree) => personas.find((p) => p.id === tree?.persona);
   const treeByCode = (code) => trees.find((t) => t.code === code);
 
   async function start(senderId, spaceId) {
@@ -48,11 +54,25 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   }
 
   async function tellStory(tree, me) {
-    const text = await storyIn(tree, me.lang);
-    const out = [say(shortStory({ ...tree, story: text }, 600))];
-    const v = await storyVoice(tree, me.lang);
-    if (v) out.push(v);
-    return out;
+    const [text, v] = await Promise.all([storyIn(tree, me.lang), storyVoice(tree, me.lang)]);
+    return [together(say(shortStory({ ...tree, story: text }, 600)), v)];
+  }
+
+  // The tree's spot through time: real aerial photo, drawn eras, real photo today.
+  async function pictures(tree) {
+    const eras = (tree.timelapse ?? []).filter((e) => e.imageUrl);
+    const picks = eras.filter((e) => e.era !== 'today' || !tree.referencePhoto).slice(0, 4);
+    const today = tree.referencePhoto ? { year: 'Today', imageUrl: tree.referencePhoto, real: true } : null;
+    if (today) picks.push(today);
+    if (!picks.length) return [say(signed(tree, personaOf(tree), 'My pictures are still being painted. Ask me something instead!'))];
+    const files = await Promise.all(picks.map(async (e, i) => {
+      const r = await api(e.imageUrl, { raw: true });
+      if (!r.ok || !r.buffer?.length) return null;
+      const ext = (r.mimeType ?? '').includes('png') ? 'png' : 'jpg';
+      return file(r.buffer, r.mimeType || 'image/jpeg', `${tree.name} ${e.year ?? i}.${ext}`);
+    }));
+    const lines = picks.map((e) => `${e.year === 'Today' ? 'Today' : `c. ${e.year}`}${e.real ? ' (real photo)' : ''}${e.caption ? `: ${e.caption}` : ''}`);
+    return [together(say(signed(tree, personaOf(tree), `My spot through time 📸\n${lines.join('\n')}\n\nOld photos are real; the rest are AI paintings from historical sources.`)), ...files)];
   }
 
   async function wake(me, senderId, code, key) {
@@ -79,17 +99,17 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     const key = `${senderId}:${code}`;
     const past = history.get(key) ?? [];
     const r = await api(`/api/trees/${code}/ask`, {
-      method: 'POST', body: { playerId: me.playerId, question, lang: me.lang, history: past },
+      method: 'POST', body: { playerId: me.playerId, question, lang: me.lang, history: past, channel: 'text' },
     });
     if (r.status === 503) return [say('Trees can\'t answer questions on this server yet. Text "story" to hear my story instead.')];
     if (!r.ok) return [say(r.json?.error ?? 'I didn\'t catch that. Try asking again.')];
     history.set(key, [...past, { q: question, a: r.json.answer }].slice(-3));
-    const out = [say(`${tree.name}: ${r.json.answer}`)];
+    let v = null;
     if (r.json.audio?.startsWith('data:')) {
       const [head, b64] = r.json.audio.split(',');
-      out.push(sound(Buffer.from(b64, 'base64'), head.match(/data:([^;]+)/)?.[1] ?? 'audio/mpeg', tree.name));
+      v = sound(Buffer.from(b64, 'base64'), head.match(/data:([^;]+)/)?.[1] ?? 'audio/mpeg', tree.name);
     }
-    return out;
+    return [together(say(signed(tree, personaOf(tree), r.json.answer)), v)];
   }
 
   async function report(me, senderId, photo) {
@@ -157,6 +177,11 @@ export function createBot({ api, readTag, publicUrl = '' }) {
         const tree = intent.query ? findTree(trees, intent.query) : treeByCode(me.currentTree);
         if (!tree) return intent.query && me.currentTree ? ask(me, senderId, text) : [say(reply(intent.query ? intent : { intent: 'help' }, me, trees))];
         return tellStory(tree, me);
+      }
+      case 'pictures': {
+        const tree = treeByCode(me.currentTree) ?? (me.visited?.length ? treeByCode(me.visited.at(-1).code) : null);
+        if (!tree) return [say('Wake a tree first and it\'ll show you its pictures. Send me a photo of a QR tag!')];
+        return pictures(tree);
       }
       case 'map':
         return [say(publicUrl

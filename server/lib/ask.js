@@ -12,7 +12,8 @@ export function loadFacts(code, dir = path.join(ROOT, 'data', 'facts')) {
 // General tree and nature questions get a playful answer from common knowledge.
 // `retrieved` are extra sourced snippets found by vector search (TigerData);
 // they may be about campus in general rather than this exact tree.
-export function buildAskMessages(tree, persona, facts, question, { retrieved = [], lang = 'en', history = [] } = {}) {
+// channel 'text' means the answer arrives as an iMessage, written in the tree's own texting style.
+export function buildAskMessages(tree, persona, facts, question, { retrieved = [], lang = 'en', history = [], channel = 'voice' } = {}) {
   const own = new Set((facts?.facts ?? []).map((f) => f.text));
   const known = [
     `My story: ${tree.story}`,
@@ -29,7 +30,11 @@ export function buildAskMessages(tree, persona, facts, question, { retrieved = [
         `You are ${tree.name}, a tree on a university campus in a family-friendly game. ` +
         `Personality: ${persona?.name ?? 'a friendly tree'}. ${persona?.style ?? ''}\n` +
         'Talk like a character in a storybook game: warm, playful, curious about the person you are talking to. ' +
-        'Answer in first person, in 2 to 4 short spoken sentences (under 60 words), plain text, no lists, no emoji. ' +
+        (channel === 'text'
+          ? `You are texting this person in iMessage. Your texting style: ${persona?.texting ?? 'friendly and short'} ` +
+            'Stay in that style every time. Keep it under 45 words, in first person. ' +
+            'If they ask for pictures or photos, say you have some and tell them to text "pictures". '
+          : 'Answer in first person, in 2 to 4 short spoken sentences (under 60 words), plain text, no lists, no emoji. ') +
         'Never start two answers the same way, and never just repeat your story.\n' +
         (lang !== 'en' ? `Answer in ${ENGLISH_NAMES[lang] ?? LANGUAGES[lang]?.name ?? lang} (${LANGUAGES[lang]?.name ?? lang}, language code ${lang}).\n` : '') +
         'Two kinds of knowledge:\n' +

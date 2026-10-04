@@ -37,6 +37,7 @@ export function parse(input) {
   const story = lower.match(/(?:story|tell me about|tell me)\s+(?:of\s+|about\s+)?(.+?)(?:'s story)?[?.!]*$/);
   if (story && !/^(me|a story|story|your story|me your story|me a story)$/.test(story[1])) return { intent: 'story', query: story[1].replace(/^the\s+/, '') };
   if (/^(story|your story|tell me (a |your )?story)[?.!]*$/.test(lower)) return { intent: 'story', query: null };
+  if (/\b(pictures?|photos?|pics?|images?|time ?lapse|then and now|what did (it|this|you) look like)\b/.test(lower)) return { intent: 'pictures' };
   if (/\b(point|score)s?\b/.test(lower)) return { intent: 'points' };
   if (/^(map|website|site|link)\b/.test(lower)) return { intent: 'map' };
   if (/\b(route|path|walk)\b/.test(lower)) return { intent: 'route' };
@@ -55,6 +56,7 @@ export const HELP =
 export const MORE =
   'You can text me:\n' +
   '• a question for the tree you\'re with\n' +
+  '• "pictures" to see the tree\'s spot through time\n' +
   '• "points" or "next"\n' +
   '• "report", then a photo of a sick tree\n' +
   '• "spanish", "hindi", "gujarati", "chinese" or "english"';
@@ -74,7 +76,12 @@ export function wakeText(tree, result) {
 
 export function askTip(tree) {
   const q = tree.questions?.[0];
-  return q ? `Ask me anything! Like: "${q}"` : 'Ask me anything!';
+  return `${q ? `Ask me anything, like "${q}"` : 'Ask me anything'}, or text "pictures" 📸`;
+}
+
+// How a tree signs its texts, so you always know who's talking.
+export function signed(tree, persona, text) {
+  return `${persona?.emoji ?? '🌳'} ${tree.name}\n${text}`;
 }
 
 const FLAG_WORDS = { pest: 'pests', damage: 'damage', dying: 'a dying tree' };

@@ -494,11 +494,14 @@ export function createApp({
       }
     }
     const history = Array.isArray(req.body.history) ? req.body.history.filter((h) => h && h.q && h.a).slice(-3) : [];
-    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang, history }))).slice(0, 700);
+    const channel = req.body.channel === 'text' ? 'text' : 'voice';
+    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang, history, channel }))).slice(0, 700);
+    // Emoji and texting shorthand shouldn't be read aloud.
+    const spoken = answer.replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, '').replace(/[~*_]+/g, ' ').replace(/\s+/g, ' ').trim();
     let audio = null;
     if (voice && voice.canSpeak(persona, lang)) {
       try {
-        audio = `data:audio/mpeg;base64,${(await voice.speak(answer, persona, lang)).toString('base64')}`;
+        audio = `data:audio/mpeg;base64,${(await voice.speak(spoken || answer, persona, lang)).toString('base64')}`;
       } catch (e) {
         console.warn('speech failed:', e.message);
       }

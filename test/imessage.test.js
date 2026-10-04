@@ -16,12 +16,13 @@ import { createBot } from '../photon/bot.js';
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'td-im-'));
 const env = { PUBLIC_URL: 'https://td.example', PHOTON_API_KEY: 'bot-key-123', REPORT_SALT: 's', QR_SECRET: 'tag-secret', UPLOAD_DIR: path.join(tmp, 'up') };
 const trees = [
-  { code: 'TD-001', name: 'Old Oakley', persona: 'elder', lat: 40.742, lng: -74.179, story: 'Well now. I stand by a castle. It was an orphanage once.', label: 'Fact', verified: true, timelapse: [], questions: ['Why do you look like a castle?'] },
+  { code: 'TD-001', name: 'Old Oakley', persona: 'elder', lat: 40.742, lng: -74.179, story: 'Well now. I stand by a castle. It was an orphanage once.', label: 'Fact', verified: true, questions: ['Why do you look like a castle?'],
+    timelapse: [{ era: 'aerial-1930', year: 1930, imageUrl: '/historic/TD-001-1930.jpg', real: true }, { era: '1857', year: 1857, imageUrl: '/timelapse/TD-001-2-1857.png', caption: 'A new castle.' }] },
   { code: 'TD-002', name: 'Whisper', persona: 'gossip', lat: 40.7425, lng: -74.178, story: 'Psst. Come closer.', label: 'Fact', verified: true, timelapse: [] },
 ];
 const asked = [];
 const app = createApp({
-  env, trees, personas: [{ id: 'elder', name: 'The Elder' }, { id: 'gossip', name: 'The Gossip' }],
+  env, trees, personas: [{ id: 'elder', name: 'The Elder', emoji: '🌳', texting: 'Texts like a grandparent, signs off ~ O.' }, { id: 'gossip', name: 'The Gossip' }],
   store: new JsonStore(path.join(tmp, 'data')),
   photos: { kind: 'local', dir: env.UPLOAD_DIR, save: async (name) => `/uploads/${name}` },
   vision: async () => ({ available: true, speciesGuess: 'Pin oak', confidence: 0.81, alternatives: [], suggestedFlag: null }),
@@ -57,7 +58,8 @@ async function tagPhoto(code) {
 }
 
 const bot = createBot({ api, readTag: (b, m) => readTag(b, m), publicUrl: 'https://td.example' });
-const texts = (parts) => parts.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
+const flat = (parts) => parts.flatMap((p) => (p.type === 'group' ? p.items : [p]));
+const texts = (parts) => flat(parts).filter((p) => p.type === 'text').map((p) => p.text).join('\n');
 const PHONE = '+15551234567';
 const send = (...contents) => bot.handle({ senderId: PHONE, spaceId: 'sp1', contents });
 
@@ -79,7 +81,7 @@ test('a photo of the QR tag wakes the tree and it starts talking', async () => {
 
 test('then any text is a question for that tree, with memory', async () => {
   let out = await send({ type: 'text', text: 'Why do you look like a castle?' });
-  assert.match(texts(out), /^Old Oakley: The castle was built in 1857\./);
+  assert.match(texts(out), /^🌳 Old Oakley\nThe castle was built in 1857\./);
   out = await send({ type: 'text', text: 'who built it?' });
   const last = asked.at(-1);
   assert.equal(last.at(-1).content, 'who built it?');
@@ -109,7 +111,7 @@ test('typed tag codes, points, language and talk-to', async () => {
   out = await send({ type: 'text', text: 'map' });
   assert.match(texts(out), /td\.example\/\?player=imsg-/);
   out = await send({ type: 'text', text: 'thanks' }); // a six-letter word, not a link code
-  assert.match(texts(out), /^Old Oakley:/);
+  assert.match(texts(out), /^🌳 Old Oakley\n/);
 });
 
 test('a photo with no tag and no tree yet gets a helpful answer', async () => {
@@ -143,4 +145,19 @@ test('the "you woke it" message goes out before the story is ready', async () =>
   assert.match(early[0].text, /You woke Old Oakley/);
   assert.doesNotMatch(texts(out), /You woke/);
   assert.match(texts(out), /castle/);
+});
+
+test('trees text in their own style and can send their pictures', async () => {
+  await send({ type: 'text', text: 'talk to old oakley' });
+  await send({ type: 'text', text: 'how old are you?' });
+  const sys = asked.at(-1)[0].content;
+  assert.match(sys, /texting this person in iMessage/);
+  assert.match(sys, /signs off ~ O\./);
+  const out = await send({ type: 'text', text: 'I am bored can I see some pictures' });
+  const items = flat(out);
+  const photos = items.filter((p) => p.type === 'file');
+  assert.equal(photos.length, 2);
+  assert.ok(photos.every((p) => p.buffer.length > 1000));
+  assert.match(texts(out), /c\. 1930 \(real photo\)/);
+  assert.equal(out.length, 1, 'text and photos arrive as one message');
 });

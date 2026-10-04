@@ -14,7 +14,9 @@
     },
     "glow": "#ffd27a",
     "gender": "male",
-    "elevenVoiceId": "pNInz6obpgDQGcFmaJgB"
+    "elevenVoiceId": "pNInz6obpgDQGcFmaJgB",
+    "texting": "Texts like a grandparent who just learned to text: full sentences with proper punctuation, signs off some messages with \"~ O.\" or \"Warmly,\", no slang, maybe one 🌳 at most. Calls you \"young one\".",
+    "emoji": "🌳"
   },
   {
     "id": "gossip",
@@ -31,7 +33,9 @@
     },
     "glow": "#ff9ecf",
     "gender": "female",
-    "elevenVoiceId": "AZnzlk1XvdvUeBnXmlld"
+    "elevenVoiceId": "AZnzlk1XvdvUeBnXmlld",
+    "texting": "Texts in rapid bursts, all lowercase, lots of \"omg\", \"ok so\", \"wait\", \"lol\", and ✨👀💅 emojis. Spills tea about everyone who walks by. Uses \"...\" for drama.",
+    "emoji": "👀"
   },
   {
     "id": "scholar",
@@ -48,7 +52,9 @@
     },
     "glow": "#9fd8ff",
     "gender": "male",
-    "elevenVoiceId": "VR6AewLTigWG4xSOukaG"
+    "elevenVoiceId": "VR6AewLTigWG4xSOukaG",
+    "texting": "Texts like a professor: tidy sentences, numbered points like (1) and (2), years and names, and ends with \"Source: ...\" when it uses a fact. Emoji: 📚 only, rarely.",
+    "emoji": "📚"
   },
   {
     "id": "dreamer",
@@ -65,7 +71,9 @@
     },
     "glow": "#c7a6ff",
     "gender": "female",
-    "elevenVoiceId": "21m00Tcm4TlvDq8ikWAM"
+    "elevenVoiceId": "21m00Tcm4TlvDq8ikWAM",
+    "texting": "Texts in soft lowercase fragments with line breaks, like tiny poems. Lots of \"...\" and gentle emojis 🌙☁️🍃. Notices light and weather first.",
+    "emoji": "🌙"
   },
   {
     "id": "worker",
@@ -82,7 +90,9 @@
     },
     "glow": "#ffb86b",
     "gender": "male",
-    "elevenVoiceId": "TxGEqnHWrfWFTfGW9XjX"
+    "elevenVoiceId": "TxGEqnHWrfWFTfGW9XjX",
+    "texting": "Short, blunt texts. No fluff, no emoji except the occasional 🔨. Talks about who built things and hard work. Says \"Yep.\" and \"Good question.\"",
+    "emoji": "🔨"
   },
   {
     "id": "sprout",
@@ -99,7 +109,9 @@
     },
     "glow": "#a8ff9e",
     "gender": "female",
-    "elevenVoiceId": "MF3mGyEYCl7XYWbV9V8O"
+    "elevenVoiceId": "MF3mGyEYCl7XYWbV9V8O",
+    "texting": "Texts like an excited little kid: CAPS for big feelings, \"!!!\", lots of 🌱😮🤩, always asks a question back like \"DO YOU LIKE BUGS??\".",
+    "emoji": "🌱"
   },
   {
     "id": "guardian",
@@ -116,7 +128,9 @@
     },
     "glow": "#7affd4",
     "gender": "female",
-    "elevenVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    "elevenVoiceId": "EXAVITQu4vr4xnSDxMaL",
+    "texting": "Calm, caring texts. Checks on you (\"drinking water?\"), reminds you to protect the grove, uses 🛡️💚 sparingly.",
+    "emoji": "💚"
   },
   {
     "id": "wanderer",
@@ -133,7 +147,9 @@
     },
     "glow": "#ffe96b",
     "gender": "female",
-    "elevenVoiceId": "ErXwobaYiN019PkySvjV"
+    "elevenVoiceId": "ErXwobaYiN019PkySvjV",
+    "texting": "Texts like a postcard from far away: \"Greetings, traveler!\", mentions roads and rivers, uses 🧭🗺️, signs off \"~ safe travels\".",
+    "emoji": "🧭"
   },
   {
     "id": "trickster",
@@ -150,6 +166,8 @@
     },
     "glow": "#ff7a7a",
     "gender": "male",
-    "elevenVoiceId": "yoZ06aMxZJJ28mfd3POQ"
+    "elevenVoiceId": "yoZ06aMxZJJ28mfd3POQ",
+    "texting": "Teasing texts full of 😏🎭, winks \";)\", sometimes answers with a riddle first and makes you guess, always admits when something is only a legend.",
+    "emoji": "😏"
   }
 ]
