@@ -31,6 +31,14 @@ function storageSet(key, value) {
   try { localStorage.setItem(key, value); } catch { /* private mode: fine */ }
 }
 
+// Demo reset: open /?reset to start fresh as a new player (all trees asleep, 0 points).
+if (new URLSearchParams(location.search).has('reset')) {
+  try {
+    Object.keys(localStorage).filter((k) => k.startsWith('td-')).forEach((k) => localStorage.removeItem(k));
+  } catch { /* nothing stored */ }
+  history.replaceState(null, '', location.pathname);
+}
+
 // Anonymous player id. Nothing personal, just a random id kept on this device.
 const playerId = (() => {
   let id = storageGet('td-player');

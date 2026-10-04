@@ -17,6 +17,8 @@ Then open http://localhost:3000. To fake a scan, go to http://localhost:3000/?tr
 
 Tests: `npm test`
 
+Before a demo, open http://localhost:3000/?reset to start over as a new player, with every tree asleep and 0 points.
+
 It runs fine without any Azure keys, it just falls back to local files and the browser's built in voice. Copy `.env.example` to `.env` and add keys as you get them.
 
 ## What uses Azure
