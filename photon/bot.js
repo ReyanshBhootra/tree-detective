@@ -62,13 +62,12 @@ export function createBot({ api, readTag, publicUrl = '' }) {
     const r = await api('/api/visits', { method: 'POST', body: { playerId: me.playerId, treeCode: tree.code, treeKey: key } });
     if (r.status === 403) return [say('That code doesn\'t match the tag on the tree. Send me a photo of the QR code instead.')];
     if (!r.ok) return [say('The grove is a little sleepy right now. Try again in a minute.')];
+    // Say "you woke it" right away; the story and voice note follow.
+    const woke = say(wakeText(tree, r.json));
+    const early = me.emit ? (await me.emit(woke), []) : [woke];
     await prefs(senderId, { currentTree: tree.code });
     me.currentTree = tree.code;
-    return [
-      say(wakeText(tree, r.json)),
-      ...(await tellStory(tree, me)),
-      say(askTip(tree)),
-    ];
+    return [...early, ...(await tellStory(tree, me)), say(askTip(tree))];
   }
 
   async function ask(me, senderId, question) {
@@ -178,9 +177,10 @@ export function createBot({ api, readTag, publicUrl = '' }) {
   }
 
   // content: { type: 'text', text } | { type: 'image', buffer, mimeType, name } | { type: 'voice' }
-  async function handle({ senderId, spaceId, contents }) {
+  // emit(part), if given, sends a part straight away instead of waiting for the rest.
+  async function handle({ senderId, spaceId, contents, emit }) {
     if (!trees.length) await loadTrees();
-    const me = { ...(await start(senderId, spaceId)), spaceId };
+    const me = { ...(await start(senderId, spaceId)), spaceId, emit };
     const out = [];
     const firstIsCode = contents.some((c) => c.type === 'text' && /^(link|wake)$/.test(parse(c.text).intent));
     if (me.isNew && !firstIsCode) out.push(say(WELCOME));
