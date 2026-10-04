@@ -60,19 +60,20 @@ export function createBot({ api, readTag, publicUrl = '' }) {
 
   // The tree's spot through time: real aerial photo, drawn eras, real photo today.
   async function pictures(tree) {
-    const eras = (tree.timelapse ?? []).filter((e) => e.imageUrl);
-    const picks = eras.filter((e) => e.era !== 'today' || !tree.referencePhoto).slice(0, 4);
-    const today = tree.referencePhoto ? { year: 'Today', imageUrl: tree.referencePhoto, real: true } : null;
-    if (today) picks.push(today);
+    const eras = (tree.timelapse ?? []).filter((e) => e.imageUrl && (e.era !== 'today' || !tree.referencePhoto));
+    // Oldest first; real photos are marked with a camera.
+    const picks = eras.slice(0, 4).sort((a, b) => (Number(a.year) || 9999) - (Number(b.year) || 9999));
+    if (tree.referencePhoto) picks.push({ year: 'Today', imageUrl: tree.referencePhoto, real: true });
     if (!picks.length) return [say(signed(tree, personaOf(tree), 'My pictures are still being painted. Ask me something instead!'))];
-    const files = await Promise.all(picks.map(async (e, i) => {
+    const files = (await Promise.all(picks.map(async (e, i) => {
       const r = await api(e.imageUrl, { raw: true });
       if (!r.ok || !r.buffer?.length) return null;
       const ext = (r.mimeType ?? '').includes('png') ? 'png' : 'jpg';
       return file(r.buffer, r.mimeType || 'image/jpeg', `${tree.name} ${e.year ?? i}.${ext}`);
-    }));
-    const lines = picks.map((e) => `${e.year === 'Today' ? 'Today' : `c. ${e.year}`}${e.real ? ' (real photo)' : ''}${e.caption ? `: ${e.caption}` : ''}`);
-    return [together(say(signed(tree, personaOf(tree), `My spot through time 📸\n${lines.join('\n')}\n\nOld photos are real; the rest are AI paintings from historical sources.`)), ...files)];
+    })));
+    const line = picks.map((e) => `${e.year}${e.real ? ' 📷' : ''}`).join(' → ');
+    const note = picks.some((e) => e.real) && picks.some((e) => !e.real) ? '\n📷 = real photo, the rest are AI paintings' : '';
+    return [together(say(signed(tree, personaOf(tree), `My spot through time 📸\n${line}${note}`)), ...files)];
   }
 
   async function wake(me, senderId, code, key) {

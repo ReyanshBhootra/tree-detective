@@ -158,7 +158,7 @@ test('trees text in their own style and can send their pictures', async () => {
   const photos = items.filter((p) => p.type === 'file');
   assert.equal(photos.length, 2);
   assert.ok(photos.every((p) => p.buffer.length > 1000));
-  assert.match(texts(out), /c\. 1930 \(real photo\)/);
+  assert.match(texts(out), /1857 → 1930 📷/);
   assert.equal(out.length, 1, 'text and photos arrive as one message');
 });
 
