@@ -44,7 +44,7 @@ Create a free service at [console.cloud.timescale.com](https://console.cloud.tim
 
 ## Pages
 
-- `/` the map. Drag the time travel slider to fade campus back to the real 1930s aerial photos of New Jersey. A line above the buttons shows how many trees are asleep, which ones need a check-up, and today's weather. The Book button shows the trees you've met and your badges.
+- `/` the map. Drag the time travel slider back through real photos of campus from above: New Jersey's 1930s aerial survey, any later state aerial surveys its server has, and satellite photos from 2014 to now ([Esri World Imagery Wayback](https://livingatlas.arcgis.com/wayback/)). No keys needed. A line above the buttons shows how many trees are asleep, which ones need a check-up, and today's weather. The Book button shows the trees you've met and your badges.
 
 Inside a tree's story you can switch language, compare "then" with "today", ask it a question (type or hold the mic), and leave it a note for the next visitor. Sending a photo of a tree that already has a reported problem earns a rescue bonus.
 - `/grounds.html` tree health dashboard for the grounds team, with seasons, photos and a CSV export

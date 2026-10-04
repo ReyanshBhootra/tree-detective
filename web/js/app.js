@@ -945,7 +945,7 @@ async function boot() {
   }
   initMap();
   startFireflies($('fireflies'));
-  initTimeTravel(map, state.config.historic, toast);
+  initTimeTravel(map, state.config.historic, toast, api);
   setupHoldToTalk();
   loadMapStatus();
   api('/api/weather').then((w) => { state.weather = w; renderStatusLine(); }).catch(() => {});

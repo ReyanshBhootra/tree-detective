@@ -26,6 +26,7 @@ import { createTiger } from './lib/tiger.js';
 import { computeTrends, computeSeasonTimeline } from './lib/trends.js';
 import { createWeather, weatherLine } from './lib/weather.js';
 import { checkNote, cleanName, HIDE_AFTER_FLAGS } from './lib/notes.js';
+import { createTimeline } from './lib/timeline.js';
 
 const PLAYER_ID = /^[A-Za-z0-9-]{8,64}$/;
 const LINK_CODE_TTL_MS = 30 * 60 * 1000;
@@ -47,6 +48,7 @@ export function createApp({
   tiger = createTiger(env),
   embedQuery = ai.can('embed') ? (q) => ai.embed(q) : null,
   weather = null,
+  timeline = null,
   translator = env.AZURE_TRANSLATOR_KEY && env.AZURE_TRANSLATOR_REGION ? (text, langs, codeMap) => translate(env, text, langs, codeMap) : null,
 } = {}) {
   const app = express();
@@ -73,6 +75,10 @@ export function createApp({
   const logEvent = (e) => tiger?.logEvent(e).catch((err) => console.warn('tigerdata:', err.message));
 
   const historicUrl = env.HISTORIC_WMS_URL === 'off' ? null : env.HISTORIC_WMS_URL || DEFAULT_HISTORIC_WMS;
+  const historic = historicUrl
+    ? { wmsUrl: historicUrl, layer: env.HISTORIC_WMS_LAYER || 'BlackWhite1930', year: 1930, attribution: '1930s aerial photography: NJ Office of GIS' }
+    : null;
+  const mapTimeline = timeline ?? createTimeline({ historic });
 
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -129,6 +135,11 @@ export function createApp({
 
   // ---------- public read endpoints ----------
 
+  // Real aerial and satellite photos of campus through the years, for the map slider.
+  app.get('/api/timeline', wrap(async (_req, res) => {
+    res.json(await mapTimeline());
+  }));
+
   app.get('/api/config', (_req, res) => {
     res.json({
       publicUrl,
@@ -147,14 +158,7 @@ export function createApp({
         maxZoom: Number(env.MAP_TILES_MAX_ZOOM || 19),
       },
       pestReport: { url: PEST_REPORT_URL, hotline: PEST_HOTLINE },
-      historic: historicUrl
-        ? {
-            wmsUrl: historicUrl,
-            layer: env.HISTORIC_WMS_LAYER || 'BlackWhite1930',
-            year: 1930,
-            attribution: '1930s aerial photography: NJ Office of GIS',
-          }
-        : null,
+      historic,
       features: {
         speciesVision: visionConfigured(env),
         speciesProvider: speciesProvider(env),

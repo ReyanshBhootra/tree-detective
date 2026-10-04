@@ -259,6 +259,10 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 .timetravel label { color: var(--glow); white-space: nowrap; }
 .timetravel input { flex: 1; min-width: 0; accent-color: var(--glow); }
 .timetravel.past { border-color: var(--glow); }
+.timetravel .tt-start { opacity: 0.7; }
+.timetravel .tt-year { min-width: 7.5em; white-space: nowrap; text-align: right; color: var(--glow); }
+/* real photos keep their colors; the storybook tint is only on the base map */
+.leaflet-timeline-pane { filter: none; }
 
 /* grove book */
 .book h3 { font-size: 1.1rem; margin: 16px 0 8px; }

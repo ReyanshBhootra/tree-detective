@@ -538,3 +538,26 @@ test('reference photo search keeps real photos of the right building', async () 
   assert.equal(none.photo, null);
   assert.equal(none.tried.length, 2);
 });
+
+test('map timeline picks one satellite photo per year plus the newest', async () => {
+  const { waybackStops, createTimeline } = await import('../server/lib/timeline.js');
+  const url = 'https://wayback/tile/{level}/{row}/{col}';
+  const config = {
+    10: { itemTitle: 'World Imagery (Wayback 2014-02-20)', itemURL: url.replace('tile/', 'tile/10/') },
+    11: { itemTitle: 'World Imagery (Wayback 2014-06-01)', itemURL: url },
+    577: { itemTitle: 'World Imagery (Wayback 2017-01-11)', itemURL: url },
+    999: { itemTitle: 'World Imagery (Wayback 2026-08-05)', itemURL: url },
+  };
+  const stops = waybackStops(config, [2014, 2017, 2020]);
+  assert.deepEqual(stops.map((s) => s.year), [2014, 2017, 2026]);
+  assert.equal(stops[0].url, 'https://wayback/tile/10/{z}/{y}/{x}');
+  assert.match(stops.at(-1).label, /latest/);
+
+  // NJ server down, Wayback up: still works, oldest first, 1930 included.
+  const fake = async (u) => (u.includes('waybackconfig')
+    ? { ok: true, json: async () => config }
+    : { ok: false, text: async () => '' });
+  const tl = createTimeline({ historic: { year: 1930, wmsUrl: 'nj', layer: 'BlackWhite1930', attribution: 'x' }, fetchImpl: fake });
+  const { stops: all } = await tl();
+  assert.deepEqual(all.map((s) => s.year), [1930, 2014, 2017, 2026]);
+});
