@@ -116,3 +116,31 @@ test('a photo with no tag and no tree yet gets a helpful answer', async () => {
   const other = await bot.handle({ senderId: '+15550000000', spaceId: 'sp2', contents: [{ type: 'image', buffer: Buffer.from([0xff, 0xd8, 0xff, 0xd9]), mimeType: 'image/jpeg' }] });
   assert.match(texts(other), /can't see a tag/);
 });
+
+test('a tilted photo of the tag on a screen, with glare, still wakes the tree fast', async () => {
+  const { readTag: rt } = await import('../server/lib/qrread.js');
+  const qr = PNG.sync.read(await QRCode.toBuffer(treeLink('https://td.example', 'TD-002', env.QR_SECRET), { width: 700, margin: 2 }));
+  const W = 1512, H = 2016, data = Buffer.alloc(W * H * 4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const dx = x - 750, dy = y - 1000;
+    const sx = Math.round(Math.cos(0.12) * dx + Math.sin(0.12) * dy + qr.width / 2);
+    const sy = Math.round(-Math.sin(0.12) * dx + Math.cos(0.12) * dy + qr.height / 2);
+    let v = sx >= 0 && sy >= 0 && sx < qr.width && sy < qr.height ? (qr.data[(sy * qr.width + sx) * 4] ? 225 : 40) : 30;
+    if (y % 4 === 0) v *= 0.82;
+    const g = Math.max(0, 1 - Math.hypot(x - 930, y - 750) / 210);
+    v += (255 - v) * g * 0.85;
+    const d = (y * W + x) * 4; data[d] = data[d + 1] = data[d + 2] = Math.min(255, v); data[d + 3] = 255;
+  }
+  const t = Date.now();
+  const tag = await rt(jpeg.encode({ data, width: W, height: H }, 80).data, 'image/jpeg');
+  assert.equal(tag?.code, 'TD-002');
+  assert.ok(Date.now() - t < 3000, `took ${Date.now() - t} ms`);
+});
+
+test('the "you woke it" message goes out before the story is ready', async () => {
+  const early = [];
+  const out = await bot.handle({ senderId: '+15559990000', spaceId: 'sp3', contents: [{ type: 'text', text: typedCode('TD-001', env.QR_SECRET) }], emit: (p) => early.push(p) });
+  assert.match(early[0].text, /You woke Old Oakley/);
+  assert.doesNotMatch(texts(out), /You woke/);
+  assert.match(texts(out), /castle/);
+});

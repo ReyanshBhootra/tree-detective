@@ -1,6 +1,9 @@
-// Reads a Tree Detective tag from a photo: the QR code first (pure JS, works
-// offline), then, if that fails, an AI model reads the code printed under it.
-// Handles JPEG, PNG and iPhone HEIC photos.
+// Reads a Tree Detective tag from a photo. ZXing (the same engine phone
+// scanner apps use) reads the QR first, since it copes with glare, angles and
+// photos of screens; jsQR is a second try; an AI model reading the printed code
+// is the last resort. Handles JPEG, PNG and iPhone HEIC photos, all offline.
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import jsQR from 'jsqr';
 import jpeg from 'jpeg-js';
 import { PNG } from 'pngjs';
@@ -61,8 +64,31 @@ function shrink(img, max) {
   return { data, width, height };
 }
 
+let zxing = null;
+async function zxingReader() {
+  if (!zxing) {
+    zxing = (async () => {
+      const mod = await import('zxing-wasm/reader');
+      const wasm = createRequire(import.meta.url).resolve('zxing-wasm/reader/zxing_reader.wasm');
+      mod.prepareZXingModule({ overrides: { wasmBinary: fs.readFileSync(wasm) }, fireImmediately: true });
+      return mod;
+    })();
+  }
+  return zxing;
+}
+
+const ZX_OPTS = { formats: ['QRCode'], tryHarder: true, tryRotate: true, tryInvert: true, tryDownscale: true, maxNumberOfSymbols: 1 };
+
+// input: image file bytes (JPEG/PNG) or { data, width, height } pixels.
+export async function zxingRead(input) {
+  const { readBarcodes } = await zxingReader();
+  const arg = input.data ? { data: new Uint8ClampedArray(input.data.buffer, input.data.byteOffset, input.data.length), width: input.width, height: input.height, colorSpace: 'srgb' } : new Uint8Array(input);
+  const hits = await readBarcodes(arg, ZX_OPTS);
+  return hits.find((h) => h.isValid && h.text)?.text ?? null;
+}
+
 export function findQr(img) {
-  for (const max of [900, 1600, Infinity]) {
+  for (const max of [900, 1600]) {
     const small = shrink(img, max);
     const hit = jsQR(new Uint8ClampedArray(small.data.buffer, small.data.byteOffset, small.data.length), small.width, small.height, { inversionAttempts: 'attemptBoth' });
     if (hit?.data) return hit.data;
@@ -74,17 +100,26 @@ export function findQr(img) {
 // readText(buffer, mime) is an optional AI fallback that returns any text it sees on the tag.
 export async function readTag(buffer, givenMime, { readText } = {}) {
   const mime = sniffMime(buffer, givenMime);
-  try {
-    const img = await pixels(buffer, mime);
-    const raw = img && findQr(img);
-    const tag = raw && parseTagText(raw);
-    if (tag) return { ...tag, via: 'qr' };
-  } catch (e) {
-    console.warn('QR decode failed:', e.message);
+  const heic = mime === 'image/heic' || mime === 'image/heif';
+  let img = null;
+  const tries = [
+    // JPEG and PNG go straight to ZXing, which decodes them itself (fast).
+    async () => (heic ? null : zxingRead(buffer)),
+    async () => { img = heic || !img ? await pixels(buffer, mime) : img; return img && zxingRead(img); },
+    async () => { img ??= await pixels(buffer, mime); return img && findQr(img); },
+  ];
+  for (const attempt of tries) {
+    try {
+      const tag = parseTagText(await attempt());
+      if (tag) return { ...tag, via: 'qr' };
+    } catch (e) {
+      console.warn('QR decode attempt failed:', e.message);
+    }
   }
   if (readText) {
     try {
-      const tag = parseTagText(await readText(buffer, mime));
+      const timeout = new Promise((_, no) => setTimeout(() => no(new Error('took too long')), 8000));
+      const tag = parseTagText(await Promise.race([readText(buffer, mime), timeout]));
       if (tag) return { ...tag, via: 'ai' };
     } catch (e) {
       console.warn('tag reading failed:', e.message);

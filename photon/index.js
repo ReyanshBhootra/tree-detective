@@ -154,8 +154,10 @@ async function main() {
         const contents = await contentsOf(message.content);
         if (!contents.length) return;
         await space.responding(async () => {
-          const parts = await bot.handle({ senderId: message.sender.id, spaceId: space.id, contents });
-          await sendAll(space, parts, { text, voice, attachment });
+          const content = { text, voice, attachment };
+          const emit = (part) => sendAll(space, [part], content);
+          const parts = await bot.handle({ senderId: message.sender.id, spaceId: space.id, contents, emit });
+          await sendAll(space, parts, content);
         });
       } catch (e) {
         console.warn('reply failed:', e.message);

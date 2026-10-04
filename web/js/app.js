@@ -41,7 +41,7 @@ if (new URLSearchParams(location.search).has('reset')) {
 // From iMessage ("map"): open the site as the same explorer, so their awake trees show.
 {
   const fromText = new URLSearchParams(location.search).get('player');
-  if (fromText && /^imsg-[a-f0-9-]{36}$/.test(fromText)) {
+  if (fromText && /^[A-Za-z0-9-]{8,64}$/.test(fromText)) {
     try { localStorage.setItem('td-player', fromText); } catch { /* private mode */ }
     history.replaceState(null, '', location.pathname);
   }
@@ -166,6 +166,27 @@ function applySummary(summary) {
 async function refreshSummary() {
   try { applySummary(await api(`/api/players/${playerId}`)); } catch { /* keep what we have */ }
 }
+
+// Trees woken somewhere else (like from iMessage) light up here too, live.
+let syncing = false;
+async function syncFromElsewhere() {
+  if (syncing || document.hidden || !state.summary) return;
+  syncing = true;
+  try {
+    const summary = await api(`/api/players/${playerId}`);
+    const fresh = summary.visited.filter((v) => !state.visited.has(v.code));
+    applySummary(summary);
+    for (const v of fresh) {
+      const tree = state.trees.find((t) => t.code === v.code);
+      if (!tree) continue;
+      await wakeMoment(tree, { firstVisit: true, pointsEarned: v.points ?? state.config.pointsPerTree });
+      toast(`📱 ${tree.name} was woken from iMessage!`, 2600);
+    }
+  } catch { /* try again next time */ } finally {
+    syncing = false;
+  }
+}
+setInterval(syncFromElsewhere, 4000);
 
 function bumpPoints() {
   const el = document.querySelector('.score-points');
