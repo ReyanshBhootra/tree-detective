@@ -27,3 +27,7 @@ export const ASK_LIMIT_PER_HOUR = 40;
 export const SEASONS = ['buds', 'first-leaves', 'full-leaf', 'flowers-fruit', 'color-change', 'dropping', 'bare'];
 export const PEST_REPORT_URL = 'https://www.nj.gov/agriculture/divisions/pi/prog/pests-diseases/spotted-lanternfly/#reporting-tool';
 export const PEST_HOTLINE = '1-833-223-2840';
+// Extra points for a photo of a tree that already has an open (possible) problem:
+// it gets the problem confirmed, or cleared, sooner.
+export const RESCUE_BONUS = 15;
+export const NOTE_LIMIT_PER_HOUR = 20;

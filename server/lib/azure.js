@@ -37,16 +37,61 @@ export async function image(env, prompt, { size = '1024x1024' } = {}) {
   return Buffer.from(await img.arrayBuffer());
 }
 
-const xml = (s) => String(s).replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]);
-
-export function ssml(text, persona) {
-  const lang = persona.voice.split('-').slice(0, 2).join('-');
-  const { rate = '0%', pitch = '0%' } = persona.prosody ?? {};
-  return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${lang}">` +
-    `<voice name="${persona.voice}"><prosody rate="${rate}" pitch="${pitch}">${xml(text)}</prosody></voice></speak>`;
+// Re-draws a real photo of the spot as another era, keeping the camera angle,
+// so "then" and "now" line up. Needs an image model that supports edits (gpt-image-1).
+export async function imageFromPhoto(env, prompt, photo, { size = '1024x1024' } = {}) {
+  need(env, 'AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_IMAGE_DEPLOYMENT');
+  const base = env.AZURE_OPENAI_ENDPOINT.replace(/\/+$/, '');
+  const version = env.AZURE_OPENAI_IMAGE_EDIT_API_VERSION || '2025-04-01-preview';
+  const form = new FormData();
+  form.append('image', new Blob([photo.buffer], { type: photo.type }), photo.name);
+  form.append('prompt', prompt);
+  form.append('size', size);
+  const res = await fetch(`${base}/openai/deployments/${encodeURIComponent(env.AZURE_OPENAI_IMAGE_DEPLOYMENT)}/images/edits?api-version=${version}`, {
+    method: 'POST', headers: { 'api-key': env.AZURE_OPENAI_KEY }, body: form,
+  });
+  if (!res.ok) throw new Error(`Azure OpenAI image edit ${res.status}: ${await res.text()}`);
+  return Buffer.from((await res.json()).data[0].b64_json, 'base64');
 }
 
-export async function speak(env, text, persona) {
+export async function embed(env, input) {
+  need(env, 'AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT');
+  const res = await fetch(openaiUrl(env, env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT, 'embeddings'), {
+    method: 'POST',
+    headers: { 'api-key': env.AZURE_OPENAI_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ input }),
+  });
+  if (!res.ok) throw new Error(`Azure OpenAI embeddings ${res.status}: ${await res.text()}`);
+  const data = (await res.json()).data;
+  return Array.isArray(input) ? data.map((d) => d.embedding) : data[0].embedding;
+}
+
+// Azure AI Translator. Haitian Creole is "ht".
+export async function translate(env, text, to) {
+  need(env, 'AZURE_TRANSLATOR_KEY', 'AZURE_TRANSLATOR_REGION');
+  const res = await fetch(`https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en${to.map((t) => `&to=${t}`).join('')}`, {
+    method: 'POST',
+    headers: {
+      'Ocp-Apim-Subscription-Key': env.AZURE_TRANSLATOR_KEY,
+      'Ocp-Apim-Subscription-Region': env.AZURE_TRANSLATOR_REGION,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify([{ text }]),
+  });
+  if (!res.ok) throw new Error(`Azure Translator ${res.status}: ${await res.text()}`);
+  return Object.fromEntries((await res.json())[0].translations.map((t) => [t.to, t.text]));
+}
+
+const xml = (s) => String(s).replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]);
+
+export function ssml(text, persona, voice = persona.voice) {
+  const lang = voice.split('-').slice(0, 2).join('-');
+  const { rate = '0%', pitch = '0%' } = persona.prosody ?? {};
+  return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${lang}">` +
+    `<voice name="${voice}"><prosody rate="${rate}" pitch="${pitch}">${xml(text)}</prosody></voice></speak>`;
+}
+
+export async function speak(env, text, persona, voice = persona.voice) {
   need(env, 'AZURE_SPEECH_KEY', 'AZURE_SPEECH_REGION');
   const res = await fetch(`https://${env.AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: 'POST',
@@ -56,7 +101,7 @@ export async function speak(env, text, persona) {
       'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
       'User-Agent': 'tree-detective',
     },
-    body: ssml(text, persona),
+    body: ssml(text, persona, voice),
   });
   if (!res.ok) throw new Error(`Azure Speech ${res.status}: ${await res.text()}`);
   return Buffer.from(await res.arrayBuffer());

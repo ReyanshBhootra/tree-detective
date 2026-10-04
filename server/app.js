@@ -5,6 +5,7 @@ import multer from 'multer';
 import {
   ROOT, CONFIRM_THRESHOLD, FLAG_TYPES, LOCATION_RADIUS_METERS, POINTS_PER_TREE,
   REPORT_LIMIT_PER_HOUR, ASK_LIMIT_PER_HOUR, SEASONS, PEST_REPORT_URL, PEST_HOTLINE,
+  RESCUE_BONUS, NOTE_LIMIT_PER_HOUR,
 } from './config.js';
 import { loadTrees, loadPersonas } from './lib/trees.js';
 import { createStore } from './lib/store.js';
@@ -16,7 +17,12 @@ import { planRoute } from './lib/geo.js';
 import { verifyTreeKey } from './lib/qr.js';
 import { rateLimiter } from './lib/ratelimit.js';
 import { loadFacts, buildAskMessages } from './lib/ask.js';
-import { chat, speak } from './lib/azure.js';
+import { chat, speak, embed } from './lib/azure.js';
+import { LANGUAGES, isLanguage, voiceFor } from './lib/languages.js';
+import { createTiger } from './lib/tiger.js';
+import { computeTrends, computeSeasonTimeline } from './lib/trends.js';
+import { createWeather, weatherLine } from './lib/weather.js';
+import { checkNote, cleanName, HIDE_AFTER_FLAGS } from './lib/notes.js';
 
 const PLAYER_ID = /^[A-Za-z0-9-]{8,64}$/;
 const LINK_CODE_TTL_MS = 30 * 60 * 1000;
@@ -34,6 +40,9 @@ export function createApp({
   voice = (text, persona) => speak(env, text, persona),
   facts = (code) => loadFacts(code),
   askEnabled = Boolean(env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_KEY && env.AZURE_OPENAI_CHAT_DEPLOYMENT),
+  tiger = createTiger(env),
+  embedQuery = env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT ? (q) => embed(env, q) : null,
+  weather = null,
 } = {}) {
   const app = express();
   app.disable('x-powered-by');
@@ -49,6 +58,11 @@ export function createApp({
   const reportLimit = rateLimiter(REPORT_LIMIT_PER_HOUR);
   const askLimit = rateLimiter(ASK_LIMIT_PER_HOUR);
   const speechReady = Boolean(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION);
+
+  const noteLimit = rateLimiter(NOTE_LIMIT_PER_HOUR);
+  const currentWeather = weather ?? (trees.length ? createWeather(centroid()) : async () => null);
+  // TigerData writes never block or break a request.
+  const logEvent = (e) => tiger?.logEvent(e).catch((err) => console.warn('tigerdata:', err.message));
 
   const historicUrl = env.HISTORIC_WMS_URL === 'off' ? null : env.HISTORIC_WMS_URL || DEFAULT_HISTORIC_WMS;
 
@@ -76,9 +90,11 @@ export function createApp({
     const from = (last && byCode.get(last.rowKey)) || centroid();
     const unvisited = trees.filter((t) => !visited.has(t.code));
     const route = planRoute(from, unvisited);
+    const bonuses = await store.list('bonuses', playerId);
     const summary = {
       playerId,
-      totalPoints: totalPoints(visits),
+      totalPoints: totalPoints(visits) + totalPoints(bonuses),
+      bonusPoints: totalPoints(bonuses),
       visited: visits
         .sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1))
         .map((v) => ({ code: v.rowKey, name: byCode.get(v.rowKey)?.name ?? v.rowKey, timestamp: v.timestamp, points: v.points })),
@@ -92,6 +108,8 @@ export function createApp({
       const mine = (await store.list('reports')).filter((r) => r.reporterHash === me);
       summary.reportsSent = mine.filter((r) => r.photoUrl || r.flagType !== 'none').length;
       summary.seasonsLogged = mine.filter((r) => r.season).length;
+      summary.pestReports = mine.filter((r) => r.flagType === 'pest').length;
+      summary.rescues = bonuses.length;
     }
     return summary;
   }
@@ -112,6 +130,8 @@ export function createApp({
       flagTypes: FLAG_TYPES,
       seasons: SEASONS,
       photonNumber: env.PHOTON_PHONE_NUMBER || null,
+      languages: Object.entries(LANGUAGES).map(([code, l]) => ({ code, name: l.name, label: l.label, locale: l.locale })),
+      rescueBonus: RESCUE_BONUS,
       // Map background. OpenStreetMap's free tiles by default, no key needed.
       tiles: {
         url: env.MAP_TILES_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -134,6 +154,7 @@ export function createApp({
         photoStorage: photos.kind,
         signedTags: Boolean(env.QR_SECRET),
         ask: askEnabled,
+        tigerData: Boolean(tiger),
       },
     });
   });
@@ -151,6 +172,65 @@ export function createApp({
     if (!byCode.has(code)) return bad(res, 'unknown tree', 404);
     const h = treeHealth(await store.list('reports', code), code);
     res.json({ flags: h.flags, season: h.season, reportCount: h.reportCount });
+  }));
+
+  // One line per tree for the map: is anything wrong with it?
+  app.get('/api/status', wrap(async (_req, res) => {
+    const reports = await store.list('reports');
+    const out = {};
+    for (const t of trees) {
+      const flags = Object.values(treeHealth(reports, t.code).flags);
+      out[t.code] = flags.some((f) => f.status === 'confirmed') ? 'confirmed' : flags.length ? 'possible' : 'ok';
+    }
+    res.json(out);
+  }));
+
+  app.get('/api/weather', wrap(async (_req, res) => {
+    const w = await currentWeather();
+    res.json(w ? { ...w, line: weatherLine(w) } : null);
+  }));
+
+  // ---------- notes for the tree ----------
+
+  app.get('/api/trees/:code/notes', wrap(async (req, res) => {
+    const code = req.params.code.toUpperCase();
+    if (!byCode.has(code)) return bad(res, 'unknown tree', 404);
+    const notes = (await store.list('notes', code))
+      .filter((n) => (n.flags ?? 0) < HIDE_AFTER_FLAGS)
+      .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
+      .slice(0, 12)
+      .map((n) => ({ id: n.rowKey, text: n.text, name: n.name, timestamp: n.timestamp }));
+    res.json(notes);
+  }));
+
+  app.post('/api/trees/:code/notes', wrap(async (req, res) => {
+    const tree = byCode.get(req.params.code.toUpperCase());
+    if (!tree) return bad(res, 'unknown tree', 404);
+    const { playerId } = req.body ?? {};
+    if (!requirePlayer(playerId, res)) return;
+    if (!(await store.get('visits', playerId, tree.code))) return bad(res, 'Wake this tree first, then you can leave it a note.', 403);
+    const check = checkNote(req.body.text);
+    if (!check.ok) return bad(res, check.error);
+    if (!noteLimit(hash(`note:${req.ip}`))) return bad(res, 'That\'s a lot of notes. Try again later.', 429);
+    const timestamp = new Date().toISOString();
+    const note = {
+      partitionKey: tree.code, rowKey: `${timestamp}-${crypto.randomUUID().slice(0, 8)}`,
+      text: check.text, name: cleanName(req.body.name), timestamp, authorHash: hashPlayer(playerId), flags: 0,
+    };
+    await store.upsert('notes', note);
+    res.status(201).json({ id: note.rowKey, text: note.text, name: note.name, timestamp });
+  }));
+
+  app.post('/api/trees/:code/notes/:id/flag', wrap(async (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId } = req.body ?? {};
+    if (!requirePlayer(playerId, res)) return;
+    const note = await store.get('notes', code, req.params.id);
+    if (!note) return bad(res, 'unknown note', 404);
+    const flaggedBy = new Set(String(note.flaggedBy ?? '').split(',').filter(Boolean));
+    flaggedBy.add(hashPlayer(playerId).slice(0, 12));
+    await store.upsert('notes', { partitionKey: code, rowKey: note.rowKey, flags: flaggedBy.size, flaggedBy: [...flaggedBy].join(',') });
+    res.json({ ok: true, hidden: flaggedBy.size >= HIDE_AFTER_FLAGS });
   }));
 
   app.get('/api/personas', (_req, res) => res.json(personas));
@@ -177,6 +257,7 @@ export function createApp({
         // Only the outcome of the on-phone check is stored, never the phone's position.
         locationVerified: locationVerified === true ? 'yes' : locationVerified === false ? 'no' : 'unknown',
       });
+      logEvent({ treeCode: tree.code, kind: 'visit' });
     }
     const summary = await playerSummary(playerId, { withReports: true });
     res.status(existing ? 200 : 201).json({
@@ -225,6 +306,21 @@ export function createApp({
       flagSource = 'vision';
     }
 
+    // Rescue bonus: a photo of a tree that already has an open problem helps
+    // confirm or clear it, so it's worth extra points (once per tree per person).
+    let rescue = 0;
+    if (photoUrl) {
+      const before = await store.list('reports', tree.code);
+      const open = Object.values(treeHealth(before, tree.code).flags).some((f) => f.status === 'possible');
+      if (open && !(await store.get('bonuses', playerId, `${tree.code}-rescue`))) {
+        await store.upsert('bonuses', {
+          partitionKey: playerId, rowKey: `${tree.code}-rescue`, treeCode: tree.code,
+          points: RESCUE_BONUS, timestamp: new Date().toISOString(),
+        });
+        rescue = RESCUE_BONUS;
+      }
+    }
+
     const report = {
       partitionKey: tree.code,
       rowKey: crypto.randomUUID(),
@@ -241,6 +337,7 @@ export function createApp({
       speciesFeedback: '',
     };
     await store.upsert('reports', report);
+    logEvent({ time: report.timestamp, treeCode: tree.code, kind: 'report', flagType: flagType === 'none' ? null : flagType, season: season || null, hasPhoto: Boolean(photoUrl) });
 
     let flag = null;
     if (flagType !== 'none') {
@@ -274,6 +371,7 @@ export function createApp({
       speciesNote: analysis.speciesGuess ? null : analysis.error ?? 'species check is not configured on this server',
       flag,
       pestReport: flagType === 'pest' ? { url: PEST_REPORT_URL, hotline: PEST_HOTLINE } : null,
+      rescueBonus: rescue,
     });
   }));
 
@@ -302,20 +400,44 @@ export function createApp({
     if (!(await store.get('visits', playerId, tree.code))) return bad(res, 'Wake this tree first, then you can ask it things.', 403);
     if (!askLimit(hash(`ask:${req.ip}`))) return bad(res, 'The trees need a short rest. Try again soon.', 429);
 
+    const lang = isLanguage(req.body.lang) ? req.body.lang : 'en';
+
     const persona = personaById.get(tree.persona);
-    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question))).slice(0, 600);
-    let audio = null;
-    if (speechReady && persona) {
+    let retrieved = [];
+    if (tiger && embedQuery) {
       try {
-        audio = `data:audio/mpeg;base64,${(await voice(answer, persona)).toString('base64')}`;
+        retrieved = await tiger.searchFacts(tree.code, await embedQuery(question), 5);
+      } catch (e) {
+        console.warn('fact search failed:', e.message);
+      }
+    }
+    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang }))).slice(0, 600);
+    let audio = null;
+    const voiceName = persona && voiceFor(persona, lang);
+    if (speechReady && voiceName) {
+      try {
+        audio = `data:audio/mpeg;base64,${(await voice(answer, persona, voiceName)).toString('base64')}`;
       } catch (e) {
         console.warn('speech failed:', e.message);
       }
     }
-    res.json({ answer, audio });
+    res.json({ answer, audio, sources: retrieved.map((r) => ({ url: r.source_url, label: r.label })) });
   }));
 
   // ---------- grounds team view ----------
+
+  app.get('/api/trends', wrap(async (req, res) => {
+    const weeks = Math.min(52, Math.max(2, Number(req.query.weeks) || 8));
+    if (tiger) {
+      try {
+        return res.json({ source: 'TigerData', weeks: await tiger.trends(weeks), seasonTimeline: await tiger.seasonTimeline() });
+      } catch (e) {
+        console.warn('tigerdata trends failed, using app data:', e.message);
+      }
+    }
+    const reports = await store.list('reports');
+    res.json({ source: 'app', weeks: computeTrends(await store.list('visits'), reports, { weeks }), seasonTimeline: computeSeasonTimeline(reports) });
+  }));
 
   app.get('/api/health', wrap(async (_req, res) => {
     const reports = await store.list('reports');

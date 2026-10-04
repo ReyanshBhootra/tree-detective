@@ -24,13 +24,23 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 - Speech for each tree's voice
 - OpenAI for writing the stories and time-lapse images (ahead of time), and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
 - Custom Vision for spotting pests and damage in photos (species guesses use the free [Pl@ntNet API](https://my.plantnet.org) if you add a key)
+- Translator to tell each story in Spanish, Portuguese and Haitian Creole, and Speech voices for Spanish and Portuguese
+- OpenAI embeddings so trees can look up their sourced facts
 - Communication Services Email for the weekly grounds summary
 - Table Storage and Blob Storage for visits, reports and photos
 - App Service / Static Web Apps for hosting
 
+## TigerData
+
+Every visit, report and season sighting is also written to a TimescaleDB hypertable in TigerData. The grounds dashboard's week-by-week charts and "season firsts" come straight from it. Sourced facts are stored there with vector embeddings (pgvector, with pgvectorscale's DiskANN index when available), so when you ask a tree something it pulls the most relevant sourced facts, including campus-wide ones from `data/facts/campus.json`.
+
+Create a free service at [console.cloud.timescale.com](https://console.cloud.timescale.com), put its connection string in `TIGER_DATABASE_URL`, then run `npm run index-facts`. Without it, the charts are worked out from the app's own records.
+
 ## Pages
 
-- `/` the map. Drag the time travel slider to fade campus back to the real 1930s aerial photos of New Jersey. The Book button shows the trees you've met and your badges.
+- `/` the map. Drag the time travel slider to fade campus back to the real 1930s aerial photos of New Jersey. A line above the buttons shows how many trees are asleep, which ones need a check-up, and today's weather. The Book button shows the trees you've met and your badges.
+
+Inside a tree's story you can switch language, compare "then" with "today", ask it a question (type or hold the mic), and leave it a note for the next visitor. Sending a photo of a tree that already has a reported problem earns a rescue bonus.
 - `/grounds.html` tree health dashboard for the grounds team, with seasons, photos and a CSV export
 
 ## Things that keep it honest
@@ -50,11 +60,14 @@ To write a tree's story, put the facts and sources in `data/facts/<code>.json` (
 npm run stories     # writes the story in the tree's voice
 npm run timelapse   # makes the time-lapse images
 npm run audio       # records the narration
+npm run translate   # Spanish, Portuguese and Kreyòl versions (+ voices)
 npm run historic    # adds a real 1930s aerial photo of the spot to the time-lapse
 npm run qr          # printable QR tags, set PUBLIC_URL and QR_SECRET first
 ```
 
 `npm run check-content` tells you what each tree is still missing.
+
+For the "then and now" slider, take one photo of each tree from a spot you mark on the tag ("stand here"), save it as `web/reference/TD-001.jpg`, and add `"referencePhoto": "/reference/TD-001.jpg"` to that tree. Run `npm run timelapse -- --force` afterwards and every era gets drawn from that same photo, so the slider lines up. This needs an image model that supports edits, like gpt-image-1.
 
 To show what a tree does for campus each year, look it up on [i-Tree MyTree](https://mytree.itreetools.org) and add it to the tree in `data/trees.json`:
 

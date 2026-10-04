@@ -9,6 +9,8 @@ export const BADGES = [
   { id: 'owl', icon: '🦉', name: 'Night Owl', desc: 'Wake a tree after dark (8pm to 5am)', test: (c) => c.nightVisits >= 1 },
   { id: 'doctor', icon: '🩺', name: 'Tree Doctor', desc: 'Send a photo or problem report', test: (c) => c.reports >= 1 },
   { id: 'seasons', icon: '🍂', name: 'Season Watcher', desc: 'Log a season sighting', test: (c) => c.seasons >= 1 },
+  { id: 'lanternfly', icon: '🦗', name: 'Lanternfly Squad', desc: 'Report pests on a tree', test: (c) => c.pestReports >= 1 },
+  { id: 'rescuer', icon: '🛟', name: 'Rescuer', desc: 'Photograph a tree with an open problem', test: (c) => c.rescues >= 1 },
 ];
 
 export function bookCounts(summary, trees, personaOf) {
@@ -24,6 +26,8 @@ export function bookCounts(summary, trees, personaOf) {
     }).length,
     reports: summary?.reportsSent ?? 0,
     seasons: summary?.seasonsLogged ?? 0,
+    pestReports: summary?.pestReports ?? 0,
+    rescues: summary?.rescues ?? 0,
   };
 }
 

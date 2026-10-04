@@ -157,6 +157,7 @@ button { font: inherit; }
 
 /* ---------- sheets / dialogs ---------- */
 dialog.sheet {
+  overflow-x: hidden;
   width: min(560px, calc(100vw - 24px));
   max-height: calc(100dvh - 32px);
   padding: 22px 22px 26px;
@@ -360,3 +361,69 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* language picker */
+.lang-picker { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
+.lang-picker button {
+  border: 2px solid var(--parchment-2); background: #fff; color: var(--ink);
+  border-radius: 999px; padding: 4px 12px; font: 700 0.8rem var(--font-head); cursor: pointer;
+}
+.lang-picker button[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
+.lang-note { margin: 6px 0 0; }
+
+/* then and now */
+.tl-frame { position: relative; }
+.compare { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; --cut: 50%; }
+.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; clip-path: inset(0 0 0 var(--cut)); }
+.compare::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: var(--cut); width: 3px;
+  transform: translateX(-50%); background: var(--glow); box-shadow: 0 0 10px var(--glow); pointer-events: none;
+}
+.compare-tag {
+  position: absolute; top: 10px; padding: 3px 10px; border-radius: 999px;
+  background: rgba(15, 28, 23, 0.8); color: var(--parchment); font: 700 0.75rem var(--font-head);
+}
+.compare-tag.then { left: 10px; }
+.compare-tag.now { right: 10px; }
+.compare input { position: absolute; left: 12px; right: 12px; bottom: 10px; width: calc(100% - 24px); accent-color: var(--glow); }
+.btn-small { min-height: 36px; padding: 0 14px; font-size: 0.85rem; margin: 10px auto 0; display: flex; }
+
+/* hold to talk */
+.btn.talk { width: 46px; height: 46px; min-height: 46px; background: #fff; color: var(--ink); border: 2px solid var(--parchment-2); box-shadow: none; }
+.btn.talk.listening { background: var(--danger); color: #fff; border-color: var(--danger); animation: bump 1s ease infinite; }
+
+/* notes */
+.notes { margin-top: 18px; }
+.notes h3 { font-size: 1.05rem; color: var(--leaf-deep); margin-bottom: 8px; }
+.notes-list { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 8px; }
+.notes-list li { background: #fff; border-radius: 12px; padding: 10px 12px; }
+.notes-list p { margin: 0 0 4px; font-family: var(--font-head); font-weight: 500; font-size: 1rem; }
+.notes-list small { color: var(--ink-soft); }
+.link-btn { background: none; border: none; color: var(--ink-soft); text-decoration: underline; cursor: pointer; font: inherit; font-size: 0.75rem; margin-left: 6px; }
+.note-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.note-form textarea {
+  width: 100%; border-radius: 12px; border: 2px solid var(--parchment-2); padding: 10px 12px; resize: vertical;
+  font: 500 1rem var(--font-body); color: var(--ink); background: #fff;
+}
+.note-form textarea:focus, .note-form input:focus { outline: none; border-color: var(--leaf-deep); }
+.note-form .row input { text-transform: none; }
+.row > .btn { flex: none; }
+
+/* problem marks on the map */
+.tree-alert {
+  position: absolute; left: 0; top: 0; z-index: 2; width: 20px; height: 20px; border-radius: 50%;
+  font: 700 13px/20px var(--font-head); text-align: center; color: #fff; border: 2px solid #fff;
+}
+.tree-alert.possible { background: var(--warn); }
+.tree-alert.confirmed { background: var(--danger); animation: bump 1.6s ease infinite; }
+
+/* status line above the buttons */
+.status-line {
+  position: fixed; z-index: 500; left: 50%; transform: translateX(-50%);
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 58px);
+  margin: 0; padding: 6px 14px; border-radius: 999px; white-space: nowrap; max-width: calc(100vw - 32px);
+  overflow: hidden; text-overflow: ellipsis;
+  background: rgba(22, 40, 31, 0.9); border: 1px solid rgba(255, 224, 138, 0.25);
+  font: 600 0.85rem var(--font-head); color: var(--parchment);
+}
+@media (max-width: 520px) { .status-line { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 116px); font-size: 0.78rem; } }

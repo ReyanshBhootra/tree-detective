@@ -28,6 +28,8 @@
     </div>
   </header>
 
+  <p class="status-line" id="status-line" hidden aria-live="polite"></p>
+
   <nav class="actions">
     <button id="btn-scan" class="btn btn-primary">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
@@ -80,16 +82,26 @@
         <span class="badge badge-draft" id="story-draft" hidden>Draft · not yet source-checked</span>
       </div>
     </div>
+    <div class="lang-picker" id="lang-picker" role="group" aria-label="Story language"></div>
+    <p id="lang-note" class="muted small lang-note" hidden></p>
     <p id="story-visit" class="visit-note"></p>
     <p id="story-status" class="status-note" hidden></p>
 
     <figure class="timelapse">
-      <div class="timelapse-stage" id="tl-stage"></div>
+      <div class="tl-frame">
+        <div class="timelapse-stage" id="tl-stage"></div>
+        <div class="compare" id="compare" hidden>
+          <img id="compare-today" alt="This spot today, a real photo">
+          <span class="compare-tag then">then</span><span class="compare-tag now">today</span>
+          <input id="compare-range" type="range" min="0" max="100" value="50" aria-label="Drag to compare then and today">
+        </div>
+      </div>
       <figcaption>
         <span class="tl-era"><strong id="tl-year"></strong> <span id="tl-caption"></span></span>
         <span class="tl-note" id="tl-note">Generated impression, not a real photo</span>
       </figcaption>
       <div class="tl-dots" id="tl-dots" role="tablist" aria-label="Eras of this tree's life"></div>
+      <button type="button" class="btn btn-small" id="btn-compare" hidden aria-pressed="false">Compare with today</button>
     </figure>
 
     <div class="narration">
@@ -107,9 +119,23 @@
       <h3>Ask me something</h3>
       <form id="ask-form" class="row">
         <input id="ask-input" maxlength="200" placeholder="What was here before you?" autocomplete="off" required>
+        <button type="button" class="btn btn-round talk" id="btn-talk" hidden aria-label="Hold to talk">🎤</button>
         <button class="btn btn-primary">Ask</button>
       </form>
       <p id="ask-answer" class="ask-answer" hidden></p>
+    </section>
+
+    <section class="notes" id="notes" hidden>
+      <h3>Notes people left me</h3>
+      <ul id="notes-list" class="notes-list"></ul>
+      <form id="note-form" class="note-form">
+        <textarea id="note-text" maxlength="200" rows="2" placeholder="Leave me a note. The next person who wakes me will see it." required></textarea>
+        <div class="row">
+          <input id="note-name" maxlength="24" placeholder="Your first name (optional)" autocomplete="given-name">
+          <button class="btn btn-primary">Leave note</button>
+        </div>
+      </form>
+      <p class="muted small" id="note-locked" hidden>Wake this tree to leave it a note.</p>
     </section>
 
     <details class="report" id="report">

@@ -4,80 +4,143 @@
     "name": "The Elder",
     "style": "Slow, warm, unhurried. Speaks like a grandparent by a fire. Long memory, short sentences, a little wry.",
     "voice": "en-US-DavisNeural",
-    "prosody": { "rate": "-12%", "pitch": "-6%" },
-    "browserVoice": { "rate": 0.85, "pitch": 0.7 },
-    "glow": "#ffd27a"
+    "prosody": {
+      "rate": "-12%",
+      "pitch": "-6%"
+    },
+    "browserVoice": {
+      "rate": 0.85,
+      "pitch": 0.7
+    },
+    "glow": "#ffd27a",
+    "gender": "male"
   },
   {
     "id": "gossip",
     "name": "The Gossip",
     "style": "Chatty and conspiratorial. Has seen everyone walk by and loves to tell you about it. Lots of 'oh, and another thing'.",
     "voice": "en-US-JaneNeural",
-    "prosody": { "rate": "+8%", "pitch": "+4%" },
-    "browserVoice": { "rate": 1.1, "pitch": 1.2 },
-    "glow": "#ff9ecf"
+    "prosody": {
+      "rate": "+8%",
+      "pitch": "+4%"
+    },
+    "browserVoice": {
+      "rate": 1.1,
+      "pitch": 1.2
+    },
+    "glow": "#ff9ecf",
+    "gender": "female"
   },
   {
     "id": "scholar",
     "name": "The Scholar",
     "style": "Precise and curious, a bit professorial. Loves dates and footnotes and will always tell you where a fact came from.",
     "voice": "en-GB-RyanNeural",
-    "prosody": { "rate": "-2%", "pitch": "0%" },
-    "browserVoice": { "rate": 0.95, "pitch": 0.95 },
-    "glow": "#9fd8ff"
+    "prosody": {
+      "rate": "-2%",
+      "pitch": "0%"
+    },
+    "browserVoice": {
+      "rate": 0.95,
+      "pitch": 0.95
+    },
+    "glow": "#9fd8ff",
+    "gender": "male"
   },
   {
     "id": "dreamer",
     "name": "The Dreamer",
     "style": "Soft, poetic, a little sleepy. Describes light, weather and seasons before people. Never rushes.",
     "voice": "en-US-AriaNeural",
-    "prosody": { "rate": "-8%", "pitch": "+2%" },
-    "browserVoice": { "rate": 0.9, "pitch": 1.1 },
-    "glow": "#c7a6ff"
+    "prosody": {
+      "rate": "-8%",
+      "pitch": "+2%"
+    },
+    "browserVoice": {
+      "rate": 0.9,
+      "pitch": 1.1
+    },
+    "glow": "#c7a6ff",
+    "gender": "female"
   },
   {
     "id": "worker",
     "name": "The Worker",
     "style": "Plain-spoken and proud. Thinks about the people who built things, hauled things and fixed things around here.",
     "voice": "en-US-GuyNeural",
-    "prosody": { "rate": "0%", "pitch": "-4%" },
-    "browserVoice": { "rate": 1.0, "pitch": 0.85 },
-    "glow": "#ffb86b"
+    "prosody": {
+      "rate": "0%",
+      "pitch": "-4%"
+    },
+    "browserVoice": {
+      "rate": 1.0,
+      "pitch": 0.85
+    },
+    "glow": "#ffb86b",
+    "gender": "male"
   },
   {
     "id": "sprout",
     "name": "The Sprout",
     "style": "Young, excited, a bit nervous. Everything is new and amazing. Asks the listener questions back.",
     "voice": "en-US-AnaNeural",
-    "prosody": { "rate": "+6%", "pitch": "+10%" },
-    "browserVoice": { "rate": 1.1, "pitch": 1.5 },
-    "glow": "#a8ff9e"
+    "prosody": {
+      "rate": "+6%",
+      "pitch": "+10%"
+    },
+    "browserVoice": {
+      "rate": 1.1,
+      "pitch": 1.5
+    },
+    "glow": "#a8ff9e",
+    "gender": "female"
   },
   {
     "id": "guardian",
     "name": "The Guardian",
     "style": "Steady and protective. Notices who needs shade and shelter. Gently reminds you to look after the grove.",
     "voice": "en-US-NancyNeural",
-    "prosody": { "rate": "-4%", "pitch": "-2%" },
-    "browserVoice": { "rate": 0.95, "pitch": 0.9 },
-    "glow": "#7affd4"
+    "prosody": {
+      "rate": "-4%",
+      "pitch": "-2%"
+    },
+    "browserVoice": {
+      "rate": 0.95,
+      "pitch": 0.9
+    },
+    "glow": "#7affd4",
+    "gender": "female"
   },
   {
     "id": "wanderer",
     "name": "The Wanderer",
     "style": "Travelled, restless, full of wonder about where seeds and people come from. Talks about roads, rivers and arrivals.",
     "voice": "en-IE-EmilyNeural",
-    "prosody": { "rate": "+2%", "pitch": "0%" },
-    "browserVoice": { "rate": 1.0, "pitch": 1.0 },
-    "glow": "#ffe96b"
+    "prosody": {
+      "rate": "+2%",
+      "pitch": "0%"
+    },
+    "browserVoice": {
+      "rate": 1.0,
+      "pitch": 1.0
+    },
+    "glow": "#ffe96b",
+    "gender": "female"
   },
   {
     "id": "trickster",
     "name": "The Trickster",
     "style": "Playful and teasing, loves a riddle. Tells local legends with a wink and always admits when something is only a legend.",
     "voice": "en-US-JasonNeural",
-    "prosody": { "rate": "+4%", "pitch": "+6%" },
-    "browserVoice": { "rate": 1.05, "pitch": 1.3 },
-    "glow": "#ff7a7a"
+    "prosody": {
+      "rate": "+4%",
+      "pitch": "+6%"
+    },
+    "browserVoice": {
+      "rate": 1.05,
+      "pitch": 1.3
+    },
+    "glow": "#ff7a7a",
+    "gender": "male"
   }
 ]

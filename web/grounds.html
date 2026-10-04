@@ -35,6 +35,23 @@
     </div>
   </section>
 
+  <section class="trends" aria-labelledby="trends-h">
+    <h2 id="trends-h">Week by week</h2>
+    <p class="muted small" id="trends-source"></p>
+    <div class="charts">
+      <figure class="chart"><figcaption>Tree visits per week</figcaption><div id="chart-visits"></div></figure>
+      <figure class="chart"><figcaption>Community reports per week</figcaption><div id="chart-reports"></div></figure>
+    </div>
+    <details class="table-view">
+      <summary>Show as a table</summary>
+      <div class="table-wrap"><table><thead><tr><th>Week of</th><th>Visits</th><th>Reports</th><th>Pests</th><th>Damage</th><th>Dying</th><th>Season sightings</th></tr></thead><tbody id="trend-rows"></tbody></table></div>
+    </details>
+    <h3>Season firsts</h3>
+    <p class="muted small">The first time each season sign was reported on each tree. Over the years this shows whether spring is coming earlier.</p>
+    <div class="table-wrap"><table><thead><tr><th>Tree</th><th>Sign</th><th>Year</th><th>First seen</th></tr></thead><tbody id="season-rows"></tbody></table></div>
+  </section>
+  <div class="tooltip" id="tooltip" role="status" hidden></div>
+
   <section>
     <h2>Every tagged tree</h2>
     <div class="table-wrap">

@@ -14,6 +14,13 @@ const trees = [
 ];
 let vision = async () => ({ available: true, speciesGuess: 'Pin Oak', confidence: 0.77, alternatives: [], suggestedFlag: null });
 let askedWith = null;
+const tigerEvents = [];
+const fakeTiger = {
+  async logEvent(e) { tigerEvents.push(e); },
+  async trends() { throw new Error('offline'); }, // exercise the fallback
+  async seasonTimeline() { return []; },
+  async searchFacts(code) { return [{ text: 'The trolley ran past here.', label: 'Fact', source_url: 'https://campus-src', tree_code: null, code }]; },
+};
 const app = createApp({
   env, trees, personas: [{ id: 'elder', name: 'The Elder', style: 'Slow.' }], store: new JsonStore(path.join(tmp, 'data')),
   photos: { kind: 'local', dir: env.UPLOAD_DIR, save: async (name) => `/uploads/${name}` },
@@ -21,6 +28,9 @@ const app = createApp({
   askEnabled: true,
   askModel: async (messages) => { askedWith = messages; return 'I remember the old well. That is all I know.'; },
   facts: () => ({ label: 'Fact', facts: [{ text: 'A well stood here.', sourceUrl: 'https://src' }] }),
+  weather: async () => ({ tempF: 88, summary: 'Sunny', at: 't' }),
+  tiger: fakeTiger,
+  embedQuery: async () => [0.5, 0.5],
 });
 const server = app.listen(0);
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -152,8 +162,11 @@ test('a season sighting on its own is a valid report and shows on the tree', asy
 
 test('asking a tree: only after waking it, answer comes from the model', async () => {
   assert.equal((await json('POST', '/api/trees/TD-002/ask', { playerId: P1, question: 'what was here?' })).status, 403);
-  const r = await json('POST', '/api/trees/TD-001/ask', { playerId: P1, question: 'what was here?' });
+  const r = await json('POST', '/api/trees/TD-001/ask', { playerId: P1, question: 'what was here?', lang: 'es' });
   assert.equal(r.status, 200);
+  assert.match(askedWith[0].content, /The trolley ran past here/);
+  assert.match(askedWith[0].content, /Answer in Español/);
+  assert.deepEqual(r.body.sources, [{ url: 'https://campus-src', label: 'Fact' }]);
   assert.equal(r.body.answer, 'I remember the old well. That is all I know.');
   assert.equal(r.body.audio, null);
   assert.match(askedWith[0].content, /A well stood here/);
@@ -213,4 +226,60 @@ test('signed tags: links without the right key don\'t wake trees', async () => {
   } finally {
     srv.close();
   }
+});
+
+test('rescue bonus: a photo of a tree with an open problem earns extra points once', async () => {
+  const P = 'rescuer-00001';
+  const form = (photo) => {
+    const f = new FormData();
+    f.append('playerId', P);
+    f.append('flagType', 'none');
+    if (photo) f.append('photo', new Blob([Buffer.from('jpg')], { type: 'image/jpeg' }), 'a.jpg');
+    else f.append('season', 'bare');
+    return f;
+  };
+  const send = (photo) => fetch(`${base}/api/trees/TD-001/reports`, { method: 'POST', body: form(photo) }).then((r) => r.json());
+  // TD-001 has no open problem yet: no bonus
+  assert.equal((await send(true)).rescueBonus, 0);
+  await report('someone-flags-1', 'damage'); // on TD-002 (the helper's tree)
+  const f = new FormData();
+  f.append('playerId', 'opener-000001'); f.append('flagType', 'damage');
+  await fetch(`${base}/api/trees/TD-001/reports`, { method: 'POST', body: f });
+  assert.equal((await send(true)).rescueBonus, 15);
+  assert.equal((await send(true)).rescueBonus, 0, 'once per tree per person');
+  assert.equal((await send(false)).rescueBonus, 0, 'needs a photo');
+  const me = await json('GET', `/api/players/${P}`);
+  assert.equal(me.body.totalPoints, 15);
+  assert.equal(me.body.rescues, 1);
+});
+
+test('map status, weather and trends', async () => {
+  const st = await json('GET', '/api/status');
+  assert.equal(st.body['TD-002'], 'confirmed');
+  assert.equal(st.body['TD-001'], 'possible');
+  const w = await json('GET', '/api/weather');
+  assert.match(w.body.line, /88°F/);
+  const t = await json('GET', '/api/trends?weeks=4');
+  assert.equal(t.body.source, 'app', 'falls back when TigerData errors');
+  assert.equal(t.body.weeks.length, 4);
+  assert.ok(t.body.weeks.at(-1).reports >= 1);
+  assert.ok(t.body.seasonTimeline.some((s) => s.season === 'color-change'));
+  assert.ok(tigerEvents.some((e) => e.kind === 'visit') && tigerEvents.some((e) => e.kind === 'report'));
+});
+
+test('notes: only after waking, filtered, hidden after two reports', async () => {
+  assert.equal((await json('POST', '/api/trees/TD-002/notes', { playerId: P1, text: 'hi there' })).status, 403);
+  const bad = await json('POST', '/api/trees/TD-001/notes', { playerId: P1, text: 'go to www.x.com' });
+  assert.equal(bad.status, 400);
+  const ok = await json('POST', '/api/trees/TD-001/notes', { playerId: P1, text: 'Thanks for the shade!', name: 'Maya' });
+  assert.equal(ok.status, 201);
+  let notes = (await json('GET', '/api/trees/TD-001/notes')).body;
+  assert.deepEqual(notes.map((n) => [n.text, n.name]), [['Thanks for the shade!', 'Maya']]);
+  assert.ok(!('authorHash' in notes[0]));
+  await json('POST', `/api/trees/TD-001/notes/${encodeURIComponent(ok.body.id)}/flag`, { playerId: 'flagger-0001' });
+  await json('POST', `/api/trees/TD-001/notes/${encodeURIComponent(ok.body.id)}/flag`, { playerId: 'flagger-0001' });
+  assert.equal((await json('GET', '/api/trees/TD-001/notes')).body.length, 1, 'same person twice counts once');
+  await json('POST', `/api/trees/TD-001/notes/${encodeURIComponent(ok.body.id)}/flag`, { playerId: 'flagger-0002' });
+  notes = (await json('GET', '/api/trees/TD-001/notes')).body;
+  assert.equal(notes.length, 0);
 });

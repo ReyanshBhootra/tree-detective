@@ -177,7 +177,7 @@ test('book badges come from the summary', async () => {
   const late = new Date(); late.setHours(22, 0, 0, 0);
   const noon = new Date(); noon.setHours(12, 0, 0, 0);
   const c = bookCounts({ visited: [{ code: 'A', timestamp: late.toISOString() }, { code: 'B', timestamp: noon.toISOString() }], reportsSent: 1, seasonsLogged: 0 }, trees, (t) => t.persona);
-  assert.deepEqual(c, { woken: 2, total: 2, personas: 2, nightVisits: 1, reports: 1, seasons: 0 });
+  assert.deepEqual(c, { woken: 2, total: 2, personas: 2, nightVisits: 1, reports: 1, seasons: 0, pestReports: 0, rescues: 0 });
   const got = BADGES.filter((b) => b.test(c)).map((b) => b.id);
   assert.deepEqual(got, ['first', 'whole', 'owl', 'doctor']);
 });
@@ -216,6 +216,112 @@ test('ask prompt keeps the tree to its own facts', async () => {
   );
   assert.match(m[0].content, /Use ONLY the information below/);
   assert.match(m[0].content, /A well stood here\./);
-  assert.match(m[0].content, /local legends/);
+  assert.match(m[0].content, /Local Legend is a legend/);
   assert.equal(m[1].content, 'what was here?');
+});
+
+test('languages: voices follow the persona, Kreyòl is text only', async () => {
+  const { voiceFor, isLanguage } = await import('../server/lib/languages.js');
+  assert.equal(voiceFor({ voice: 'en-US-DavisNeural', gender: 'male' }, 'es'), 'es-US-AlonsoNeural');
+  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'pt'), 'pt-BR-FranciscaNeural');
+  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'en'), 'en-US-JaneNeural');
+  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'ht'), null);
+  assert.equal(isLanguage('ht'), true);
+  assert.equal(isLanguage('toString'), false);
+  const personas = loadPersonas();
+  assert.ok(personas.every((p) => p.gender === 'male' || p.gender === 'female'));
+});
+
+test('weather: lines follow the real reading, NWS lookup is cached', async () => {
+  const { weatherLine, createWeather } = await import('../server/lib/weather.js');
+  assert.match(weatherLine({ tempF: 88, summary: 'Sunny' }), /88°F.*shade/);
+  assert.match(weatherLine({ tempF: 60, summary: 'Light Rain' }), /rain/);
+  assert.match(weatherLine({ tempF: 31, summary: 'Clear' }), /31°F/);
+  assert.equal(weatherLine(null), null);
+  let calls = 0;
+  const fake = async (url, opts) => {
+    calls++;
+    assert.match(opts.headers['User-Agent'], /tree-detective/);
+    if (url.includes('/points/')) return { ok: true, json: async () => ({ properties: { forecastHourly: 'https://api.weather.gov/x/hourly' } }) };
+    return { ok: true, json: async () => ({ properties: { periods: [{ temperature: 30, temperatureUnit: 'C', shortForecast: 'Sunny', startTime: 't' }] } }) };
+  };
+  const get = createWeather({ lat: 40.742, lng: -74.179, fetchImpl: fake });
+  assert.deepEqual(await get(), { tempF: 86, summary: 'Sunny', at: 't' });
+  await get();
+  assert.equal(calls, 2, 'second call comes from the cache');
+  const broken = createWeather({ lat: 1, lng: 1, fetchImpl: async () => ({ ok: false, status: 500 }) });
+  assert.equal(await broken(), null);
+});
+
+test('notes: kind, short, no links or phone numbers', async () => {
+  const { checkNote, cleanName } = await import('../server/lib/notes.js');
+  assert.deepEqual(checkNote('  thank you   for the shade '), { ok: true, text: 'thank you for the shade' });
+  assert.equal(checkNote('a').ok, false);
+  assert.equal(checkNote('x'.repeat(201)).ok, false);
+  assert.equal(checkNote('visit www.spam.com').ok, false);
+  assert.equal(checkNote('call me 201-555-0123').ok, false);
+  assert.equal(checkNote('follow @someone').ok, false);
+  assert.equal(checkNote('you are shit').ok, false);
+  assert.equal(cleanName(' Maya <b> '), 'Maya b');
+  assert.equal(cleanName('José'), 'José');
+});
+
+test('trends: weekly buckets and season firsts', async () => {
+  const { computeTrends, computeSeasonTimeline, weekStart } = await import('../server/lib/trends.js');
+  assert.equal(weekStart('2026-10-04T12:00:00Z'), '2026-09-28'); // Sunday belongs to the week starting Monday
+  assert.equal(weekStart('2026-09-28T00:00:00Z'), '2026-09-28');
+  const now = new Date('2026-10-04T12:00:00Z');
+  const t = computeTrends(
+    [{ timestamp: '2026-10-01T10:00:00Z' }, { timestamp: '2026-09-22T10:00:00Z' }, { timestamp: '2025-01-01T00:00:00Z' }],
+    [{ timestamp: '2026-10-02T10:00:00Z', flagType: 'pest', photoUrl: '/x', season: '' },
+     { timestamp: '2026-10-02T11:00:00Z', flagType: 'none', photoUrl: '', season: 'color-change' }],
+    { weeks: 2, now },
+  );
+  assert.deepEqual(t.map((w) => w.week), ['2026-09-21', '2026-09-28']);
+  assert.deepEqual(t[1], { week: '2026-09-28', visits: 1, reports: 1, seasons: 1, flags: { pest: 1, damage: 0, dying: 0 } });
+  assert.equal(t[0].visits, 1);
+  const s = computeSeasonTimeline([
+    { treeCode: 'A', season: 'bare', timestamp: '2026-12-02T00:00:00Z' },
+    { treeCode: 'A', season: 'bare', timestamp: '2026-11-20T00:00:00Z' },
+    { treeCode: 'A', season: 'bare', timestamp: '2025-11-25T00:00:00Z' },
+  ]);
+  assert.deepEqual(s.map((x) => [x.year, x.firstSeen.slice(0, 10)]), [[2025, '2025-11-25'], [2026, '2026-11-20']]);
+});
+
+test('TigerData: schema, hypertable, vector search and event logging', async () => {
+  const { createTiger, SCHEMA, toVector } = await import('../server/lib/tiger.js');
+  assert.equal(createTiger({}), null);
+  const queries = [];
+  const pool = {
+    async query(sql, params) {
+      queries.push({ sql, params });
+      if (/vectorscale/.test(sql)) throw new Error('not installed');
+      if (/time_bucket/.test(sql)) return { rows: [{ week: '2026-09-28', visits: '3', reports: '2', seasons: '1', pest: '1', damage: '0', dying: '0' }] };
+      if (/FROM facts/.test(sql)) return { rows: [{ text: 'A well stood here.', label: 'Fact', source_url: 'https://src', tree_code: null }] };
+      return { rows: [] };
+    },
+    async end() {},
+  };
+  const tiger = createTiger({}, { pool });
+  await tiger.logEvent({ treeCode: 'TD-001', kind: 'visit' });
+  assert.ok(queries.some((q) => /create_hypertable\('events'/.test(q.sql)));
+  assert.ok(queries.some((q) => /USING hnsw/.test(q.sql)), 'falls back to pgvector when pgvectorscale is missing');
+  assert.equal(queries.filter((q) => q.sql === SCHEMA[0]).length, 1, 'schema runs once');
+  const ev = queries.find((q) => /INSERT INTO events/.test(q.sql));
+  assert.deepEqual(ev.params.slice(1), ['TD-001', 'visit', null, null, false]);
+  assert.deepEqual((await tiger.trends(8))[0], { week: '2026-09-28', visits: 3, reports: 2, seasons: 1, flags: { pest: 1, damage: 0, dying: 0 } });
+  const hits = await tiger.searchFacts('TD-001', [0.1, 0.2], 3);
+  assert.equal(hits[0].text, 'A well stood here.');
+  const search = queries.find((q) => /FROM facts/.test(q.sql));
+  assert.deepEqual(search.params, ['TD-001', '[0.1,0.2]', 3]);
+  assert.equal(toVector([1, 2]), '[1,2]');
+});
+
+test('ask prompt includes retrieved campus facts and the chosen language', async () => {
+  const { buildAskMessages } = await import('../server/lib/ask.js');
+  const m = buildAskMessages({ name: 'Riddle', story: 'Hi.' }, null, null, 'q', {
+    lang: 'ht', retrieved: [{ text: 'A trolley ran here.', label: 'Fact', source_url: 'https://s', tree_code: null }],
+  });
+  assert.match(m[0].content, /Campus fact \(Fact, source https:\/\/s\): A trolley ran here\./);
+  assert.match(m[0].content, /Answer in Kreyòl \(language code ht\)/);
 });

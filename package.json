@@ -19,7 +19,9 @@
     "qr": "node scripts/make-qr.js",
     "check-content": "node scripts/check-content.js",
     "historic": "node scripts/fetch-historic.js",
-    "digest": "node scripts/send-digest.js"
+    "digest": "node scripts/send-digest.js",
+    "translate": "node scripts/translate-stories.js",
+    "index-facts": "node scripts/index-facts.js"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
@@ -27,6 +29,7 @@
     "@azure/storage-blob": "^12.26.0",
     "express": "^4.21.2",
     "multer": "^2.0.0",
+    "pg": "^8.23.1",
     "qrcode": "^1.5.4"
   },
   "optionalDependencies": {

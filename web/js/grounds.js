@@ -81,11 +81,72 @@ async function render(data) {
   }
 }
 
+// One single-series bar chart: weeks along the bottom, count up the side.
+function barChart(el, weeks, key, label) {
+  const W = 320, H = 150, pad = { l: 26, r: 6, t: 8, b: 22 };
+  const vals = weeks.map((w) => w[key]);
+  const max = Math.max(1, ...vals);
+  const step = (W - pad.l - pad.r) / weeks.length;
+  const bw = Math.max(4, step - 2); // 2px gap between bars
+  const y = (v) => pad.t + (H - pad.t - pad.b) * (1 - v / max);
+  const ticks = [0, Math.ceil(max / 2), max].filter((v, i, a) => a.indexOf(v) === i);
+  const fmt = (d) => new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+    ${ticks.map((t) => `<line class="grid" x1="${pad.l}" x2="${W - pad.r}" y1="${y(t)}" y2="${y(t)}"/><text class="axis" x="${pad.l - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}
+    ${weeks.map((w, i) => {
+      const x = pad.l + i * step + (step - bw) / 2;
+      const top = y(w[key]);
+      const h = H - pad.b - top;
+      const r = Math.min(4, h / 2, bw / 2);
+      const path = h > 0
+        ? `M${x},${H - pad.b} V${top + r} Q${x},${top} ${x + r},${top} H${x + bw - r} Q${x + bw},${top} ${x + bw},${top + r} V${H - pad.b} Z`
+        : '';
+      return `<path class="bar" data-i="${i}" d="${path}"/>
+        <rect class="hit" data-i="${i}" x="${pad.l + i * step}" y="${pad.t}" width="${step}" height="${H - pad.t - pad.b}"/>
+        ${i % 2 === weeks.length % 2 ? '' : `<text class="axis" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${fmt(w.week)}</text>`}`;
+    }).join('')}
+  </svg>`;
+  const tip = $('tooltip');
+  el.querySelectorAll('.hit').forEach((h) => {
+    const i = Number(h.dataset.i);
+    const bar = el.querySelector(`.bar[data-i="${i}"]`);
+    h.addEventListener('mousemove', (e) => {
+      tip.hidden = false;
+      tip.textContent = `Week of ${fmt(weeks[i].week)}: ${weeks[i][key]} ${key}`;
+      tip.style.left = `${e.clientX}px`;
+      tip.style.top = `${e.clientY}px`;
+      bar.classList.add('hover');
+    });
+    h.addEventListener('mouseleave', () => { tip.hidden = true; bar.classList.remove('hover'); });
+  });
+}
+
+async function loadTrends(names) {
+  try {
+    const t = await (await fetch(`${API}/api/trends?weeks=8`)).json();
+    $('trends-source').textContent = t.source === 'TigerData'
+      ? 'Computed live in TigerData (TimescaleDB time buckets).'
+      : 'Computed from the app\'s own records. Connect TigerData for the full history.';
+    barChart($('chart-visits'), t.weeks, 'visits', 'Tree visits per week');
+    barChart($('chart-reports'), t.weeks, 'reports', 'Community reports per week');
+    $('trend-rows').innerHTML = t.weeks.map((w) => `<tr><td>${esc(w.week)}</td><td>${w.visits}</td><td>${w.reports}</td>
+      <td>${w.flags.pest}</td><td>${w.flags.damage}</td><td>${w.flags.dying}</td><td>${w.seasons}</td></tr>`).join('');
+    $('season-rows').innerHTML = t.seasonTimeline.length
+      ? t.seasonTimeline.map((r) => `<tr><td>${esc(names.get(r.treeCode) ?? r.treeCode)}</td><td>${esc(SEASON[r.season] ?? r.season)}</td>
+          <td>${r.year}</td><td>${new Date(r.firstSeen).toLocaleDateString()}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="muted">No season sightings yet.</td></tr>';
+  } catch (e) {
+    $('trends-source').textContent = `Trends unavailable (${e.message}).`;
+  }
+}
+
 async function load() {
   try {
     const res = await fetch(`${API}/api/health`);
     if (!res.ok) throw new Error(res.status);
-    await render(await res.json());
+    const data = await res.json();
+    await render(data);
+    loadTrends(new Map(data.trees.map((t) => [t.code, t.name])));
   } catch (e) {
     $('rows').innerHTML = `<tr><td colspan="6">Could not load reports (${esc(e.message)}).</td></tr>`;
   }

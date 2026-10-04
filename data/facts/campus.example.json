@@ -1,0 +1,10 @@
+{
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "A checked fact about campus or the neighborhood in general, that any tree could mention.",
+      "sourceUrl": "https://example.org/the-archive-page-you-read",
+      "sourceNote": "Archive name, collection, page or item number"
+    }
+  ]
+}

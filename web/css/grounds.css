@@ -54,3 +54,21 @@ tr:last-child td { border-bottom: none; }
 footer { margin-top: 24px; }
 .pest-note { margin: 20px 0 0; padding: 12px 16px; border-radius: 14px; background: #fdebc8; color: #5c3b00; font-weight: 600; }
 @media (prefers-color-scheme: dark) { .pest-note { background: #3a2c10; color: #f6dca3; } }
+
+.trends h3 { font: 600 1.05rem 'Fredoka', sans-serif; margin: 24px 0 4px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.chart { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 8px; }
+.chart figcaption { font-weight: 700; margin-bottom: 8px; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .bar { fill: var(--accent); }
+.chart .bar.hover { fill: var(--ink); }
+.chart .axis { fill: var(--muted); font-size: 11px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .hit { fill: transparent; cursor: default; }
+.table-view { margin-top: 10px; }
+.table-view summary { cursor: pointer; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.trends table { min-width: 520px; }
+.tooltip {
+  position: fixed; z-index: 1000; pointer-events: none; padding: 6px 10px; border-radius: 8px;
+  background: var(--ink); color: var(--bg); font-size: 0.85rem; font-weight: 600; transform: translate(-50%, calc(-100% - 10px));
+}

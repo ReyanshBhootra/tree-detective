@@ -100,7 +100,9 @@ function treeIcon(tree, { justWoke = false } = {}) {
     html: `<div class="tree ${awake ? 'awake' : 'sleeping'} ${justWoke ? 'just-woke' : ''}" style="--tree-glow:${glow}">
       ${treeSvg(awake ? glow : '#556')}
       ${awake ? '' : '<span class="zzz">z z</span>'}
-    </div><span class="tree-name">${escapeHtml(tree.name)}</span>`,
+    </div>
+    ${state.status?.[tree.code] && state.status[tree.code] !== 'ok'
+      ? `<span class="tree-alert ${state.status[tree.code]}" title="${state.status[tree.code] === 'confirmed' ? 'Confirmed problem' : 'Possible problem reported'}">!</span>` : ''}<span class="tree-name">${escapeHtml(tree.name)}</span>`,
   });
 }
 
@@ -141,6 +143,7 @@ function applySummary(summary) {
   $('points').textContent = state.points;
   $('awake').textContent = state.visited.size;
   $('total').textContent = state.trees.length;
+  renderStatusLine();
 }
 
 async function refreshSummary() {
@@ -248,7 +251,9 @@ class Narrator {
       const pv = persona(this.tree).browserVoice ?? {};
       u.rate = pv.rate ?? 1;
       u.pitch = pv.pitch ?? 1;
-      const voices = speechSynthesis.getVoices().filter((v) => v.lang?.startsWith('en'));
+      const lang = (this.tree.locale ?? 'en-US').slice(0, 2);
+      u.lang = this.tree.locale ?? 'en-US';
+      const voices = speechSynthesis.getVoices().filter((v) => v.lang?.startsWith(lang));
       if (voices.length) u.voice = voices[[...this.tree.persona].reduce((s, c) => s + c.charCodeAt(0), 0) % voices.length];
       const len = this.tree.story.length;
       u.onboundary = (e) => this.onProgress(e.charIndex / len);
@@ -370,7 +375,34 @@ function paintProgress(tree, p) {
   if (n && narrator?.playing) showEra(tree, Math.min(n - 1, Math.floor(p * n)));
 }
 
-function openStory(tree, visitNote) {
+// The story in the reader's chosen language. Falls back to English until a
+// translation exists, and says so.
+function storyView(tree) {
+  const lang = state.lang;
+  const t = lang !== 'en' ? tree.translations?.[lang] : null;
+  const locale = state.config.languages.find((l) => l.code === (t ? lang : 'en'))?.locale ?? 'en-US';
+  return {
+    ...tree,
+    story: t?.story ?? tree.story,
+    audioUrl: t ? tree.audio?.[lang] ?? null : tree.audio?.en ?? tree.audioUrl,
+    locale,
+    translated: Boolean(t),
+    machine: Boolean(t?.machine),
+  };
+}
+
+function renderLanguagePicker(tree) {
+  const box = $('lang-picker');
+  box.innerHTML = state.config.languages.map((l) =>
+    `<button type="button" data-lang="${l.code}" aria-pressed="${l.code === state.lang}" lang="${l.code}">${escapeHtml(l.label)}</button>`).join('');
+  box.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    state.lang = b.dataset.lang;
+    storageSet('td-lang', state.lang);
+    openStory(tree, $('story-visit').hidden ? null : $('story-visit').innerHTML, { keepNote: true });
+  }));
+}
+
+function openStory(tree, visitNote, { keepNote = false } = {}) {
   state.currentTree = tree;
   narrator?.pause();
   const p = persona(tree);
@@ -382,7 +414,14 @@ function openStory(tree, visitNote) {
   $('story-draft').hidden = Boolean(tree.verified);
   $('story-visit').innerHTML = visitNote ?? '';
   $('story-visit').hidden = !visitNote;
-  renderStoryWords(tree);
+  renderLanguagePicker(tree);
+  const view = storyView(tree);
+  state.view = view;
+  renderStoryWords(view);
+  const langName = state.config.languages.find((l) => l.code === state.lang)?.name;
+  $('lang-note').textContent = state.lang === 'en' ? ''
+    : view.translated ? `Machine translated from English (Azure Translator).` : `Not translated into ${langName} yet, so here it is in English.`;
+  $('lang-note').hidden = state.lang === 'en';
   $('story-source').innerHTML = tree.sourceUrl
     ? `${escapeHtml(tree.label)} · Source: <a href="${escapeHtml(tree.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(tree.sourceNote || tree.sourceUrl)}</a>`
     : `<em>${escapeHtml(tree.sourceNote || 'Source pending.')}</em>`;
@@ -397,7 +436,7 @@ function openStory(tree, visitNote) {
 
   lastProgress = 0;
   $('narration-progress').style.width = '0';
-  narrator = new Narrator(tree, (x) => paintProgress(tree, x), () => { $('btn-play').textContent = '↺'; $('btn-play').setAttribute('aria-label', 'Play again'); });
+  narrator = new Narrator(view, (x) => paintProgress(view, x), () => { $('btn-play').textContent = '↺'; $('btn-play').setAttribute('aria-label', 'Play again'); });
   const modeNote = {
     azure: `Voice: ${p.voice} (Azure Speech)`,
     browser: 'Voice: your browser (Azure narration not generated yet)',
@@ -409,11 +448,13 @@ function openStory(tree, visitNote) {
   $('btn-play').disabled = narrator.mode === 'none';
 
   resetReport();
+  renderCompare(tree);
+  loadNotes(tree);
   const dlg = $('story-dialog');
   if (!dlg.open) dlg.showModal();
 
   // Try to start talking right away; browsers may insist on a tap first.
-  if (visitNote) togglePlay().catch(() => toast('Tap ▶ to hear the tree speak.'));
+  if (visitNote && !keepNote) togglePlay().catch(() => toast('Tap ▶ to hear the tree speak.'));
 }
 
 // What this tree does for campus each year, from an i-Tree MyTree estimate
@@ -451,9 +492,134 @@ async function loadTreeStatus(tree) {
         : `🔎 ${f.reporters + f.withoutPhoto} ${f.reporters + f.withoutPhoto === 1 ? 'person has' : 'people have'} reported ${PROBLEM_NAMES[f.flagType] ?? f.flagType}. Seen it too? Add a photo below.`);
     }
     if (s.season) bits.push(`🍃 Last season sighting: ${SEASON_NAMES[s.season.season] ?? s.season.season} (${new Date(s.season.timestamp).toLocaleDateString()}).`);
+    if (state.weather?.line) bits.unshift(`☀️ ${state.weather.line}`);
     el.innerHTML = bits.map(escapeHtml).join('<br>');
     el.hidden = !bits.length;
   } catch { /* status is a nice extra, never block the story */ }
+}
+
+// ---------- then and now ----------
+
+// With a real reference photo of the spot, drag to wipe between today and the
+// selected era. Eras made from that photo line up with it exactly.
+function renderCompare(tree) {
+  const btn = $('btn-compare');
+  const box = $('compare');
+  box.hidden = true;
+  btn.hidden = !tree.referencePhoto;
+  btn.setAttribute('aria-pressed', 'false');
+  if (!tree.referencePhoto) return;
+  $('compare-today').src = tree.referencePhoto.startsWith('http') ? tree.referencePhoto : `${API}${tree.referencePhoto}`;
+  $('compare-range').value = 50;
+  box.style.setProperty('--cut', '50%');
+}
+
+$('btn-compare').addEventListener('click', () => {
+  const on = $('compare').hidden;
+  $('compare').hidden = !on;
+  $('btn-compare').setAttribute('aria-pressed', String(on));
+  $('btn-compare').textContent = on ? 'Back to the time-lapse' : 'Compare with today';
+  if (on) stopAutoTimelapse();
+});
+$('compare-range').addEventListener('input', (e) => $('compare').style.setProperty('--cut', `${e.target.value}%`));
+
+// ---------- notes for the tree ----------
+
+async function loadNotes(tree) {
+  const list = $('notes-list');
+  $('notes').hidden = false;
+  $('note-form').hidden = !state.visited.has(tree.code);
+  $('note-locked').hidden = state.visited.has(tree.code);
+  try {
+    const notes = await api(`/api/trees/${encodeURIComponent(tree.code)}/notes`);
+    if (state.currentTree !== tree) return;
+    list.innerHTML = notes.length
+      ? notes.map((n) => `<li><p>${escapeHtml(n.text)}</p><small>${n.name ? `${escapeHtml(n.name)} · ` : ''}${new Date(n.timestamp).toLocaleDateString()}
+          <button class="link-btn" data-flag="${escapeHtml(n.id)}">Report</button></small></li>`).join('')
+      : '<li class="muted">No notes yet. Be the first.</li>';
+    list.querySelectorAll('[data-flag]').forEach((b) => b.addEventListener('click', async () => {
+      try {
+        await api(`/api/trees/${encodeURIComponent(tree.code)}/notes/${encodeURIComponent(b.dataset.flag)}/flag`, { method: 'POST', body: JSON.stringify({ playerId }) });
+        b.closest('li').remove();
+        toast('Thanks. Notes reported by a couple of people are hidden.');
+      } catch (err) { toast(err.message); }
+    }));
+  } catch { list.innerHTML = ''; }
+}
+
+$('note-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const tree = state.currentTree;
+  const name = $('note-name').value.trim();
+  storageSet('td-name', name);
+  try {
+    await api(`/api/trees/${encodeURIComponent(tree.code)}/notes`, {
+      method: 'POST', body: JSON.stringify({ playerId, text: $('note-text').value, name }),
+    });
+    $('note-text').value = '';
+    toast(`${tree.name} will treasure that.`);
+    loadNotes(tree);
+  } catch (err) { toast(err.message); }
+});
+
+// ---------- map status line ----------
+
+async function loadMapStatus() {
+  try {
+    state.status = await api('/api/status');
+    for (const code of state.markers.keys()) refreshMarker(code);
+    renderStatusLine();
+  } catch { /* the map works without it */ }
+}
+
+function renderStatusLine() {
+  const el = $('status-line');
+  if (!el || !state.trees.length) return;
+  const asleep = state.trees.length - state.visited.size;
+  const needHelp = Object.values(state.status ?? {}).filter((v) => v !== 'ok').length;
+  const parts = [asleep ? `🌙 ${asleep} still asleep` : '🌳 Every tree is awake'];
+  parts.push(needHelp ? `⚠️ ${needHelp} ${needHelp === 1 ? 'needs' : 'need'} a check-up` : '💚 All quiet in the grove');
+  if (state.weather) parts.push(`${Math.round(state.weather.tempF)}°F`);
+  el.textContent = parts.join(' · ');
+  el.hidden = false;
+}
+
+// ---------- hold to talk ----------
+
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+function setupHoldToTalk() {
+  const btn = $('btn-talk');
+  if (!Recognition) { btn.hidden = true; return; }
+  btn.hidden = false;
+  let rec = null;
+  let heard = '';
+  const start = (e) => {
+    e.preventDefault();
+    if (rec) return;
+    heard = '';
+    rec = new Recognition();
+    rec.lang = state.config.languages.find((l) => l.code === state.lang)?.locale ?? 'en-US';
+    rec.interimResults = true;
+    rec.onresult = (ev) => {
+      heard = [...ev.results].map((r) => r[0].transcript).join(' ');
+      $('ask-input').value = heard;
+    };
+    rec.onerror = () => toast('Couldn\'t hear that. Check the microphone permission.');
+    rec.onend = () => {
+      rec = null;
+      btn.classList.remove('listening');
+      if (heard.trim()) $('ask-form').requestSubmit();
+    };
+    btn.classList.add('listening');
+    narrator?.pause();
+    rec.start();
+  };
+  const stop = () => rec?.stop();
+  btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointerleave', stop);
+  btn.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') start(e); });
+  btn.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') stop(); });
 }
 
 // ---------- ask the tree ----------
@@ -469,7 +635,7 @@ $('ask-form').addEventListener('submit', async (e) => {
   narrator?.pause();
   try {
     const r = await api(`/api/trees/${encodeURIComponent(tree.code)}/ask`, {
-      method: 'POST', body: JSON.stringify({ playerId, question }),
+      method: 'POST', body: JSON.stringify({ playerId, question, lang: state.lang }),
     });
     if (state.currentTree !== tree) return;
     $('ask-answer').textContent = r.answer;
@@ -479,6 +645,7 @@ $('ask-form').addEventListener('submit', async (e) => {
     } else if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(r.answer);
+      u.lang = state.config.languages.find((l) => l.code === state.lang)?.locale ?? 'en-US';
       const pv = persona(tree).browserVoice ?? {};
       u.rate = pv.rate ?? 1;
       u.pitch = pv.pitch ?? 1;
@@ -501,7 +668,7 @@ async function togglePlay() {
     return;
   }
   stopAutoTimelapse();
-  if (lastProgress >= 1) narrator = new Narrator(state.currentTree, (x) => paintProgress(state.currentTree, x), narrator.onEnd);
+  if (lastProgress >= 1) narrator = new Narrator(state.view, (x) => paintProgress(state.view, x), narrator.onEnd);
   $('btn-play').textContent = '❚❚';
   $('btn-play').setAttribute('aria-label', 'Pause story');
   try {
@@ -552,6 +719,7 @@ $('report-form').addEventListener('submit', async (e) => {
     state.lastReportId = r.report.id;
     refreshSummary();
     loadTreeStatus(tree);
+    loadMapStatus();
     e.target.hidden = true;
     showReportResult(tree, r);
   } catch (err) {
@@ -591,6 +759,11 @@ function showReportResult(tree, r) {
       or call <a href="tel:${escapeHtml(r.pestReport.hotline)}">${escapeHtml(r.pestReport.hotline)}</a>.</p>`;
   }
   if (r.report.season) html += '<p class="small" style="margin:0">🍃 Season sighting saved. Thanks for watching the seasons.</p>';
+  if (r.rescueBonus) {
+    html += `<p style="margin:0"><b>🛟 Rescue bonus: +${r.rescueBonus} points!</b> This tree had an open problem, and your photo helps the grounds team decide.</p>`;
+    burst(`+${r.rescueBonus}`);
+    bumpPoints();
+  }
   html += '</div>';
   out.innerHTML = html;
   out.hidden = false;
@@ -674,6 +847,11 @@ async function boot() {
     state.trees = trees;
     state.byCode = new Map(trees.map((t) => [t.code, t]));
     state.personas = new Map(personas.map((p) => [p.id, p]));
+    const savedLang = storageGet('td-lang');
+    const browserLang = (navigator.language || 'en').slice(0, 2);
+    const known = (c) => config.languages.some((l) => l.code === c);
+    state.lang = known(savedLang) ? savedLang : known(browserLang) ? browserLang : 'en';
+    $('note-name').value = storageGet('td-name') ?? '';
     document.querySelectorAll('.confirm-n').forEach((el) => { el.textContent = config.confirmThreshold; });
     $('btn-link').hidden = !config.features.photon;
     applySummary(summary);
@@ -684,6 +862,9 @@ async function boot() {
   initMap();
   startFireflies($('fireflies'));
   initTimeTravel(map, state.config.historic, toast);
+  setupHoldToTalk();
+  loadMapStatus();
+  api('/api/weather').then((w) => { state.weather = w; renderStatusLine(); }).catch(() => {});
   initBook({ state, persona, escapeHtml, onOpenTree: (code) => openStory(state.byCode.get(code), null) });
 
   const params = new URLSearchParams(location.search);
