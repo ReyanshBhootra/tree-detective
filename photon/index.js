@@ -11,6 +11,7 @@ import { createBot } from './bot.js';
 import { readTag } from '../server/lib/qrread.js';
 import { geminiReadTag } from '../server/lib/gemini.js';
 import { locationFromText } from '../server/lib/geocode.js';
+import { toM4a } from '../server/lib/audio.js';
 
 loadEnv();
 const API = (process.env.API_BASE || `http://localhost:${process.env.PORT || 3000}`).replace(/\/+$/, '');
@@ -60,24 +61,38 @@ async function contentsOf(content) {
   return [];
 }
 
+const fileName = (name) => String(name || 'Tree Detective').replace(/[^\w\- ]+/g, '').trim() || 'Tree Detective';
+const isM4a = (buf) => buf?.length > 12 && buf.toString('ascii', 4, 8) === 'ftyp';
+
+// Voice bubbles need Apple's m4a audio, with a name that matches. We convert
+// here (ffmpeg-static) so the file name always matches what's inside; if we
+// can't convert, the mp3 goes out as a normal audio file people can tap to play.
+async function prepareVoice(p) {
+  if (isM4a(p.buffer)) return { ...p, mimeType: 'audio/mp4' };
+  try {
+    return { ...p, buffer: await toM4a(p.buffer), mimeType: 'audio/mp4' };
+  } catch (e) {
+    console.warn('voice note sent as an mp3 file (could not convert):', e.message);
+    return { type: 'file', buffer: p.buffer, mimeType: 'audio/mpeg', name: `${fileName(p.name)}.mp3` };
+  }
+}
+
 function build(p, { text, voice, attachment }) {
   if (p.type === 'text') return text(p.text);
-  if (p.type === 'voice') {
-    // Photon turns this into a real iMessage voice bubble (needs ffmpeg-static).
-    const ext = p.mimeType.includes('wav') ? 'wav' : 'mp3';
-    return voice(p.buffer, { mimeType: p.mimeType, name: `${p.name}.${ext}` });
-  }
+  if (p.type === 'voice') return voice(p.buffer, { mimeType: 'audio/mp4', name: `${fileName(p.name)}.m4a` });
   if (p.type === 'file') return attachment(p.buffer, { mimeType: p.mimeType, name: p.name });
   return null;
 }
 
 async function sendOne(space, p, content) {
+  const part = p.type === 'voice' ? await prepareVoice(p) : p;
   try {
-    await space.send(build(p, content));
+    await space.send(build(part, content));
   } catch (e) {
-    if (p.type !== 'voice') throw e;
-    // No converter available: send the audio as a normal file instead.
-    await space.send(content.attachment(p.buffer, { mimeType: p.mimeType, name: `${p.name}.mp3` }));
+    if (part.type !== 'voice') throw e;
+    // The voice bubble didn't go through: send the same audio as a file instead.
+    console.warn('voice bubble failed, sending as a file:', e.message);
+    await space.send(content.attachment(part.buffer, { mimeType: 'audio/mp4', name: `${fileName(p.name)}.m4a` }));
   }
 }
 
@@ -87,7 +102,7 @@ async function sendAll(space, parts, content) {
       await sendOne(space, p, content);
       continue;
     }
-    const items = p.items.filter(Boolean);
+    const items = await Promise.all(p.items.filter(Boolean).map((i) => (i.type === 'voice' ? prepareVoice(i) : i)));
     if (items.length === 1) {
       await sendOne(space, items[0], content);
       continue;

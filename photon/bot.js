@@ -321,6 +321,8 @@ export function createBot({ api, readTag, publicUrl = '' }) {
         return [say(reply(intent, me, trees))];
       case 'help': {
         const t = me.visited?.some((v) => v.code === me.currentTree) && treeByCode(me.currentTree);
+        // "Hi Whisper!!" gets a hello from Whisper itself, not a menu.
+        if (t && !/^(help|\?)/i.test(text.trim())) return ask(me, senderId, text);
         return [say(t ? `${t.name} is listening. Ask it anything, or text "more".` : HELP)];
       }
       case 'more':
