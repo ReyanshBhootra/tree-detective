@@ -41,7 +41,7 @@
         "details": "An open lot on High Street in Newark in the mid-1850s, before any building stood here.",
         "imageUrl": "/timelapse/TD-001-1-before.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "1857",
@@ -50,7 +50,7 @@
         "details": "A new Gothic Victorian building with castle-like towers, the Newark Orphan Asylum, children in 1850s clothing on the lawn, gas lamps.",
         "imageUrl": "/timelapse/TD-001-2-1857.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "1948",
@@ -59,7 +59,7 @@
         "details": "The same Gothic castle-like building, now college offices in 1948, students in late-1940s clothing, 1940s cars on the street.",
         "imageUrl": "/timelapse/TD-001-3-1948.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "today",
@@ -99,7 +99,10 @@
       "hi": "/audio/TD-001.hi.mp3",
       "gu": "/audio/TD-001.gu.mp3",
       "en": "/audio/TD-001.mp3"
-    }
+    },
+    "referencePhoto": "/reference/TD-001.jpg",
+    "referenceCredit": "Photo: Jim.henderson, Public domain, via Wikimedia Commons",
+    "referenceSource": "https://commons.wikimedia.org/wiki/File:Eberhardt_Hall_NJIT_jeh.JPG"
   },
   {
     "code": "TD-002",
@@ -143,7 +146,7 @@
         "details": "A brand-new seven-story Jacobean brick and terra cotta school building with four corner towers, 1912, students in 1910s clothing, horse carts and early cars.",
         "imageUrl": "/timelapse/TD-002-1-1912.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "1960s",
@@ -152,7 +155,7 @@
         "details": "The same towered brick school building in the 1960s as Central High School, students in 1960s clothing, 1960s cars.",
         "imageUrl": "/timelapse/TD-002-2-1960s.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "2017",
@@ -161,7 +164,7 @@
         "details": "The same towered brick building freshly renovated in 2017, a ribbon-cutting crowd outside.",
         "imageUrl": "/timelapse/TD-002-3-2017.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "today",
@@ -201,7 +204,10 @@
       "hi": "/audio/TD-002.hi.mp3",
       "gu": "/audio/TD-002.gu.mp3",
       "en": "/audio/TD-002.mp3"
-    }
+    },
+    "referencePhoto": "/reference/TD-002.jpg",
+    "referenceCredit": "Photo: Sixflashphoto, CC BY-SA 4.0, via Wikimedia Commons",
+    "referenceSource": "https://commons.wikimedia.org/wiki/File:Central_High_School_1.jpg"
   },
   {
     "code": "TD-003",
@@ -351,7 +357,7 @@
         "details": "A Newark street at dusk in the early 1880s with a few early electric arc lamps glowing, gas lamps, horse carts.",
         "imageUrl": "/timelapse/TD-004-1-1880s.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "1888",
@@ -360,7 +366,7 @@
         "details": "A small 1888 Newark workshop with brass electrical measuring instruments on benches, warm lamplight.",
         "imageUrl": "/timelapse/TD-004-2-1888.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "1950s",
@@ -369,7 +375,7 @@
         "details": "A small city college lawn in the 1950s with young trees and lamp posts along brick paths, students in 1950s clothing.",
         "imageUrl": "/timelapse/TD-004-3-1950s.png",
         "generated": true,
-        "fromReference": false
+        "fromReference": true
       },
       {
         "era": "today",
@@ -409,7 +415,10 @@
       "hi": "/audio/TD-004.hi.mp3",
       "gu": "/audio/TD-004.gu.mp3",
       "en": "/audio/TD-004.mp3"
-    }
+    },
+    "referencePhoto": "/reference/TD-004.jpg",
+    "referenceCredit": "Photo: Andrew nyr, CC BY-SA 4.0, via Wikimedia Commons",
+    "referenceSource": "https://commons.wikimedia.org/wiki/File:NJIT_Maple_Hall.jpg"
   },
   {
     "code": "TD-005",
