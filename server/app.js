@@ -54,6 +54,10 @@ export function createApp({
   app.set('trust proxy', 1); // App Service sits behind one proxy; gives the real client address
   app.use(express.json({ limit: '100kb' }));
 
+  // Suggested questions live in their own file so generated content in trees.json is never touched.
+  const qFile = path.join(ROOT, 'data', 'questions.json');
+  const suggested = fs.existsSync(qFile) ? JSON.parse(fs.readFileSync(qFile, 'utf8')) : {};
+  trees = trees.map((t) => (t.questions || !suggested[t.code] ? t : { ...t, questions: suggested[t.code] }));
   const byCode = new Map(trees.map((t) => [t.code, t]));
   const personaById = new Map(personas.map((p) => [p.id, p]));
   const publicUrl = (env.PUBLIC_URL || '').replace(/\/+$/, '');
@@ -477,7 +481,8 @@ export function createApp({
         console.warn('fact search failed:', e.message);
       }
     }
-    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang }))).slice(0, 600);
+    const history = Array.isArray(req.body.history) ? req.body.history.filter((h) => h && h.q && h.a).slice(-3) : [];
+    const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang, history }))).slice(0, 700);
     let audio = null;
     if (voice && voice.canSpeak(persona, lang)) {
       try {

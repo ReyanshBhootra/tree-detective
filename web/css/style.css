@@ -456,3 +456,11 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
   100% { transform: scale(1); }
 }
 .story .story-head { padding-right: 46px; }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.chip {
+  border: 2px solid var(--parchment-2); background: #fff; color: var(--ink); cursor: pointer;
+  border-radius: 999px; padding: 6px 12px; font: 600 0.85rem var(--font-body);
+}
+.chip:hover { border-color: var(--leaf-deep); }
+.you-asked { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 4px; }

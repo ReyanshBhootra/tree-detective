@@ -313,19 +313,28 @@ let narrator = null;
 let tlTimer = null;
 let lastProgress = 0;
 
+// "Today" shows the real photo of the spot when there is one.
+function erasOf(tree) {
+  return (tree.timelapse ?? []).map((era) => (era.era === 'today' && tree.referencePhoto
+    ? { ...era, imageUrl: tree.referencePhoto, real: true, photo: true, credit: tree.referenceCredit ?? 'taken at this spot' }
+    : era));
+}
+
 function buildTimelapse(tree) {
   const stage = $('tl-stage');
   const dots = $('tl-dots');
   stage.innerHTML = '';
   dots.innerHTML = '';
-  const eras = tree.timelapse ?? [];
+  const eras = erasOf(tree);
   const glow = persona(tree).glow;
   eras.forEach((era, i) => {
     let layer;
     if (era.imageUrl) {
       layer = document.createElement('img');
       layer.src = era.imageUrl.startsWith('http') ? era.imageUrl : `${API}${era.imageUrl}`;
-      layer.alt = era.real
+      layer.alt = era.photo
+        ? 'Real photo of this spot today'
+        : era.real
         ? `Real aerial photo of this spot, ${era.year}`
         : `Generated impression of this spot, ${era.year ?? era.era}`;
     } else {
@@ -349,7 +358,7 @@ function buildTimelapse(tree) {
 }
 
 function showEra(tree, i) {
-  const eras = tree.timelapse ?? [];
+  const eras = erasOf(tree);
   if (!eras.length) return;
   i = Math.max(0, Math.min(eras.length - 1, i));
   $('tl-stage').querySelectorAll('.layer').forEach((el, j) => el.classList.toggle('on', j === i));
@@ -358,12 +367,12 @@ function showEra(tree, i) {
   $('tl-year').textContent = era.year ? `c. ${era.year}` : '';
   $('tl-caption').textContent = era.caption ?? '';
   $('tl-note').textContent = era.real
-    ? `Real photo: ${era.credit ?? 'historic aerial survey'}`
+    ? `Real photo. ${era.credit ?? 'Historic aerial survey'}`
     : era.imageUrl
       ? 'AI-generated impression, not a real historical photo'
       : 'Storybook placeholder, not a real photo';
   $('tl-note').classList.toggle('real', Boolean(era.real));
-  $('tl-ring').hidden = !era.real;
+  $('tl-ring').hidden = !era.real || era.photo;
   state.currentEra = i;
 }
 
@@ -493,6 +502,12 @@ function openStory(tree, visitNote, { keepNote = false } = {}) {
   $('ask').hidden = !state.config.features.ask || !state.visited.has(tree.code);
   $('ask-answer').hidden = true;
   $('ask-input').value = '';
+  const chips = tree.questions?.length ? tree.questions : ['How old can trees like you get?', 'What happens to you in winter?', 'What was here before?'];
+  $('ask-chips').innerHTML = chips.map((q) => `<button type="button" class="chip">${escapeHtml(q)}</button>`).join('');
+  $('ask-chips').querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+    $('ask-input').value = c.textContent;
+    $('ask-form').requestSubmit();
+  }));
 
   lastProgress = 0;
   $('narration-progress').style.width = '0';
@@ -689,19 +704,27 @@ $('ask-form').addEventListener('submit', async (e) => {
   const tree = state.currentTree;
   const question = $('ask-input').value.trim();
   if (!question) return;
-  const btn = e.target.querySelector('button');
+  const btn = e.target.querySelector('button:not(.talk)');
   btn.disabled = true;
   btn.textContent = '…';
   narrator?.pause();
+  state.answerAudio?.pause();
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  state.askHistory ??= {};
+  const history = state.askHistory[tree.code] ??= [];
   try {
     const r = await api(`/api/trees/${encodeURIComponent(tree.code)}/ask`, {
-      method: 'POST', body: JSON.stringify({ playerId, question, lang: state.lang }),
+      method: 'POST', body: JSON.stringify({ playerId, question, lang: state.lang, history }),
     });
     if (state.currentTree !== tree) return;
-    $('ask-answer').textContent = r.answer;
+    history.push({ q: question, a: r.answer });
+    if (history.length > 3) history.shift();
+    $('ask-input').value = '';
+    $('ask-answer').innerHTML = `<span class="you-asked">You asked: ${escapeHtml(question)}</span>${escapeHtml(r.answer)}`;
     $('ask-answer').hidden = false;
     if (r.audio) {
-      new Audio(r.audio).play().catch(() => {});
+      state.answerAudio = new Audio(r.audio);
+      state.answerAudio.play().catch(() => {});
     } else if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(r.answer);

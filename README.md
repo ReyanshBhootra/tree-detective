@@ -22,7 +22,7 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 ## What uses Azure
 
 - Speech for each tree's voice
-- OpenAI (or Gemini as the backup) for writing the stories and time-lapse images ahead of time, and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
+- OpenAI (or Gemini as the backup) for writing the stories and time-lapse images ahead of time, and for "Ask me something", where you can ask a tree a question. Campus history only comes from its sourced facts, but it'll happily chat about seasons, birds and being a tree. It remembers your last few questions, and each tree has a few suggested questions (`data/questions.json`) you can tap
 - Custom Vision for spotting pests and damage in photos, if you train a model. Without one, Gemini checks the photo with no training. Species guesses use the free [Pl@ntNet API](https://my.plantnet.org)
 - Translator to tell each story in Spanish, Chinese, Hindi and Gujarati, with Speech as the backup voice
 - Table Storage and Blob Storage for visits, reports and photos
@@ -71,9 +71,18 @@ npm run historic    # adds a real 1930s aerial photo of the spot to the time-lap
 npm run qr          # printable QR tags, set PUBLIC_URL and QR_SECRET first
 ```
 
-`npm run prepare-demo` makes everything in one go (1930 photos, pictures, translations, voices, fact search). `npm run check-content` tells you what each tree is still missing. `npm run check-env -- --live` checks every key in `.env` without printing any of them.
+`npm run prepare-demo` makes everything in one go (1930 photos, reference photos, pictures, translations, voices, fact search). `npm run check-content` tells you what each tree is still missing. `npm run check-env -- --live` checks every key in `.env` without printing any of them.
 
-For the "then and now" slider, take one photo of each tree from a spot you mark on the tag ("stand here"), save it as `web/reference/TD-001.jpg`, and add `"referencePhoto": "/reference/TD-001.jpg"` to that tree. Run `npm run timelapse -- --force` afterwards and every era gets drawn from that same photo, so the slider lines up. This needs an image model that supports edits, like gpt-image-1.
+## Time-lapse pictures
+
+Each era is drawn as a real-looking photo from that time: sepia for the 1800s, black and white up to the 1950s, faded color film for the 70s to 90s. Every tree also gets the real 1930s aerial photo of its spot.
+
+They look best when they're redrawn from a real photo of the spot, so the building and angle stay the same and only the year changes. Two ways to get that photo:
+
+- `npm run reference` grabs a freely licensed photo of the nearby building from Wikimedia Commons (picked in `data/reference-sources.json`) and keeps the photographer credit, which shows under the picture.
+- Better: take your own photo from where people will stand and save it as `web/reference/TD-001.jpg`. Your own photos are never replaced.
+
+Then run `npm run timelapse -- --force`. "Today" shows the real photo itself.
 
 To show what a tree does for campus each year, look it up on [i-Tree MyTree](https://mytree.itreetools.org) and add it to the tree in `data/trees.json`:
 
