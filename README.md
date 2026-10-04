@@ -71,7 +71,7 @@ npm run historic    # adds a real 1930s aerial photo of the spot to the time-lap
 npm run qr          # printable QR tags, set PUBLIC_URL and QR_SECRET first
 ```
 
-`npm run check-content` tells you what each tree is still missing. `npm run check-env -- --live` checks every key in `.env` without printing any of them.
+`npm run prepare-demo` makes everything in one go (1930 photos, pictures, translations, voices, fact search). `npm run check-content` tells you what each tree is still missing. `npm run check-env -- --live` checks every key in `.env` without printing any of them.
 
 For the "then and now" slider, take one photo of each tree from a spot you mark on the tag ("stand here"), save it as `web/reference/TD-001.jpg`, and add `"referencePhoto": "/reference/TD-001.jpg"` to that tree. Run `npm run timelapse -- --force` afterwards and every era gets drawn from that same photo, so the slider lines up. This needs an image model that supports edits, like gpt-image-1.
 

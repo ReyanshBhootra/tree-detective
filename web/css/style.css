@@ -427,3 +427,32 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
   font: 600 0.85rem var(--font-head); color: var(--parchment);
 }
 @media (max-width: 520px) { .status-line { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 116px); font-size: 0.78rem; } }
+
+.place { margin: 2px 0 0; font-weight: 700; color: var(--ink-soft); font-size: 0.9rem; }
+
+/* the waking-up moment */
+.wake-fx { pointer-events: none; }
+.wake-fx-inner { position: absolute; left: 0; top: -34px; width: 0; height: 0; }
+.wake-fx .ring {
+  position: absolute; left: -14px; top: -14px; width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid var(--glow); box-shadow: 0 0 18px var(--glow);
+  animation: ring-out 1.5s ease-out forwards;
+}
+.wake-fx .ring.r2 { animation-delay: 0.25s; opacity: 0; }
+.wake-fx .spark {
+  position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--glow); box-shadow: 0 0 12px var(--glow), 0 0 4px #fff;
+  animation: spark-out var(--t) ease-out forwards;
+}
+@keyframes ring-out { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(7); opacity: 0; } }
+@keyframes spark-out {
+  0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(0.3); opacity: 0; }
+}
+.tree-marker .tree.just-woke { animation: wake 1.6s ease-out, sway 4.5s ease-in-out 1.6s infinite; }
+@keyframes wake {
+  0% { transform: scale(0.8); filter: grayscale(1) brightness(0.4); }
+  35% { transform: scale(1.45); filter: brightness(2.2) drop-shadow(0 0 30px var(--tree-glow)); }
+  100% { transform: scale(1); }
+}
+.story .story-head { padding-right: 46px; }

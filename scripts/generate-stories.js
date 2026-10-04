@@ -42,6 +42,10 @@ export function buildMessages(tree, persona, facts) {
 let changed = 0;
 for (const tree of trees) {
   if (only.length && !only.includes(tree.code)) continue;
+  if (tree.handWritten && !args.includes('--force')) {
+    console.log(`${tree.code}: hand-written story, keeping it (use --force to rewrite)`);
+    continue;
+  }
   const file = path.join(factsDir, `${tree.code}.json`);
   if (!fs.existsSync(file)) {
     console.log(`${tree.code}: no data/facts/${tree.code}.json yet, skipping`);

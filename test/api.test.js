@@ -292,3 +292,40 @@ test('the real local photo store saves into a folder per tree', async () => {
   assert.equal(url, '/uploads/TD-009/abc.jpg');
   assert.equal(fs.readFileSync(path.join(dir, 'TD-009', 'abc.jpg'), 'utf8'), 'jpg');
 });
+
+test('stories and voices in other languages are made once, then reused', async () => {
+  let translations = 0;
+  let recordings = 0;
+  const live = createApp({
+    env: { ...env, DATA_DIR: path.join(tmp, 'live') }, trees, personas: [{ id: 'elder', name: 'The Elder', elevenVoiceId: 'v' }],
+    store: new JsonStore(path.join(tmp, 'live')), photos: { kind: 'x', save: async () => '' },
+    translator: async (text, langs) => { translations++; return { [langs[0]]: `[${langs[0]}] ${text}` }; },
+    voice: { provider: 'ElevenLabs', canSpeak: () => true, speak: async (text) => { recordings++; return Buffer.from(`mp3:${text}`); } },
+  });
+  const srv = live.listen(0);
+  const at = (u) => fetch(`http://127.0.0.1:${srv.address().port}${u}`);
+  try {
+    let r = await (await at('/api/trees/TD-001/story/hi')).json();
+    assert.deepEqual(r, { story: '[hi] Hi.', machine: true });
+    await at('/api/trees/TD-001/story/hi');
+    assert.equal(translations, 1, 'translated once, then saved');
+    assert.equal((await at('/api/trees/TD-001/story/xx')).status, 400);
+
+    let a = await at('/api/trees/TD-001/audio/hi');
+    assert.equal(a.headers.get('content-type'), 'audio/mpeg');
+    assert.equal(await a.text(), 'mp3:[hi] Hi.');
+    a = await at('/api/trees/TD-001/audio/hi');
+    assert.equal(await a.text(), 'mp3:[hi] Hi.');
+    assert.equal(recordings, 1, 'recorded once, then served from disk');
+    a = await at('/api/trees/TD-001/audio/en');
+    assert.equal(await a.text(), 'mp3:Hi.');
+    const cfg = await (await at('/api/config')).json();
+    assert.equal(cfg.features.liveTranslation, true);
+    assert.equal(cfg.features.voice, 'ElevenLabs');
+  } finally {
+    srv.close();
+  }
+  // Without a translator or voice, it says so instead of breaking.
+  assert.equal((await fetch(`${base}/api/trees/TD-001/story/hi`)).status, 404);
+  assert.equal((await fetch(`${base}/api/trees/TD-001/audio/en`)).status, 404);
+});

@@ -3,40 +3,55 @@
     "code": "TD-001",
     "name": "Old Oakley",
     "persona": "elder",
+    "place": "Beside Eberhardt Hall",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 1950,
-    "lat": 40.74195,
-    "lng": -74.17875,
-    "story": "Well now. Come closer, I don't shout. They call me Old Oakley. My roots go deeper than this path, and I have watched more first days of school than I can count. My real story, the one with names and dates in it, is still being dug out of the archives by someone careful. Until they're sure of every word, I'll only tell you what I know for certain: you're here, the light is good, and you found me. That's a fine start.",
+    "lat": 40.74266,
+    "lng": -74.17716,
+    "story": "Well now. Come closer, I don't shout. See that building beside me, the one that looks like a little castle? That's Eberhardt Hall, the oldest building on this campus. It went up in 1857, and it wasn't built for students at all. It was the Newark Orphan Asylum, a home for the city's children who had no one. And it was fancy for its day: gaslight, steam heat, hot and cold running water. Even most well-off families didn't have all that. The college bought it later, and in 1948 the old rooms were turned into offices. In 1973 it was added to the National Register of Historic Places. So when you walk past, remember: before it was full of paperwork, it was somebody's home.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+    "sourceNote": "Wikipedia: Eberhardt Hall; NJIT Alumni: Historic Eberhardt Hall",
+    "sources": [
+      {
+        "url": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+        "note": "Wikipedia: Eberhardt Hall"
+      },
+      {
+        "url": "https://njit-connect.njit.edu/pages/alumni/historic-eberhardt-hall",
+        "note": "NJIT Alumni: Historic Eberhardt Hall"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
         "era": "before",
-        "year": 1925,
-        "caption": "Before me: the ground where I now stand.",
+        "year": 1855,
+        "caption": "Just before the asylum was built.",
+        "details": "An open lot on High Street in Newark in the mid-1850s, before any building stood here.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 1953,
-        "caption": "A sapling, newly planted.",
+        "era": "1857",
+        "year": 1857,
+        "caption": "The Newark Orphan Asylum opens.",
+        "details": "A new Gothic Victorian building with castle-like towers, the Newark Orphan Asylum, children in 1850s clothing on the lawn, gas lamps.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 1988,
-        "caption": "Halfway through my life so far.",
+        "era": "1948",
+        "year": 1948,
+        "caption": "The college turns the old asylum into offices.",
+        "details": "The same Gothic castle-like building, now college offices in 1948, students in late-1940s clothing, 1940s cars on the street.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "Eberhardt Hall today, and me beside it.",
+        "details": "The same Gothic castle-like building today, restored, with a mature oak tree beside it and modern students walking past.",
         "imageUrl": null
       }
     ]
@@ -45,40 +60,55 @@
     "code": "TD-002",
     "name": "Whisper",
     "persona": "gossip",
+    "place": "Near the Central King Building",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 1985,
-    "lat": 40.74232,
-    "lng": -74.1779,
-    "story": "Oh! Oh, hello, you came over. Everyone walks right past me, phones out, coffee in hand, and I see all of it. I'd love to tell you who used to stand on this corner long before me, and believe me, I will, but my storyteller says I am not allowed to repeat a single thing until it's been checked against the library. Rules, rules. Come back soon and I'll have the good stuff, sourced and everything.",
+    "lat": 40.74203,
+    "lng": -74.17758,
+    "story": "Oh! You came over. Okay, you have to hear about the big building across the way. It opened in 1912 as the Central Commercial and Manual Training School. Seven stories, four towers on the corners, brick and terra cotta, very fancy. And inside? A forge. A foundry. A sewing room, a sheet-metal room, a wood shop, and an auditorium with fifteen hundred seats. Can you imagine the noise? For almost a hundred years it was a school, and later Central High School. Then in 2010 the university bought it, fixed it all up, and in April 2017 more than two hundred people came out for the ribbon cutting. Now it's called the Central King Building. I saw every bit of it. Well. I heard about it. Same thing.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+    "sourceNote": "Wikipedia: Central King Building; Innovation NJ: ribbon cutting of the renovated Central King Building",
+    "sources": [
+      {
+        "url": "https://en.wikipedia.org/wiki/Central_King_Building",
+        "note": "Wikipedia: Central King Building"
+      },
+      {
+        "url": "https://www.innovationnj.net/news/njit-hosts-ribbon-cutting-of-renovated-central-king-building-in-newark",
+        "note": "Innovation NJ: ribbon cutting of the renovated Central King Building"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
-        "era": "before",
-        "year": 1960,
-        "caption": "Before me: the ground where I now stand.",
+        "era": "1912",
+        "year": 1912,
+        "caption": "The Central Commercial and Manual Training School is dedicated.",
+        "details": "A brand-new seven-story Jacobean brick and terra cotta school building with four corner towers, 1912, students in 1910s clothing, horse carts and early cars.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 1988,
-        "caption": "A sapling, newly planted.",
+        "era": "1960s",
+        "year": 1965,
+        "caption": "Central High School in its busy years.",
+        "details": "The same towered brick school building in the 1960s as Central High School, students in 1960s clothing, 1960s cars.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 2006,
-        "caption": "Halfway through my life so far.",
+        "era": "2017",
+        "year": 2017,
+        "caption": "Reopened by NJIT as the Central King Building.",
+        "details": "The same towered brick building freshly renovated in 2017, a ribbon-cutting crowd outside.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "Today, with me keeping an eye on things.",
+        "details": "The same towered brick building today with a leafy street tree in front and students passing.",
         "imageUrl": null
       }
     ]
@@ -87,40 +117,59 @@
     "code": "TD-003",
     "name": "Professor Plane",
     "persona": "scholar",
+    "place": "Near Weston Hall",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 1970,
-    "lat": 40.74148,
-    "lng": -74.1795,
-    "story": "Good afternoon. I am Professor Plane, and I insist on citations. My lecture on the history of this exact spot is in draft, pending review against NJIT records and the Newark Public Library collections. I will not state a date I cannot source. For now, observe my bark: it peels in patches, like a map. Make a note of it. There will be a quiz.",
+    "lat": 40.74108,
+    "lng": -74.17758,
+    "story": "Good afternoon. Take notes. In 1886, a cornerstone was laid at High Street and Summit Place for a three-story building. It was later named Weston Hall, after Edward Weston, one of the school's founding trustees, and his son. In 1960, two years after Cullimore Hall went up, the old Weston Hall was torn down and replaced with the seven-story building that stands there now. Mr. Weston, by the way, was no ordinary donor. He earned more than three hundred patents, and his electric light company won the contract to light the Brooklyn Bridge. One more footnote: the street once called High Street is now Martin Luther King Jr. Boulevard. My sources are listed below. There will be a quiz.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://www.njit.edu/about/history-njit",
+    "sourceNote": "NJIT: History of NJIT; Wikipedia: Edward Weston; Newark Changing: High Street",
+    "sources": [
+      {
+        "url": "https://www.njit.edu/about/history-njit",
+        "note": "NJIT: History of NJIT"
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+        "note": "Wikipedia: Edward Weston"
+      },
+      {
+        "url": "https://newarkchanging.org/category/1/high-street",
+        "note": "Newark Changing: High Street"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
-        "era": "before",
-        "year": 1945,
-        "caption": "Before me: the ground where I now stand.",
+        "era": "1886",
+        "year": 1886,
+        "caption": "The cornerstone of the first Weston Hall is laid.",
+        "details": "A three-story brick technical school building going up in 1886 at a Newark street corner, workers, horse carts, 1880s clothing.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 1973,
-        "caption": "A sapling, newly planted.",
+        "era": "1920s",
+        "year": 1925,
+        "caption": "The old three-story Weston Hall in use.",
+        "details": "The same three-story brick school building in the 1920s, students in 1920s clothing, early automobiles.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 1998,
-        "caption": "Halfway through my life so far.",
+        "era": "1960",
+        "year": 1960,
+        "caption": "A new seven-story Weston Hall replaces the old one.",
+        "details": "A new seven-story modern 1960 college building, students in 1960 clothing, 1960 cars.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "Weston Hall today, with me out front.",
+        "details": "The seven-story college building today, a plane tree with peeling bark in front, students walking.",
         "imageUrl": null
       }
     ]
@@ -129,40 +178,55 @@
     "code": "TD-004",
     "name": "Lumen",
     "persona": "dreamer",
+    "place": "On the campus green",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 1995,
     "lat": 40.74275,
     "lng": -74.17905,
-    "story": "Mm. You woke me. That's alright. I was dreaming about the afternoon light, how it slides down the brick and lands right here, at my feet. Someone is still gathering the true story of this place for me, and I'd rather wait for the real thing than dream one up. Stay a minute. Listen to the leaves. That part, at least, is entirely true.",
+    "story": "Mm. You found me. I like to think about light. Long ago, an inventor working in Newark named Edward Weston was busy with electricity. His electric light company won the job of lighting the Brooklyn Bridge. Later he founded another company here that made some of the first accurate portable meters for measuring electricity, and even the first portable light meter. He also helped lay the foundation for the small technical school that grew into this university. So on a clear evening, when the lamps come on along these paths, I like to imagine they're saying thank you to him. That part is only my dream. The rest is true, and you can read where it comes from below.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+    "sourceNote": "Wikipedia: Edward Weston; New Jersey Historical Society: Weston Instruments Collection",
+    "sources": [
+      {
+        "url": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+        "note": "Wikipedia: Edward Weston"
+      },
+      {
+        "url": "https://jerseyhistory.org/mg1666",
+        "note": "New Jersey Historical Society: Weston Instruments Collection"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
-        "era": "before",
-        "year": 1970,
-        "caption": "Before me: the ground where I now stand.",
+        "era": "1880s",
+        "year": 1883,
+        "caption": "Electric light is brand new in Newark.",
+        "details": "A Newark street at dusk in the early 1880s with a few early electric arc lamps glowing, gas lamps, horse carts.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 1998,
-        "caption": "A sapling, newly planted.",
+        "era": "1888",
+        "year": 1888,
+        "caption": "Weston's instrument company is founded in Newark.",
+        "details": "A small 1888 Newark workshop with brass electrical measuring instruments on benches, warm lamplight.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 2011,
-        "caption": "Halfway through my life so far.",
+        "era": "1950s",
+        "year": 1955,
+        "caption": "The campus grows around this spot.",
+        "details": "A small city college lawn in the 1950s with young trees and lamp posts along brick paths, students in 1950s clothing.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "The green today, lamps on, and me.",
+        "details": "A city campus green at dusk today with lamp posts glowing along the paths and a graceful tree, students on the grass.",
         "imageUrl": null
       }
     ]
@@ -171,40 +235,55 @@
     "code": "TD-005",
     "name": "Sprig",
     "persona": "sprout",
+    "place": "Near the Specht Building",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 2015,
     "lat": 40.7411,
     "lng": -74.1782,
-    "story": "Hi! Hi! Are you here for me? Nobody ever scans me, I'm the little one. I don't have a long history yet, I'm still growing my first big branches. Do you think I'll get as tall as the old ones? What's the tallest thing you've ever climbed? Come back next year and see how much I've grown!",
+    "story": "Hi! Hi! Did you know this whole university started really small? On February ninth, 1881, it began as the Newark Technical School, and when it opened it had just eighty-eight students. Eighty-eight! That's like a few classrooms. Then it grew up and changed its name, like I'm going to. In 1930 it became the Newark College of Engineering. Then a School of Architecture joined in 1973, and the school got so big it needed a bigger name. So on January first, 1975, it became the New Jersey Institute of Technology. That's three names! How many names do you think I'll have when I'm old? I'm hoping for at least two.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+    "sourceNote": "Wikipedia: New Jersey Institute of Technology; NJIT: History of NJIT",
+    "sources": [
+      {
+        "url": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+        "note": "Wikipedia: New Jersey Institute of Technology"
+      },
+      {
+        "url": "https://www.njit.edu/about/history-njit",
+        "note": "NJIT: History of NJIT"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
-        "era": "before",
-        "year": 1990,
-        "caption": "Before me: the ground where I now stand.",
+        "era": "1881",
+        "year": 1881,
+        "caption": "Newark Technical School opens with 88 students.",
+        "details": "A modest 1881 Newark street with a small brick building, a few students in 1880s clothing carrying books, horse carts.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 2018,
-        "caption": "A sapling, newly planted.",
+        "era": "1930",
+        "year": 1930,
+        "caption": "It becomes the Newark College of Engineering.",
+        "details": "A busy 1930 college street in Newark with brick buildings, students in 1930s clothing, 1930s cars.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 2021,
-        "caption": "Halfway through my life so far.",
+        "era": "1975",
+        "year": 1975,
+        "caption": "It becomes the New Jersey Institute of Technology.",
+        "details": "A 1975 city college campus with concrete and brick buildings, students in 1970s clothing and hairstyles, 1970s cars.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "Today: a big university, and little me.",
+        "details": "A lively modern university campus today with a very young sapling tree with a support stake in the foreground.",
         "imageUrl": null
       }
     ]
@@ -213,40 +292,55 @@
     "code": "TD-006",
     "name": "Riddle",
     "persona": "trickster",
+    "place": "Near Cullimore Hall",
     "species": null,
     "speciesConfidence": null,
-    "plantedYearEstimate": 1975,
     "lat": 40.743,
     "lng": -74.1776,
-    "story": "Riddle me this: what has rings but no fingers? Ha, me. I am Riddle, and I collect local legends the way squirrels collect acorns. But here's my promise: when I tell you one, I'll tell you it's a legend, and when I tell you a fact, it'll come with a source. Neither is ready yet. Come back, and bring a friend who likes a good tale.",
+    "story": "Riddle me this: what has a man's name on the front, went up in 1958, and stands where Bleeker Street meets Summit Street? That's Cullimore Hall, right over there. It's named for Dr. Allan R. Cullimore, who led this school from 1920 to 1949. Here's the twist. When he arrived, it was the Newark Technical School. By the time he left, it was the Newark College of Engineering. Under him the school got a new name, and then the school gave his name to a building. Fair trade, if you ask me. Now here's a riddle to take with you: which building on this campus is the oldest? Hint: it used to be a home for children. Go find the castle.",
     "label": "Fact",
-    "sourceUrl": null,
-    "sourceNote": "SAMPLE: replace with sourced NJIT / Newark Public Library history before the demo.",
-    "verified": false,
+    "sourceUrl": "https://www.njit.edu/about/history-njit",
+    "sourceNote": "NJIT: History of NJIT; Wikipedia: New Jersey Institute of Technology",
+    "sources": [
+      {
+        "url": "https://www.njit.edu/about/history-njit",
+        "note": "NJIT: History of NJIT"
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+        "note": "Wikipedia: New Jersey Institute of Technology"
+      }
+    ],
+    "verified": true,
+    "handWritten": true,
     "audioUrl": null,
     "timelapse": [
       {
-        "era": "before",
-        "year": 1950,
-        "caption": "Before me: the ground where I now stand.",
+        "era": "1920s",
+        "year": 1925,
+        "caption": "Allan Cullimore has just taken charge of the school.",
+        "details": "A Newark street corner in the 1920s near a small technical school, students in 1920s clothing, early cars.",
         "imageUrl": null
       },
       {
-        "era": "sapling",
-        "year": 1978,
-        "caption": "A sapling, newly planted.",
+        "era": "1958",
+        "year": 1958,
+        "caption": "Cullimore Hall goes up.",
+        "details": "A new 1958 brick college building on a city street corner, construction just finished, 1950s cars and clothing.",
         "imageUrl": null
       },
       {
-        "era": "midlife",
-        "year": 2001,
-        "caption": "Halfway through my life so far.",
+        "era": "1990s",
+        "year": 1995,
+        "caption": "Students rushing between classes.",
+        "details": "The same brick college building in the 1990s, students in 1990s clothing with backpacks.",
         "imageUrl": null
       },
       {
         "era": "today",
         "year": 2026,
-        "caption": "Me, today.",
+        "caption": "Today, with me guarding the corner.",
+        "details": "The same brick college building today on a street corner with a mischievous-looking leafy tree in front.",
         "imageUrl": null
       }
     ]

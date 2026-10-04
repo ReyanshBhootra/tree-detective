@@ -1,0 +1,61 @@
+{
+  "code": "TD-001",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "Eberhardt Hall is the oldest building at NJIT and was built in 1857 as the Newark Orphan Asylum, a home for Newark's orphans.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    },
+    {
+      "text": "When it opened, the Newark Orphan Asylum had gaslight, steam heat and hot-and-cold running water, which were rare even in the most affluent homes of the period.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    },
+    {
+      "text": "The building was designed by architects John Welch and Thomas A. Roberts in Victorian and Elizabethan Gothic styles, drawing on 15th and 16th century castle design.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    },
+    {
+      "text": "After the Newark College of Engineering acquired it, the interior was converted for administrative use in 1948. Today it holds the Alumni office and administrative offices.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    },
+    {
+      "text": "Eberhardt Hall was added to the National Register of Historic Places on June 19, 1973.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    }
+  ],
+  "eras": [
+    {
+      "era": "before",
+      "year": 1855,
+      "caption": "Just before the asylum was built.",
+      "details": "An open lot on High Street in Newark in the mid-1850s, before any building stood here.",
+      "imageUrl": null
+    },
+    {
+      "era": "1857",
+      "year": 1857,
+      "caption": "The Newark Orphan Asylum opens.",
+      "details": "A new Gothic Victorian building with castle-like towers, the Newark Orphan Asylum, children in 1850s clothing on the lawn, gas lamps.",
+      "imageUrl": null
+    },
+    {
+      "era": "1948",
+      "year": 1948,
+      "caption": "The college turns the old asylum into offices.",
+      "details": "The same Gothic castle-like building, now college offices in 1948, students in late-1940s clothing, 1940s cars on the street.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "Eberhardt Hall today, and me beside it.",
+      "details": "The same Gothic castle-like building today, restored, with a mature oak tree beside it and modern students walking past.",
+      "imageUrl": null
+    }
+  ]
+}

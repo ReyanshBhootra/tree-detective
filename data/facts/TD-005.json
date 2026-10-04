@@ -1,0 +1,56 @@
+{
+  "code": "TD-005",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "NJIT was established on February 9, 1881, as the Newark Technical School, and opened with 88 students.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: New Jersey Institute of Technology"
+    },
+    {
+      "text": "The school adopted the name Newark College of Engineering in 1930.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: New Jersey Institute of Technology"
+    },
+    {
+      "text": "The New Jersey School of Architecture was added in 1973.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: New Jersey Institute of Technology"
+    },
+    {
+      "text": "Newark College of Engineering officially became the New Jersey Institute of Technology on January 1, 1975.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: New Jersey Institute of Technology"
+    }
+  ],
+  "eras": [
+    {
+      "era": "1881",
+      "year": 1881,
+      "caption": "Newark Technical School opens with 88 students.",
+      "details": "A modest 1881 Newark street with a small brick building, a few students in 1880s clothing carrying books, horse carts.",
+      "imageUrl": null
+    },
+    {
+      "era": "1930",
+      "year": 1930,
+      "caption": "It becomes the Newark College of Engineering.",
+      "details": "A busy 1930 college street in Newark with brick buildings, students in 1930s clothing, 1930s cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "1975",
+      "year": 1975,
+      "caption": "It becomes the New Jersey Institute of Technology.",
+      "details": "A 1975 city college campus with concrete and brick buildings, students in 1970s clothing and hairstyles, 1970s cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "Today: a big university, and little me.",
+      "details": "A lively modern university campus today with a very young sapling tree with a support stake in the foreground.",
+      "imageUrl": null
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import multer from 'multer';
@@ -19,6 +20,7 @@ import { rateLimiter } from './lib/ratelimit.js';
 import { loadFacts, buildAskMessages } from './lib/ask.js';
 import { createAI } from './lib/ai.js';
 import { createVoice } from './lib/voice.js';
+import { translate } from './lib/azure.js';
 import { LANGUAGES, isLanguage } from './lib/languages.js';
 import { createTiger } from './lib/tiger.js';
 import { computeTrends, computeSeasonTimeline } from './lib/trends.js';
@@ -45,6 +47,7 @@ export function createApp({
   tiger = createTiger(env),
   embedQuery = ai.can('embed') ? (q) => ai.embed(q) : null,
   weather = null,
+  translator = env.AZURE_TRANSLATOR_KEY && env.AZURE_TRANSLATOR_REGION ? (text, langs, codeMap) => translate(env, text, langs, codeMap) : null,
 } = {}) {
   const app = express();
   app.disable('x-powered-by');
@@ -158,6 +161,7 @@ export function createApp({
         aiProvider: ai.providers.chat,
         tigerData: Boolean(tiger),
         voice: voice?.provider ?? null,
+        liveTranslation: translatorReady,
       },
     });
   });
@@ -234,6 +238,64 @@ export function createApp({
     flaggedBy.add(hashPlayer(playerId).slice(0, 12));
     await store.upsert('notes', { partitionKey: code, rowKey: note.rowKey, flags: flaggedBy.size, flaggedBy: [...flaggedBy].join(',') });
     res.json({ ok: true, hidden: flaggedBy.size >= HIDE_AFTER_FLAGS });
+  }));
+
+  // ---------- stories in other languages, and their voices ----------
+  // Pre-made translations and recordings are used when they exist. Otherwise
+  // the first request makes one (Azure Translator / ElevenLabs or Azure Speech),
+  // saves it, and every later request reuses it.
+  const translatorReady = Boolean(translator);
+  const pending = new Map();
+  const once = (key, fn) => {
+    if (!pending.has(key)) pending.set(key, fn().finally(() => setTimeout(() => pending.delete(key), 1000)));
+    return pending.get(key);
+  };
+  const storyHash = (text) => crypto.createHash('sha1').update(text).digest('hex').slice(0, 10);
+
+  async function storyIn(tree, lang) {
+    if (lang === 'en') return { story: tree.story, machine: false };
+    if (tree.translations?.[lang]?.story) return { story: tree.translations[lang].story, machine: Boolean(tree.translations[lang].machine) };
+    const hashNow = storyHash(tree.story);
+    const saved = await store.get('translations', tree.code, lang);
+    if (saved?.source === hashNow) return { story: saved.story, machine: true };
+    if (!translatorReady) return null;
+    return once(`t:${tree.code}:${lang}`, async () => {
+      const codeMap = Object.fromEntries(Object.entries(LANGUAGES).filter(([, l]) => l.translator).map(([c, l]) => [c, l.translator]));
+      const story = (await translator(tree.story, [lang], codeMap))[lang];
+      await store.upsert('translations', { partitionKey: tree.code, rowKey: lang, story, source: hashNow, at: new Date().toISOString() });
+      return { story, machine: true };
+    });
+  }
+
+  app.get('/api/trees/:code/story/:lang', wrap(async (req, res) => {
+    const tree = byCode.get(req.params.code.toUpperCase());
+    if (!tree) return bad(res, 'unknown tree', 404);
+    if (!isLanguage(req.params.lang)) return bad(res, 'unknown language');
+    const out = await storyIn(tree, req.params.lang);
+    return out ? res.json(out) : bad(res, 'Translation isn\'t set up on this server.', 404);
+  }));
+
+  const audioDir = path.join(env.DATA_DIR || path.join(ROOT, '.data'), 'audio');
+  app.get('/api/trees/:code/audio/:lang', wrap(async (req, res) => {
+    const tree = byCode.get(req.params.code.toUpperCase());
+    if (!tree) return bad(res, 'unknown tree', 404);
+    const lang = req.params.lang;
+    if (!isLanguage(lang)) return bad(res, 'unknown language');
+    const made = lang === 'en' ? tree.audio?.en ?? tree.audioUrl : tree.audio?.[lang];
+    if (made) return res.redirect(made);
+    const persona = personaById.get(tree.persona);
+    if (!voice || !voice.canSpeak(persona, lang)) return bad(res, 'No voice for this language here.', 404);
+    const text = (await storyIn(tree, lang))?.story;
+    if (!text) return bad(res, 'Translation isn\'t set up on this server.', 404);
+    const file = path.join(audioDir, `${tree.code}.${lang}.${storyHash(text)}.mp3`);
+    if (!fs.existsSync(file)) {
+      await once(`a:${file}`, async () => {
+        const mp3 = await voice.speak(text, persona, lang);
+        fs.mkdirSync(audioDir, { recursive: true });
+        fs.writeFileSync(file, mp3);
+      });
+    }
+    res.type('audio/mpeg').set('Cache-Control', 'public, max-age=86400').sendFile(file);
   }));
 
   app.get('/api/personas', (_req, res) => res.json(personas));

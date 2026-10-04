@@ -1,0 +1,51 @@
+{
+  "code": "TD-004",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "Edward Weston co-founded the Weston Electric Light Company in Newark, New Jersey, which won the contract to illuminate the Brooklyn Bridge.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+      "sourceNote": "Wikipedia: Edward Weston"
+    },
+    {
+      "text": "Weston founded the Weston Electrical Instrument Corporation in 1888. Its innovations included the Weston standard cell, the first accurate portable voltmeters and ammeters, and the first portable light meter.",
+      "sourceUrl": "https://jerseyhistory.org/mg1666",
+      "sourceNote": "New Jersey Historical Society: Weston Instruments Collection"
+    },
+    {
+      "text": "Edward Weston helped lay the foundation for the Newark Technical School, which became NJIT.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+      "sourceNote": "Wikipedia: Edward Weston"
+    }
+  ],
+  "eras": [
+    {
+      "era": "1880s",
+      "year": 1883,
+      "caption": "Electric light is brand new in Newark.",
+      "details": "A Newark street at dusk in the early 1880s with a few early electric arc lamps glowing, gas lamps, horse carts.",
+      "imageUrl": null
+    },
+    {
+      "era": "1888",
+      "year": 1888,
+      "caption": "Weston's instrument company is founded in Newark.",
+      "details": "A small 1888 Newark workshop with brass electrical measuring instruments on benches, warm lamplight.",
+      "imageUrl": null
+    },
+    {
+      "era": "1950s",
+      "year": 1955,
+      "caption": "The campus grows around this spot.",
+      "details": "A small city college lawn in the 1950s with young trees and lamp posts along brick paths, students in 1950s clothing.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "The green today, lamps on, and me.",
+      "details": "A city campus green at dusk today with lamp posts glowing along the paths and a graceful tree, students on the grass.",
+      "imageUrl": null
+    }
+  ]
+}

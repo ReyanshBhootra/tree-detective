@@ -21,7 +21,8 @@
     "historic": "node scripts/fetch-historic.js",
     "translate": "node scripts/translate-stories.js",
     "index-facts": "node scripts/index-facts.js",
-    "check-env": "node scripts/check-env.js"
+    "check-env": "node scripts/check-env.js",
+    "prepare-demo": "node scripts/prepare-demo.js"
   },
   "dependencies": {
     "@azure/data-tables": "^13.3.0",

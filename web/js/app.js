@@ -200,12 +200,6 @@ async function wakeTree({ code, key }) {
     return toast(e.status === 403 ? e.message : `Couldn't reach the grove: ${e.message}`);
   }
   applySummary(result);
-  refreshMarker(code, { justWoke: result.firstVisit });
-  map.flyTo([tree.lat, tree.lng], Math.max(map.getZoom(), 18), { duration: 0.8 });
-  if (result.firstVisit) {
-    burst(`+${result.pointsEarned}`);
-    bumpPoints();
-  }
   if (state.routeLayer) showRoute();
 
   let note;
@@ -214,7 +208,33 @@ async function wakeTree({ code, key }) {
   if (locationVerified === true) note += ' 📍 Location confirmed.';
   else if (locationVerified === false) note += ` The QR code counted, though your GPS put you about ${Math.round(distance)} m away.`;
   else note += ' Location is off, so the QR code alone counted.';
+  await wakeMoment(tree, result);
   openStory(tree, note);
+}
+
+// The map flies to the tree, it lights up with a burst of sparks, and only
+// then does its story open.
+function wakeMoment(tree, result) {
+  const first = result.firstVisit;
+  if ($('story-dialog').open) $('story-dialog').close();
+  map.flyTo([tree.lat, tree.lng], 19, { duration: 1.1 });
+  if (!first) toast(`🌳 ${tree.name} remembers you.`, 1500);
+  setTimeout(() => {
+    refreshMarker(tree.code, { justWoke: first });
+    if (!first) return;
+    const glow = persona(tree).glow;
+    const sparks = Array.from({ length: 14 }, (_, i) =>
+      `<span class="spark" style="--a:${(360 / 14) * i}deg;--d:${70 + (i % 3) * 22}px;--t:${0.9 + (i % 4) * 0.15}s"></span>`).join('');
+    const fx = L.marker([tree.lat, tree.lng], {
+      interactive: false, keyboard: false, zIndexOffset: 1000,
+      icon: L.divIcon({ className: 'wake-fx', iconSize: [0, 0], html: `<div class="wake-fx-inner" style="--glow:${glow}"><span class="ring"></span><span class="ring r2"></span>${sparks}</div>` }),
+    }).addTo(map);
+    setTimeout(() => fx.remove(), 2800);
+    burst(`+${result.pointsEarned}`);
+    bumpPoints();
+    toast(`✨ ${tree.name} is waking up…`, 2200);
+  }, 1150);
+  return new Promise((resolve) => setTimeout(resolve, first ? 3400 : 1600));
 }
 
 // ---------- story, voice and time-lapse ----------
@@ -239,6 +259,17 @@ class Narrator {
     if (this.mode === 'azure') {
       if (!this.audio) {
         this.audio = new Audio(this.tree.audioUrl.startsWith('http') ? this.tree.audioUrl : `${API}${this.tree.audioUrl}`);
+        if (this.tree.liveAudio) {
+          $('voice-note').textContent = 'Voice: getting the voice ready… (only slow the first time)';
+          this.audio.addEventListener('playing', () => { $('voice-note').textContent = `Voice: ${state.config.features.voice}`; }, { once: true });
+        }
+        this.audio.addEventListener('error', () => {
+          // The voice service failed: read it with the browser instead.
+          this.audio = null;
+          this.tree = { ...this.tree, audioUrl: null };
+          $('voice-note').textContent = 'Voice: your browser (the voice service didn\'t answer)';
+          if (this.playing) this.play();
+        }, { once: true });
         this.audio.addEventListener('timeupdate', () => this.onProgress(this.audio.currentTime / (this.audio.duration || 1)));
         this.audio.addEventListener('ended', () => { this.playing = false; this.onProgress(1); this.onEnd(); });
       }
@@ -380,15 +411,41 @@ function paintProgress(tree, p) {
 function storyView(tree) {
   const lang = state.lang;
   const t = lang !== 'en' ? tree.translations?.[lang] : null;
-  const locale = state.config.languages.find((l) => l.code === (t ? lang : 'en'))?.locale ?? 'en-US';
+  const pending = lang !== 'en' && !t && state.config.features.liveTranslation;
+  if (pending) fetchTranslation(tree, lang);
+  const used = t ? lang : 'en';
+  const locale = state.config.languages.find((l) => l.code === used)?.locale ?? 'en-US';
+  const made = t ? tree.audio?.[lang] : tree.audio?.en ?? tree.audioUrl;
+  // No recording yet? The server makes one with ElevenLabs (or Azure) on first play and keeps it.
+  const live = state.config.features.voice && !pending ? `/api/trees/${encodeURIComponent(tree.code)}/audio/${used}` : null;
   return {
     ...tree,
     story: t?.story ?? tree.story,
-    audioUrl: t ? tree.audio?.[lang] ?? null : tree.audio?.en ?? tree.audioUrl,
+    audioUrl: made ?? live,
+    liveAudio: !made && Boolean(live),
     locale,
     translated: Boolean(t),
     machine: Boolean(t?.machine),
+    pending,
   };
+}
+
+const translating = new Set();
+async function fetchTranslation(tree, lang) {
+  const key = `${tree.code}:${lang}`;
+  if (translating.has(key)) return;
+  translating.add(key);
+  try {
+    const r = await api(`/api/trees/${encodeURIComponent(tree.code)}/story/${lang}`);
+    tree.translations = { ...tree.translations, [lang]: { story: r.story, machine: r.machine } };
+    if (state.currentTree === tree && state.lang === lang && $('story-dialog').open) {
+      openStory(tree, $('story-visit').hidden ? null : $('story-visit').innerHTML, { keepNote: true });
+    }
+  } catch (e) {
+    if (state.currentTree === tree) $('lang-note').textContent = `Couldn't translate right now (${e.message}).`;
+  } finally {
+    translating.delete(key);
+  }
 }
 
 function renderLanguagePicker(tree) {
@@ -420,10 +477,13 @@ function openStory(tree, visitNote, { keepNote = false } = {}) {
   renderStoryWords(view);
   const langName = state.config.languages.find((l) => l.code === state.lang)?.name;
   $('lang-note').textContent = state.lang === 'en' ? ''
-    : view.translated ? `Machine translated from English (Azure Translator).` : `Not translated into ${langName} yet, so here it is in English.`;
+    : view.translated ? 'Machine translated from English (Azure Translator).'
+      : view.pending ? `Translating into ${langName}…` : `Not translated into ${langName} yet, so here it is in English.`;
   $('lang-note').hidden = state.lang === 'en';
-  $('story-source').innerHTML = tree.sourceUrl
-    ? `${escapeHtml(tree.label)} · Source: <a href="${escapeHtml(tree.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(tree.sourceNote || tree.sourceUrl)}</a>`
+  $('story-place').textContent = tree.place ? `📍 ${tree.place}` : '';
+  const sources = tree.sources?.length ? tree.sources : tree.sourceUrl ? [{ url: tree.sourceUrl, note: tree.sourceNote }] : [];
+  $('story-source').innerHTML = sources.length
+    ? `${escapeHtml(tree.label)} · Sources: ${sources.map((x) => `<a href="${escapeHtml(x.url)}" target="_blank" rel="noopener">${escapeHtml(x.note || x.url)}</a>`).join(' · ')}`
     : `<em>${escapeHtml(tree.sourceNote || 'Source pending.')}</em>`;
 
   buildTimelapse(tree);
@@ -438,8 +498,8 @@ function openStory(tree, visitNote, { keepNote = false } = {}) {
   $('narration-progress').style.width = '0';
   narrator = new Narrator(view, (x) => paintProgress(view, x), () => { $('btn-play').textContent = '↺'; $('btn-play').setAttribute('aria-label', 'Play again'); });
   const modeNote = {
-    azure: `Voice: recorded with ${state.config.features.voice ?? 'Azure Speech'}`,
-    browser: 'Voice: your browser (Azure narration not generated yet)',
+    azure: view.liveAudio ? `Voice: ${state.config.features.voice}` : `Voice: recorded with ${state.config.features.voice ?? 'Azure Speech'}`,
+    browser: view.pending ? 'Voice: waiting for the translation…' : 'Voice: your browser',
     none: 'This browser cannot read aloud.',
   }[narrator.mode];
   $('voice-note').textContent = modeNote;

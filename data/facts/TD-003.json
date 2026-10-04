@@ -1,0 +1,61 @@
+{
+  "code": "TD-003",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "In 1886 the cornerstone was laid at the intersection of High Street and Summit Place for the three-story building later named Weston Hall, in honor of the institution's early benefactor.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "Two years after Cullimore Hall was built in 1958, the old Weston Hall was razed and replaced with the current seven-story structure.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "Edward Weston was a founding member of the board of trustees of the school that became NJIT. Weston Hall is named for him and his son, Edward Faraday Weston.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+      "sourceNote": "Wikipedia: Edward Weston"
+    },
+    {
+      "text": "Edward Weston obtained more than 300 patents. His Weston Electric Light Company in Newark won the contract to illuminate the Brooklyn Bridge.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Edward_Weston_(chemist)",
+      "sourceNote": "Wikipedia: Edward Weston"
+    },
+    {
+      "text": "High Street in Newark was renamed Martin Luther King Jr. Boulevard.",
+      "sourceUrl": "https://newarkchanging.org/category/1/high-street",
+      "sourceNote": "Newark Changing: High Street"
+    }
+  ],
+  "eras": [
+    {
+      "era": "1886",
+      "year": 1886,
+      "caption": "The cornerstone of the first Weston Hall is laid.",
+      "details": "A three-story brick technical school building going up in 1886 at a Newark street corner, workers, horse carts, 1880s clothing.",
+      "imageUrl": null
+    },
+    {
+      "era": "1920s",
+      "year": 1925,
+      "caption": "The old three-story Weston Hall in use.",
+      "details": "The same three-story brick school building in the 1920s, students in 1920s clothing, early automobiles.",
+      "imageUrl": null
+    },
+    {
+      "era": "1960",
+      "year": 1960,
+      "caption": "A new seven-story Weston Hall replaces the old one.",
+      "details": "A new seven-story modern 1960 college building, students in 1960 clothing, 1960 cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "Weston Hall today, with me out front.",
+      "details": "The seven-story college building today, a plane tree with peeling bark in front, students walking.",
+      "imageUrl": null
+    }
+  ]
+}

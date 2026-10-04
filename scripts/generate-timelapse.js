@@ -27,9 +27,13 @@ export function eraPrompt(tree, era) {
     sapling: 'A young sapling, recently planted, with a support stake.',
     midlife: 'The same tree, now medium-sized and established.',
     today: 'The same tree, fully grown, as it stands today.',
-  }[era.era] ?? `The tree during the "${era.era}" era.`;
-  return `${STYLE} Scene: a city university campus spot in Newark, New Jersey, around the year ${era.year}. ${stage} ` +
-    (era.details ? `Era details from historical sources: ${era.details}. ` : '') +
+  }[era.era];
+  // Eras with their own sourced description draw exactly that scene.
+  if (era.details) {
+    return `${STYLE} Scene in Newark, New Jersey, around the year ${era.year}: ${era.details}. ` +
+      'Clothing, vehicles and buildings should match that period in a general way.';
+  }
+  return `${STYLE} Scene: a city university campus spot in Newark, New Jersey, around the year ${era.year}. ${stage ?? ''} ` +
     'Clothing, vehicles and buildings, if any appear, should match that period in a general way.';
 }
 

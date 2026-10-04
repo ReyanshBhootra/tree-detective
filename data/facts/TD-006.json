@@ -1,0 +1,51 @@
+{
+  "code": "TD-006",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "Cullimore Hall was built in 1958 and stands at the intersection of Bleeker Street and Summit Street.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "Cullimore Hall is named after Dr. Allan R. Cullimore, who led the institution from 1920 to 1949 and transformed the Newark Technical School into the Newark College of Engineering.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "The name Newark College of Engineering was adopted in 1930, during Cullimore's time leading the school.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    }
+  ],
+  "eras": [
+    {
+      "era": "1920s",
+      "year": 1925,
+      "caption": "Allan Cullimore has just taken charge of the school.",
+      "details": "A Newark street corner in the 1920s near a small technical school, students in 1920s clothing, early cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "1958",
+      "year": 1958,
+      "caption": "Cullimore Hall goes up.",
+      "details": "A new 1958 brick college building on a city street corner, construction just finished, 1950s cars and clothing.",
+      "imageUrl": null
+    },
+    {
+      "era": "1990s",
+      "year": 1995,
+      "caption": "Students rushing between classes.",
+      "details": "The same brick college building in the 1990s, students in 1990s clothing with backpacks.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "Today, with me guarding the corner.",
+      "details": "The same brick college building today on a street corner with a mischievous-looking leafy tree in front.",
+      "imageUrl": null
+    }
+  ]
+}

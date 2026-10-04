@@ -1,0 +1,30 @@
+{
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "NJIT was established on February 9, 1881, as the Newark Technical School and opened with 88 students.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: New Jersey Institute of Technology"
+    },
+    {
+      "text": "Campbell Hall on the NJIT campus was erected in 1925.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "Eberhardt Hall, built in 1857 as the Newark Orphan Asylum, is the oldest building on the NJIT campus.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Eberhardt_Hall,_New_Jersey_Institute_of_Technology",
+      "sourceNote": "Wikipedia: Eberhardt Hall"
+    },
+    {
+      "text": "Cullimore Hall was built in 1958 and Weston Hall was rebuilt as a seven-story building two years later.",
+      "sourceUrl": "https://www.njit.edu/about/history-njit",
+      "sourceNote": "NJIT: History of NJIT"
+    },
+    {
+      "text": "The Central King Building was dedicated in 1912 and bought by NJIT in 2010.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+      "sourceNote": "Wikipedia: Central King Building"
+    }
+  ]
+}

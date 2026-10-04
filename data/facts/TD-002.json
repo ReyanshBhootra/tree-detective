@@ -1,0 +1,61 @@
+{
+  "code": "TD-002",
+  "label": "Fact",
+  "facts": [
+    {
+      "text": "The Central King Building was built as the Central Commercial and Manual Training School. The school was founded in 1911 and the building was dedicated on January 31, 1912.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+      "sourceNote": "Wikipedia: Central King Building"
+    },
+    {
+      "text": "It is a seven-story building of brick and terra cotta in the Jacobean style, with four corner towers.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+      "sourceNote": "Wikipedia: Central King Building"
+    },
+    {
+      "text": "The school had a forge, a foundry, a sewing room, a sheet-metal room and a wood shop, plus an auditorium seating 1,500.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+      "sourceNote": "Wikipedia: Central King Building"
+    },
+    {
+      "text": "The building housed Central High School until NJIT bought it in 2010.",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Central_King_Building",
+      "sourceNote": "Wikipedia: Central King Building"
+    },
+    {
+      "text": "On April 13, 2017, more than 200 students, alumni, faculty, staff and friends attended the ribbon cutting of the renovated Central King Building.",
+      "sourceUrl": "https://www.innovationnj.net/news/njit-hosts-ribbon-cutting-of-renovated-central-king-building-in-newark",
+      "sourceNote": "Innovation NJ: ribbon cutting of the renovated Central King Building"
+    }
+  ],
+  "eras": [
+    {
+      "era": "1912",
+      "year": 1912,
+      "caption": "The Central Commercial and Manual Training School is dedicated.",
+      "details": "A brand-new seven-story Jacobean brick and terra cotta school building with four corner towers, 1912, students in 1910s clothing, horse carts and early cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "1960s",
+      "year": 1965,
+      "caption": "Central High School in its busy years.",
+      "details": "The same towered brick school building in the 1960s as Central High School, students in 1960s clothing, 1960s cars.",
+      "imageUrl": null
+    },
+    {
+      "era": "2017",
+      "year": 2017,
+      "caption": "Reopened by NJIT as the Central King Building.",
+      "details": "The same towered brick building freshly renovated in 2017, a ribbon-cutting crowd outside.",
+      "imageUrl": null
+    },
+    {
+      "era": "today",
+      "year": 2026,
+      "caption": "Today, with me keeping an eye on things.",
+      "details": "The same towered brick building today with a leafy street tree in front and students passing.",
+      "imageUrl": null
+    }
+  ]
+}
