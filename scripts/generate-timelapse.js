@@ -64,6 +64,7 @@ function referencePhoto(tree) {
 
 let made = 0;
 const trees = loadTrees();
+let stopped = false;
 for (const tree of trees) {
   if (only.length && !only.includes(tree.code)) continue;
   const photo = referencePhoto(tree);
@@ -84,8 +85,22 @@ for (const tree of trees) {
       saveTrees(trees); // save as we go, image calls are slow
       console.log('done');
     } catch (e) {
-      console.log(`failed: ${e.message}`);
+      const msg = e.message.match(/"message":\s*"([^"]+)/)?.[1] ?? e.message;
+      console.log(`failed: ${msg.split('\\n')[0].slice(0, 160)}`);
+      if (/\b429\b/.test(e.message) && /quota|billing|limit: 0/i.test(e.message)) {
+        console.log(`
+Stopping: your ${ai.providers.image} key has no quota for image generation.
+Image generation isn't in Gemini's free tier. To use your credits:
+  1. aistudio.google.com -> API keys -> find this key -> "Set up billing"
+     (or console.cloud.google.com/billing -> link the key's project to the
+     billing account that has your credits)
+  2. Wait a minute, then run "npm run timelapse" again.
+Until then the app shows drawn storybook scenes, plus the real 1930 photos.`);
+        stopped = true;
+        break;
+      }
     }
   }
+  if (stopped) break;
 }
 console.log(dry ? 'Dry run, nothing generated.' : `Generated ${made} images into web/timelapse/.`);
