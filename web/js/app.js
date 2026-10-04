@@ -159,6 +159,7 @@ function applySummary(summary) {
   $('points').textContent = state.points;
   $('awake').textContent = state.visited.size;
   $('total').textContent = state.trees.length;
+  $('score-fill').style.width = pct(state.trees.length ? state.visited.size / state.trees.length : 0);
   renderStatusLine();
 }
 
@@ -840,7 +841,7 @@ function showReportResult(tree, r) {
       <p class="small" style="margin:8px 0 0">Guesses are sometimes wrong. Does it look right?
         <button class="btn" data-fb="agree" style="min-height:34px">Yes</button>
         <button class="btn" data-fb="disagree" style="min-height:34px">Not sure</button></p></div>`;
-  } else if (r.speciesNote && r.report.photoUrl) {
+  } else if (r.speciesNote && r.report.photoUrl && (state.config.features.speciesVision || state.config.features.speciesProvider)) {
     html += `<p class="muted small" style="margin:0">Species guess skipped: ${escapeHtml(r.speciesNote)}.</p>`;
   }
   if (r.flag) {
@@ -934,6 +935,16 @@ $('btn-link').addEventListener('click', async () => {
   }
 });
 
+// ---------- how to play ----------
+
+function openWelcome() {
+  storageSet('td-welcomed', '1');
+  $('welcome-dialog').showModal();
+}
+$('btn-help').addEventListener('click', openWelcome);
+$('welcome-scan').addEventListener('click', () => { $('welcome-dialog').close(); openScanner(); });
+$('welcome-route').addEventListener('click', () => { $('welcome-dialog').close(); showRoute(); });
+
 // ---------- boot ----------
 
 $('btn-scan').addEventListener('click', openScanner);
@@ -973,6 +984,7 @@ async function boot() {
   if (code || params.has('route')) history.replaceState(null, '', location.pathname);
   if (tag) wakeTree(tag);
   else if (params.has('route')) showRoute();
+  else if (!state.visited.size && !storageGet('td-welcomed')) openWelcome();
   else if (!state.visited.size) toast('The trees are asleep. Find a tagged tree on campus and scan it to wake it up.', 6000);
 }
 

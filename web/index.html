@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -25,21 +25,56 @@
     <div class="score" aria-live="polite">
       <span class="score-points"><strong id="points">0</strong> pts</span>
       <span class="score-trees"><strong id="awake">0</strong>/<span id="total">0</span> awake</span>
+      <span class="score-bar" aria-hidden="true"><span id="score-fill"></span></span>
     </div>
   </header>
 
   <p class="status-line" id="status-line" hidden aria-live="polite"></p>
 
-  <nav class="actions">
-    <button id="btn-scan" class="btn btn-primary">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
-      Scan a tree
+  <nav class="actions" aria-label="Main">
+    <button id="btn-book" class="btn btn-tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v16H7.5a1.5 1.5 0 0 0 0 3H19v1H7.5A2.5 2.5 0 0 1 5 19.5z" fill="currentColor"/></svg>
+      <span>Book</span>
     </button>
-    <button id="btn-book" class="btn">Book</button>
-    <button id="btn-route" class="btn">Route</button>
-    <button id="btn-link" class="btn" hidden>Text me</button>
-    <a class="btn" href="grounds.html">Grounds</a>
+    <button id="btn-route" class="btn btn-tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3a3 3 0 0 1 3 3c0 2.2-3 5.5-3 5.5S3 8.2 3 6a3 3 0 0 1 3-3zm12 8a3 3 0 0 1 3 3c0 2.2-3 5.5-3 5.5S15 16.2 15 14a3 3 0 0 1 3-3zM6 13v3a3 3 0 0 0 3 3h4v-2H9a1 1 0 0 1-1-1v-3zm5-8h4a3 3 0 0 1 3 3v1h-2V8a1 1 0 0 0-1-1h-4z" fill="currentColor"/></svg>
+      <span>Route</span>
+    </button>
+    <button id="btn-scan" class="btn btn-primary btn-scan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM15 15h2v2h-2zM18 18h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2z" fill="currentColor"/></svg>
+      <span>Scan a tree</span>
+    </button>
+    <button id="btn-link" class="btn btn-tab" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z" fill="currentColor"/></svg>
+      <span>Text me</span>
+    </button>
+    <a class="btn btn-tab" href="grounds.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h3v10zm6 0V4h3v16zm6 0v-7h3v7z" fill="currentColor"/></svg>
+      <span>Grounds</span>
+    </a>
+    <button id="btn-help" class="btn btn-tab" aria-label="How to play">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 14.5a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5zM12 6a3.5 3.5 0 0 0-3.5 3.5h2a1.5 1.5 0 1 1 2.2 1.3c-1 .6-1.7 1.3-1.7 2.7v.5h2v-.4c0-.6.3-.9 1-1.4A3.5 3.5 0 0 0 12 6z" fill="currentColor"/></svg>
+      <span>Help</span>
+    </button>
   </nav>
+
+  <!-- First visit: how to play -->
+  <dialog id="welcome-dialog" class="sheet welcome">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <p class="persona">Welcome, detective</p>
+    <h2>The trees of campus are asleep</h2>
+    <p class="muted">Each tagged tree has a name, a voice and a true story about this place. Wake them all.</p>
+    <ol class="steps">
+      <li><span class="step-icon" aria-hidden="true">🔍</span><span><b>Find a tag.</b> Look for a small QR tag on a tree trunk.</span></li>
+      <li><span class="step-icon" aria-hidden="true">📱</span><span><b>Scan it.</b> The tree wakes up and tells you its story out loud.</span></li>
+      <li><span class="step-icon" aria-hidden="true">🕰️</span><span><b>Travel back.</b> See the spot in 1930, then ask the tree anything.</span></li>
+      <li><span class="step-icon" aria-hidden="true">🩺</span><span><b>Look after it.</b> Snap pests or damage so the grounds team can help.</span></li>
+    </ol>
+    <div class="welcome-actions">
+      <button type="button" class="btn btn-primary" id="welcome-scan" autofocus>Scan my first tree</button>
+      <button type="button" class="btn btn-ghost" id="welcome-route">Show me where they are</button>
+    </div>
+  </dialog>
 
   <div id="timetravel" class="timetravel" hidden>
     <label for="tt-range">Time travel</label>
@@ -88,6 +123,14 @@
     <p id="story-visit" class="visit-note"></p>
     <p id="story-status" class="status-note" hidden></p>
 
+    <div class="narration">
+      <button id="btn-play" class="btn btn-primary btn-round" aria-label="Play story">▶</button>
+      <div class="narration-main">
+        <div class="narration-bar"><div id="narration-progress"></div></div>
+        <span class="muted small" id="voice-note"></span>
+      </div>
+    </div>
+
     <figure class="timelapse">
       <div class="tl-frame">
         <div class="timelapse-stage" id="tl-stage"></div>
@@ -104,12 +147,6 @@
       <div class="tl-dots" id="tl-dots" role="tablist" aria-label="Eras of this tree's life"></div>
       <button type="button" class="btn btn-small" id="btn-compare" hidden aria-pressed="false">Compare with today</button>
     </figure>
-
-    <div class="narration">
-      <button id="btn-play" class="btn btn-primary btn-round" aria-label="Play story">▶</button>
-      <div class="narration-bar"><div id="narration-progress"></div></div>
-      <span class="muted small" id="voice-note"></span>
-    </div>
 
     <p id="story-text" class="story-text"></p>
     <p class="source small" id="story-source"></p>
@@ -204,7 +241,7 @@
   </dialog>
 
   <script src="config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

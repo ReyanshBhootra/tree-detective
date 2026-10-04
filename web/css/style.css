@@ -468,3 +468,70 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 }
 .chip:hover { border-color: var(--leaf-deep); }
 .you-asked { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 4px; }
+
+/* ======================================================================
+   Polish pass: tab bar, progress, welcome, story layout, focus states
+   ====================================================================== */
+
+/* keyboard users can always see where they are */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--glow); outline-offset: 2px;
+}
+dialog.sheet :where(button, a, input, select, textarea, summary):focus-visible { outline-color: var(--leaf-deep); }
+
+/* score progress */
+.score { position: relative; overflow: hidden; }
+.score-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255, 224, 138, 0.12); }
+.score-bar > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--leaf), var(--glow)); transition: width 0.8s ease; }
+
+/* bottom bar: one row, scan in the middle stands out */
+.actions { align-items: center; gap: 8px; }
+.btn-tab { gap: 6px; }
+.btn-scan { min-height: 54px; padding: 0 24px; font-size: 1.08rem; box-shadow: 0 0 0 4px rgba(255, 224, 138, 0.18), 0 0 26px rgba(255, 224, 138, 0.45), var(--shadow); }
+.btn-scan svg { width: 22px; height: 22px; }
+.btn-ghost { background: transparent; color: var(--ink); border: 2px solid var(--parchment-2); box-shadow: none; }
+.btn-ghost:hover { background: var(--parchment-2); }
+
+/* toasts sit above the buttons, out of the way of the trees */
+.toast { top: auto; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 112px); }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+/* welcome sheet */
+.welcome h2 { font-size: 1.7rem; line-height: 1.15; margin-bottom: 6px; padding-right: 36px; }
+.steps { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 10px; }
+.steps li { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 14px; padding: 10px 12px; }
+.step-icon { font-size: 1.5rem; width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--parchment-2); }
+.welcome-actions { display: grid; gap: 8px; }
+
+/* story: hear the tree first, without scrolling past the picture */
+.story .narration {
+  position: sticky; top: -22px; z-index: 1;
+  margin: 0 -22px 14px; padding: 10px 22px;
+  background: var(--parchment); border-bottom: 1px solid var(--parchment-2);
+}
+.narration-main { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.narration-main #voice-note { flex-basis: auto; }
+.timelapse-stage { max-height: 46dvh; width: 100%; margin: 0 auto; }
+.story-head h2 { line-height: 1.1; }
+
+@media (max-width: 520px) {
+  /* sheets rise from the bottom like a phone app */
+  dialog.sheet {
+    width: 100vw; max-width: 100vw; margin: auto 0 0; max-height: 92dvh;
+    border-radius: 22px 22px 0 0; padding-bottom: max(26px, env(safe-area-inset-bottom));
+  }
+  dialog.sheet[open] { animation: sheet-up 0.35s cubic-bezier(.2, .9, .3, 1); }
+  dialog.sheet::before {
+    content: ''; display: block; width: 40px; height: 5px; border-radius: 999px;
+    background: var(--parchment-2); margin: -10px auto 10px;
+  }
+  .actions { flex-wrap: nowrap; gap: 6px; }
+  .actions .btn { flex: 1 1 0; padding: 0 4px; }
+  .actions .btn-tab { flex-direction: column; gap: 2px; min-height: 54px; font-size: 0.72rem; border-radius: 16px; }
+  .actions .btn-scan { white-space: nowrap; flex: 1.6 1 0; flex-direction: column; gap: 2px; font-size: 0.85rem; border-radius: 18px; min-height: 62px; }
+  .status-line { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 72px); }
+  .toast { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 112px); }
+  .panel { bottom: 120px; }
+  .timelapse-stage { max-height: 38dvh; }
+}
+@keyframes sheet-up { from { transform: translateY(40px); opacity: 0.4; } }
