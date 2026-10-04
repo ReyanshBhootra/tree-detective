@@ -5,13 +5,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees } from '../server/lib/trees.js';
-import { image, imageFromPhoto, requireKeys } from './azure.js';
+import { createAI, requireAI } from '../server/lib/ai.js';
 
 loadEnv();
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const dry = args.includes('--dry-run');
-if (!dry) requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_IMAGE_DEPLOYMENT'], 'Making time-lapse images');
+const ai = createAI();
+if (!dry) requireAI(ai, 'image', 'Making time-lapse images');
 const only = args.filter((a) => !a.startsWith('--'));
 const outDir = path.join(ROOT, 'web', 'timelapse');
 fs.mkdirSync(outDir, { recursive: true });
@@ -69,7 +70,7 @@ for (const tree of trees) {
     if (dry) { console.log(`${tree.code} ${era.era}: ${prompt}\n`); continue; }
     process.stdout.write(`${tree.code} ${era.era} (${era.year})… `);
     try {
-      const buf = photo ? await imageFromPhoto(process.env, prompt, photo) : await image(process.env, prompt);
+      const buf = photo ? await ai.imageFromPhoto(prompt, photo) : await ai.image(prompt);
       const name = `${tree.code}-${i}-${era.era}.png`;
       fs.writeFileSync(path.join(outDir, name), buf);
       era.imageUrl = `/timelapse/${name}`;

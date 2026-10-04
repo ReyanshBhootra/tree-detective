@@ -17,7 +17,7 @@ import { planRoute } from './lib/geo.js';
 import { verifyTreeKey } from './lib/qr.js';
 import { rateLimiter } from './lib/ratelimit.js';
 import { loadFacts, buildAskMessages } from './lib/ask.js';
-import { chat, embed } from './lib/azure.js';
+import { createAI } from './lib/ai.js';
 import { createVoice } from './lib/voice.js';
 import { LANGUAGES, isLanguage } from './lib/languages.js';
 import { createTiger } from './lib/tiger.js';
@@ -37,12 +37,13 @@ export function createApp({
   trees = loadTrees(),
   personas = loadPersonas(),
   vision = (buf, mime) => analyzePhoto(buf, env, fetch, mime),
-  askModel = (messages) => chat(env, messages, { temperature: 0.6, maxTokens: 200 }),
+  ai = createAI(env),
+  askModel = (messages) => ai.chat(messages, { temperature: 0.6, maxTokens: 200 }),
   voice = createVoice(env),
   facts = (code) => loadFacts(code),
-  askEnabled = Boolean(env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_KEY && env.AZURE_OPENAI_CHAT_DEPLOYMENT),
+  askEnabled = ai.can('chat'),
   tiger = createTiger(env),
-  embedQuery = env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT ? (q) => embed(env, q) : null,
+  embedQuery = ai.can('embed') ? (q) => ai.embed(q) : null,
   weather = null,
 } = {}) {
   const app = express();
@@ -154,6 +155,7 @@ export function createApp({
         photoStorage: photos.kind,
         signedTags: Boolean(env.QR_SECRET),
         ask: askEnabled,
+        aiProvider: ai.providers.chat,
         tigerData: Boolean(tiger),
         voice: voice?.provider ?? null,
       },

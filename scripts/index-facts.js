@@ -8,11 +8,11 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { loadEnv, ROOT } from '../server/config.js';
 import { createTiger } from '../server/lib/tiger.js';
-import { embed } from '../server/lib/azure.js';
-import { requireKeys } from './azure.js';
+import { createAI, requireAI } from '../server/lib/ai.js';
 
 loadEnv();
-requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT'], 'Loading facts into TigerData');
+const ai = createAI();
+requireAI(ai, 'embed', 'Loading facts into TigerData');
 const tiger = createTiger();
 if (!tiger) {
   console.error('Set TIGER_DATABASE_URL (from console.cloud.timescale.com) first.');
@@ -34,7 +34,7 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json') && !f.e
 console.log(`Embedding ${rows.length} facts…`);
 for (let i = 0; i < rows.length; i += 16) {
   const batch = rows.slice(i, i + 16);
-  const vectors = await embed(process.env, batch.map((r) => r.text));
+  const vectors = await ai.embed(batch.map((r) => r.text));
   for (const [j, r] of batch.entries()) await tiger.upsertFact({ ...r, embedding: vectors[j] });
 }
 await tiger.close();

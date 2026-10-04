@@ -374,3 +374,52 @@ test('five languages, and Translator gets its own code for Chinese', async () =>
     globalThis.fetch = realFetch;
   }
 });
+
+test('AI switch: Azure OpenAI first, Gemini fills any gap, nothing when neither is set', async () => {
+  const { createAI } = await import('../server/lib/ai.js');
+  assert.deepEqual(createAI({}).providers, { chat: null, embed: null, image: null });
+  assert.deepEqual(createAI({ GEMINI_API_KEY: 'g' }).providers, { chat: 'Gemini', embed: 'Gemini', image: 'Gemini' });
+  const mixed = createAI({ GEMINI_API_KEY: 'g', AZURE_OPENAI_ENDPOINT: 'https://a', AZURE_OPENAI_KEY: 'k', AZURE_OPENAI_CHAT_DEPLOYMENT: 'gpt' });
+  assert.deepEqual(mixed.providers, { chat: 'Azure OpenAI', embed: 'Gemini', image: 'Gemini' });
+  await assert.rejects(createAI({}).chat([]), /No AI set up for chat/);
+});
+
+test('Gemini: chat, embeddings and photo-based images are sent the right way', async () => {
+  const { createAI } = await import('../server/lib/ai.js');
+  const calls = [];
+  const fake = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    calls.push({ url, body, key: opts.headers['x-goog-api-key'] });
+    if (url.includes(':batchEmbedContents')) return { ok: true, json: async () => ({ embeddings: body.requests.map(() => ({ values: [3, 4] })) }) };
+    if (url.includes('flash-image')) return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: 'here' }, { inlineData: { mimeType: 'image/png', data: Buffer.from('png').toString('base64') } }] } }] }) };
+    return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: 'I am an old oak.' }] } }] }) };
+  };
+  const ai = createAI({ GEMINI_API_KEY: 'g' }, { fetchImpl: fake });
+
+  assert.equal(await ai.chat([{ role: 'system', content: 'Be a tree.' }, { role: 'user', content: 'Who are you?' }], { maxTokens: 50 }), 'I am an old oak.');
+  assert.match(calls[0].url, /models\/gemini-2\.5-flash:generateContent$/);
+  assert.equal(calls[0].key, 'g');
+  assert.deepEqual(calls[0].body.systemInstruction, { parts: [{ text: 'Be a tree.' }] });
+  assert.deepEqual(calls[0].body.contents, [{ role: 'user', parts: [{ text: 'Who are you?' }] }]);
+  assert.equal(calls[0].body.generationConfig.maxOutputTokens, 50);
+  assert.equal(calls[0].body.generationConfig.thinkingConfig.thinkingBudget, 0);
+
+  assert.deepEqual(await ai.embed('one'), [0.6, 0.8], 'normalized');
+  assert.equal((await ai.embed(['a', 'b'])).length, 2);
+  assert.equal(calls[1].body.requests[0].outputDimensionality, 1536);
+
+  const png = await ai.imageFromPhoto('Same spot in 1930', { buffer: Buffer.from('jpg'), type: 'image/jpeg', name: 'r.jpg' });
+  assert.equal(png.toString(), 'png');
+  const img = calls.at(-1);
+  assert.match(img.url, /gemini-2\.5-flash-image:generateContent$/);
+  assert.deepEqual(img.body.contents[0].parts[1], { inlineData: { mimeType: 'image/jpeg', data: Buffer.from('jpg').toString('base64') } });
+  assert.deepEqual(img.body.generationConfig.responseModalities, ['IMAGE']);
+});
+
+test('Gemini: an empty or blocked answer is an error, not a blank tree', async () => {
+  const { geminiChat } = await import('../server/lib/gemini.js');
+  const fake = async () => ({ ok: true, json: async () => ({ candidates: [{ finishReason: 'SAFETY', content: { parts: [] } }] }) });
+  await assert.rejects(geminiChat({ GEMINI_API_KEY: 'g' }, [{ role: 'user', content: 'x' }], {}, fake), /no text \(SAFETY\)/);
+  const err = async () => ({ ok: false, status: 429, text: async () => 'quota' });
+  await assert.rejects(geminiChat({ GEMINI_API_KEY: 'g' }, [{ role: 'user', content: 'x' }], {}, err), /429: quota/);
+});

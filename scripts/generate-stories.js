@@ -4,12 +4,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees, loadPersonas } from '../server/lib/trees.js';
-import { chat, requireKeys } from './azure.js';
+import { createAI, requireAI } from '../server/lib/ai.js';
 
 loadEnv();
 const args = process.argv.slice(2);
 const dry = args.includes('--dry-run');
-if (!dry) requireKeys(['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_KEY', 'AZURE_OPENAI_CHAT_DEPLOYMENT'], 'Writing stories');
+const ai = createAI();
+if (!dry) requireAI(ai, 'chat', 'Writing stories');
 const only = args.filter((a) => !a.startsWith('--'));
 const trees = loadTrees();
 const personas = new Map(loadPersonas().map((p) => [p.id, p]));
@@ -55,7 +56,7 @@ for (const tree of trees) {
     console.log(`--- ${tree.code} prompt ---\n${messages.map((m) => `[${m.role}] ${m.content}`).join('\n\n')}\n`);
     continue;
   }
-  const story = await chat(process.env, messages);
+  const story = await ai.chat(messages);
   tree.story = story;
   tree.label = facts.label;
   tree.sourceUrl = facts.facts[0].sourceUrl;

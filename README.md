@@ -22,13 +22,16 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 ## What uses Azure
 
 - Speech for each tree's voice
-- OpenAI for writing the stories and time-lapse images (ahead of time), and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
+- OpenAI (or Gemini as the backup) for writing the stories and time-lapse images ahead of time, and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
 - Custom Vision for spotting pests and damage in photos (species guesses use the free [Pl@ntNet API](https://my.plantnet.org) if you add a key)
 - Translator to tell each story in Spanish, Chinese, Hindi and Gujarati, with Speech as the backup voice
-- OpenAI embeddings so trees can look up their sourced facts
 - Communication Services Email for the weekly grounds summary
 - Table Storage and Blob Storage for visits, reports and photos
 - App Service / Static Web Apps for hosting
+
+## Google Gemini
+
+Writing (stories and "Ask me something"), fact search and the time-lapse images use Azure OpenAI when it's set up, and Google Gemini otherwise (`gemini-2.5-flash`, `gemini-embedding-001` and `gemini-2.5-flash-image`, which can also redraw a real reference photo). Each job picks on its own, so you can mix them. Get a key at [aistudio.google.com](https://aistudio.google.com) and put it in `GEMINI_API_KEY`.
 
 ## ElevenLabs
 
