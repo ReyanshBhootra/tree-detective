@@ -202,3 +202,38 @@ export async function geminiReadTag(env, buffer, mime, fetchImpl = fetch) {
   const out = JSON.parse((json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join(''));
   return out.link || out.code || '';
 }
+
+async function jsonCall(env, parts, schema, fetchImpl) {
+  const name = await model(env, 'chat', fetchImpl);
+  const json = await call(env, name, 'generateContent', {
+    contents: [{ role: 'user', parts }],
+    generationConfig: { temperature: 0, ...thinking(name, 200), responseMimeType: 'application/json', responseSchema: schema },
+  }, fetchImpl);
+  return JSON.parse((json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join(''));
+}
+
+// Does this photo complete the photo quest? ("a tree with red or orange leaves")
+export async function geminiQuestCheck(env, buffer, mime, quest, fetchImpl = fetch) {
+  const out = await jsonCall(env, [
+    { text: `A player in a campus tree game sent this photo for the quest: "${quest}". Does the photo clearly show that? Be fair but not gullible: it must be a real photo of the thing, not a screen or a drawing. Reason is one short, friendly sentence to the player.` },
+    { inlineData: { mimeType: mime, data: buffer.toString('base64') } },
+  ], {
+    type: 'OBJECT',
+    properties: { match: { type: 'BOOLEAN' }, confidence: { type: 'NUMBER' }, reason: { type: 'STRING' } },
+    required: ['match', 'confidence', 'reason'],
+  }, fetchImpl);
+  return { match: Boolean(out.match), confidence: Math.max(0, Math.min(1, Number(out.confidence) || 0)), reason: String(out.reason ?? '').slice(0, 200) };
+}
+
+// Transcribes a voice memory and checks it is fine to play to strangers.
+export async function geminiListen(env, buffer, mime, fetchImpl = fetch) {
+  const out = await jsonCall(env, [
+    { text: 'This is a short voice memory someone left at a tree in a family-friendly campus game. Transcribe it. safe is false if it has insults, hate, sexual content, threats, personal info like phone numbers or addresses, or ads.' },
+    { inlineData: { mimeType: mime, data: buffer.toString('base64') } },
+  ], {
+    type: 'OBJECT',
+    properties: { transcript: { type: 'STRING' }, safe: { type: 'BOOLEAN' } },
+    required: ['transcript', 'safe'],
+  }, fetchImpl);
+  return { transcript: String(out.transcript ?? '').trim().slice(0, 400), safe: out.safe !== false };
+}

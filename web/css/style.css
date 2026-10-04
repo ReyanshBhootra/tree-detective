@@ -468,3 +468,9 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 }
 .chip:hover { border-color: var(--leaf-deep); }
 .you-asked { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 4px; }
+
+/* On real aerial and satellite photos, trees get a bright outline so they stand out */
+.photo-mode .tree-marker .tree.sleeping { filter: grayscale(0.5) brightness(1.1) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 8px rgba(255, 233, 168, 0.9)); }
+.photo-mode .tree-marker .tree.awake { filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 12px var(--tree-glow, var(--glow))) drop-shadow(0 0 24px var(--tree-glow, var(--glow))); }
+.photo-mode .tree-marker .tree-name { background: rgba(10, 22, 16, 0.92); color: #fff8e1; box-shadow: 0 0 0 2px rgba(255, 233, 168, 0.85); }
+.photo-mode .tree-marker .zzz { color: #fff8e1; text-shadow: 0 0 4px #000; }

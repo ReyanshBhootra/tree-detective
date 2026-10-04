@@ -74,6 +74,7 @@ export async function initTimeTravel(map, historic, toast, api) {
     yearLabel.textContent = near >= last ? 'Today' : stops[near].label;
     credit(near >= last ? null : stops[near].attribution);
     box.classList.toggle('past', p < last - 0.5);
+    map.getContainer().classList.toggle('photo-mode', p < last - 0.15);
   }
 
   slider.addEventListener('input', () => show(Number(slider.value)));

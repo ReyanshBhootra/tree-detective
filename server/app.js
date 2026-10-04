@@ -27,6 +27,8 @@ import { computeTrends, computeSeasonTimeline } from './lib/trends.js';
 import { createWeather, weatherLine } from './lib/weather.js';
 import { checkNote, cleanName, HIDE_AFTER_FLAGS } from './lib/notes.js';
 import { createTimeline } from './lib/timeline.js';
+import { addSocial } from './social.js';
+import { geminiQuestCheck, geminiListen } from './lib/gemini.js';
 
 const PLAYER_ID = /^[A-Za-z0-9-]{8,64}$/;
 const LINK_CODE_TTL_MS = 30 * 60 * 1000;
@@ -49,6 +51,9 @@ export function createApp({
   embedQuery = ai.can('embed') ? (q) => ai.embed(q) : null,
   weather = null,
   timeline = null,
+  questCheck = env.GEMINI_API_KEY ? (buf, mime, quest) => geminiQuestCheck(env, buf, mime, quest) : null,
+  listen = env.GEMINI_API_KEY ? (buf, mime) => geminiListen(env, buf, mime) : null,
+  social = {},
   translator = env.AZURE_TRANSLATOR_KEY && env.AZURE_TRANSLATOR_REGION ? (text, langs, codeMap) => translate(env, text, langs, codeMap) : null,
 } = {}) {
   const app = express();
@@ -172,6 +177,7 @@ export function createApp({
         speciesProvider: speciesProvider(env),
         photon: Boolean(env.PHOTON_PROJECT_ID),
         photonInApp: env.PHOTON_IN_APP === '1',
+        phoneLogin: Boolean(env.PHOTON_PROJECT_ID && env.PHOTON_PROJECT_SECRET),
         photoStorage: photos.kind,
         signedTags: Boolean(env.QR_SECRET),
         ask: askEnabled,
@@ -223,7 +229,7 @@ export function createApp({
       .filter((n) => (n.flags ?? 0) < HIDE_AFTER_FLAGS)
       .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
       .slice(0, 12)
-      .map((n) => ({ id: n.rowKey, text: n.text, name: n.name, timestamp: n.timestamp }));
+      .map((n) => ({ id: n.rowKey, text: n.text, name: n.name, timestamp: n.timestamp, audioUrl: n.audioUrl || undefined }));
     res.json(notes);
   }));
 
@@ -652,6 +658,11 @@ export function createApp({
     await store.upsert('alerts', { partitionKey: 'alert', rowKey: req.params.id, sentAt: new Date().toISOString() });
     res.json({ ok: true });
   }));
+
+  addSocial({
+    app, photon, env, store, trees, byCode, personaById, wrap, bad, requirePlayer, playerSummary,
+    photos, upload, askModel, currentWeather, hashPlayer, logEvent, questCheck, listen, ...social,
+  });
 
   app.use('/api/photon', photon);
 
