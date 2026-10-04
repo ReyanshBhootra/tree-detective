@@ -1,8 +1,63 @@
 {
-  "TD-001": { "searches": ["Eberhardt Hall NJIT", "Eberhardt Hall Newark", "Newark Orphan Asylum"], "keywords": ["eberhardt", "orphan"] },
-  "TD-002": { "searches": ["Central King Building", "Central High School Newark New Jersey"], "keywords": ["central king", "central high", "ckb"] },
-  "TD-003": { "searches": ["Weston Hall NJIT", "NJIT Weston Hall"], "keywords": ["weston"] },
-  "TD-004": { "searches": ["New Jersey Institute of Technology campus", "NJIT campus"], "keywords": [] },
-  "TD-005": { "searches": ["Specht Building NJIT", "NJIT Specht"], "keywords": ["specht"] },
-  "TD-006": { "searches": ["Cullimore Hall NJIT", "Cullimore Hall"], "keywords": ["cullimore"] }
+  "TD-001": {
+    "searches": [
+      "Eberhardt Hall NJIT",
+      "Eberhardt Hall Newark",
+      "Newark Orphan Asylum"
+    ],
+    "keywords": [
+      "eberhardt",
+      "orphan"
+    ]
+  },
+  "TD-002": {
+    "searches": [
+      "Central King Building",
+      "Central High School Newark New Jersey"
+    ],
+    "keywords": [
+      "central king",
+      "newark",
+      "njit",
+      "new jersey institute"
+    ]
+  },
+  "TD-003": {
+    "searches": [
+      "Weston Hall NJIT",
+      "NJIT Weston Hall"
+    ],
+    "keywords": [
+      "weston"
+    ]
+  },
+  "TD-004": {
+    "searches": [
+      "New Jersey Institute of Technology campus",
+      "NJIT campus",
+      "NJIT Newark"
+    ],
+    "keywords": [
+      "new jersey institute of technology",
+      "njit"
+    ]
+  },
+  "TD-005": {
+    "searches": [
+      "Specht Building NJIT",
+      "NJIT Specht"
+    ],
+    "keywords": [
+      "specht"
+    ]
+  },
+  "TD-006": {
+    "searches": [
+      "Cullimore Hall NJIT",
+      "Cullimore Hall"
+    ],
+    "keywords": [
+      "cullimore"
+    ]
+  }
 }

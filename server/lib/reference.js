@@ -17,7 +17,7 @@ export async function getJson(url, fetchImpl = fetch, tries = 3) {
   }
 }
 
-const BAD = /logo|seal|map|diagram|plan|svg|icon|flag/i;
+const BAD = /logo|seal|\bmap\b|diagram|floor ?plan|svg|icon|flag/i;
 
 // Turns a Commons API "pages" object into usable photos, best first.
 export function photosFrom(pages, keywords = []) {
@@ -27,7 +27,10 @@ export function photosFrom(pages, keywords = []) {
     .filter((p) => p.info && p.info.mime === 'image/jpeg' && !BAD.test(p.title))
     .map((p) => {
       const meta = p.info.extmetadata ?? {};
-      const matches = kw.filter((k) => p.title.toLowerCase().includes(k)).length;
+      // Match on the title, the description and the Commons categories, so
+      // "Central High School 1.jpg" only counts if it says Newark somewhere.
+      const text = [p.title, strip(meta.ImageDescription?.value), strip(meta.Categories?.value)].join(' ').toLowerCase();
+      const matches = kw.filter((k) => text.includes(k)).length;
       return {
         title: p.title,
         matches,

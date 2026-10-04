@@ -24,6 +24,13 @@ let changed = false;
 for (const tree of trees) {
   if (only.length && !only.includes(tree.code)) continue;
   const file = path.join(outDir, `${tree.code}.jpg`);
+  // You deleted a photo you didn't like: forget it so a new one can be found.
+  if (tree.referencePhoto && !fs.existsSync(path.join(ROOT, 'web', tree.referencePhoto.replace(/^\/+/, '')))) {
+    delete tree.referencePhoto;
+    delete tree.referenceCredit;
+    delete tree.referenceSource;
+    changed = true;
+  }
   if (fs.existsSync(file) && !tree.referenceCredit && !force) {
     console.log(`${tree.code}: your own photo is already there, keeping it`);
     tree.referencePhoto = `/reference/${tree.code}.jpg`;
