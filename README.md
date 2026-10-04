@@ -30,6 +30,10 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 - Table Storage and Blob Storage for visits, reports and photos
 - App Service / Static Web Apps for hosting
 
+## ElevenLabs
+
+Each of the 9 tree personalities has its own ElevenLabs voice (set in `data/personas.json`, or override one with `ELEVENLABS_VOICE_ELDER=...` and so on). With `ELEVENLABS_API_KEY` set, `npm run audio` and `npm run translate` record every story in English, Spanish, Portuguese and Haitian Creole, and trees answer "Ask me something" out loud. Without it, Azure Speech does the voices.
+
 ## TigerData
 
 Every visit, report and season sighting is also written to a TimescaleDB hypertable in TigerData. The grounds dashboard's week-by-week charts and "season firsts" come straight from it. Sourced facts are stored there with vector embeddings (pgvector, with pgvectorscale's DiskANN index when available), so when you ask a tree something it pulls the most relevant sourced facts, including campus-wide ones from `data/facts/campus.json`.

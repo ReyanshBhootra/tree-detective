@@ -438,7 +438,7 @@ function openStory(tree, visitNote, { keepNote = false } = {}) {
   $('narration-progress').style.width = '0';
   narrator = new Narrator(view, (x) => paintProgress(view, x), () => { $('btn-play').textContent = '↺'; $('btn-play').setAttribute('aria-label', 'Play again'); });
   const modeNote = {
-    azure: `Voice: ${p.voice} (Azure Speech)`,
+    azure: `Voice: recorded with ${state.config.features.voice ?? 'Azure Speech'}`,
     browser: 'Voice: your browser (Azure narration not generated yet)',
     none: 'This browser cannot read aloud.',
   }[narrator.mode];

@@ -1,13 +1,14 @@
 // npm run translate [-- TD-001] [--force]
 // Translates each story into Spanish, Portuguese and Haitian Creole with Azure
-// AI Translator, then records Spanish and Portuguese narration with Azure Speech
-// (Azure has no Kreyòl voice yet, so Kreyòl is text the browser can read).
+// AI Translator, then records narration in each language (ElevenLabs covers
+// all of them; Azure Speech has no Kreyòl voice, so with Azure, Kreyòl is text only).
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees, loadPersonas } from '../server/lib/trees.js';
-import { LANGUAGES, voiceFor } from '../server/lib/languages.js';
-import { translate, speak } from '../server/lib/azure.js';
+import { LANGUAGES } from '../server/lib/languages.js';
+import { translate } from '../server/lib/azure.js';
+import { createVoice } from '../server/lib/voice.js';
 
 loadEnv();
 const args = process.argv.slice(2);
@@ -15,7 +16,7 @@ const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--'));
 const targets = Object.keys(LANGUAGES).filter((l) => l !== 'en');
 const personas = new Map(loadPersonas().map((p) => [p.id, p]));
-const speech = Boolean(process.env.AZURE_SPEECH_KEY && process.env.AZURE_SPEECH_REGION);
+const voice = createVoice();
 fs.mkdirSync(path.join(ROOT, 'web', 'audio'), { recursive: true });
 
 const trees = loadTrees();
@@ -34,16 +35,19 @@ for (const tree of trees) {
     }
     console.log('done');
   }
-  if (!speech) continue;
+  if (!voice) continue;
   const persona = personas.get(tree.persona);
   for (const l of targets) {
-    const voice = voiceFor(persona, l);
-    if (!voice || tree.audio[l] || !tree.translations[l]) continue;
+    if (!voice.canSpeak(persona, l) || tree.audio[l] || !tree.translations[l]) continue;
     const name = `${tree.code}.${l}.mp3`;
-    fs.writeFileSync(path.join(ROOT, 'web', 'audio', name), await speak(process.env, tree.translations[l].story, persona, voice));
-    tree.audio[l] = `/audio/${name}`;
-    console.log(`  ${l} narration as ${voice}`);
+    try {
+      fs.writeFileSync(path.join(ROOT, 'web', 'audio', name), await voice.speak(tree.translations[l].story, persona, l));
+      tree.audio[l] = `/audio/${name}`;
+      console.log(`  ${l} narration by ${voice.provider}`);
+    } catch (e) {
+      console.log(`  ${l} narration failed: ${e.message}`);
+    }
   }
 }
 saveTrees(trees);
-console.log(speech ? 'Done.' : 'Done. Add Azure Speech keys to also record Spanish and Portuguese narration.');
+console.log(voice ? 'Done.' : 'Done. Add ELEVENLABS_API_KEY or Azure Speech keys to also record the narration.');

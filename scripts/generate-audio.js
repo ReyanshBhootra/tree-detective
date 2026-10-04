@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
 import { loadTrees, saveTrees, loadPersonas } from '../server/lib/trees.js';
-import { speak } from './azure.js';
+import { createVoice } from '../server/lib/voice.js';
 
 loadEnv();
 const args = process.argv.slice(2);
@@ -13,6 +13,12 @@ const only = args.filter((a) => !a.startsWith('--'));
 const outDir = path.join(ROOT, 'web', 'audio');
 fs.mkdirSync(outDir, { recursive: true });
 const personas = new Map(loadPersonas().map((p) => [p.id, p]));
+const voice = createVoice();
+if (!voice) {
+  console.error('Add ELEVENLABS_API_KEY (or Azure Speech keys) to .env first.');
+  process.exit(1);
+}
+console.log(`Voices by ${voice.provider}`);
 
 const trees = loadTrees();
 let made = 0;
@@ -21,11 +27,12 @@ for (const tree of trees) {
   if (tree.audioUrl && !force) continue;
   if (!tree.verified) console.warn(`${tree.code}: story is not verified yet, generating anyway so you can listen while reviewing`);
   const persona = personas.get(tree.persona);
-  process.stdout.write(`${tree.code} ${tree.name} as ${persona.voice}… `);
+  process.stdout.write(`${tree.code} ${tree.name} as ${voice.voiceName(persona, 'en')}… `);
   try {
-    const mp3 = await speak(process.env, tree.story, persona);
+    const mp3 = await voice.speak(tree.story, persona, 'en');
     fs.writeFileSync(path.join(outDir, `${tree.code}.mp3`), mp3);
     tree.audioUrl = `/audio/${tree.code}.mp3`;
+    tree.audio = { ...tree.audio, en: tree.audioUrl };
     made++;
     console.log('done');
   } catch (e) {

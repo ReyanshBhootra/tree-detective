@@ -325,3 +325,30 @@ test('ask prompt includes retrieved campus facts and the chosen language', async
   assert.match(m[0].content, /Campus fact \(Fact, source https:\/\/s\): A trolley ran here\./);
   assert.match(m[0].content, /Answer in Kreyòl \(language code ht\)/);
 });
+
+test('voices: ElevenLabs first, Azure as backup, nothing when neither is set', async () => {
+  const { createVoice } = await import('../server/lib/voice.js');
+  assert.equal(createVoice({}), null);
+  const calls = [];
+  const fake = async (url, opts) => {
+    calls.push({ url, opts });
+    return { ok: true, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer };
+  };
+  const v = createVoice({ ELEVENLABS_API_KEY: 'k', ELEVENLABS_VOICE_ELDER: 'custom-id', AZURE_SPEECH_KEY: 'a', AZURE_SPEECH_REGION: 'eastus' }, { fetchImpl: fake });
+  assert.equal(v.provider, 'ElevenLabs');
+  const elder = { id: 'elder', elevenVoiceId: 'default-id', voice: 'en-US-DavisNeural', gender: 'male' };
+  assert.equal(v.canSpeak(elder, 'ht'), true, 'ElevenLabs can do Kreyòl');
+  const mp3 = await v.speak('Hello', elder, 'ht');
+  assert.deepEqual([...mp3], [1, 2, 3]);
+  assert.match(calls[0].url, /text-to-speech\/custom-id\?output_format=mp3/);
+  assert.equal(calls[0].opts.headers['xi-api-key'], 'k');
+  const body = JSON.parse(calls[0].opts.body);
+  assert.equal(body.model_id, 'eleven_v3');
+  assert.equal(body.language_code, 'ht');
+  await v.speak('Hola', { ...elder, id: 'sprout' }, 'es');
+  assert.equal(JSON.parse(calls[1].opts.body).model_id, 'eleven_multilingual_v2');
+  const azure = createVoice({ AZURE_SPEECH_KEY: 'a', AZURE_SPEECH_REGION: 'eastus' });
+  assert.equal(azure.provider, 'Azure Speech');
+  assert.equal(azure.canSpeak(elder, 'ht'), false, 'Azure has no Kreyòl voice');
+  assert.ok(loadPersonas().every((p) => p.elevenVoiceId));
+});

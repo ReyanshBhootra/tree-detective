@@ -17,8 +17,9 @@ import { planRoute } from './lib/geo.js';
 import { verifyTreeKey } from './lib/qr.js';
 import { rateLimiter } from './lib/ratelimit.js';
 import { loadFacts, buildAskMessages } from './lib/ask.js';
-import { chat, speak, embed } from './lib/azure.js';
-import { LANGUAGES, isLanguage, voiceFor } from './lib/languages.js';
+import { chat, embed } from './lib/azure.js';
+import { createVoice } from './lib/voice.js';
+import { LANGUAGES, isLanguage } from './lib/languages.js';
 import { createTiger } from './lib/tiger.js';
 import { computeTrends, computeSeasonTimeline } from './lib/trends.js';
 import { createWeather, weatherLine } from './lib/weather.js';
@@ -37,7 +38,7 @@ export function createApp({
   personas = loadPersonas(),
   vision = (buf, mime) => analyzePhoto(buf, env, fetch, mime),
   askModel = (messages) => chat(env, messages, { temperature: 0.6, maxTokens: 200 }),
-  voice = (text, persona) => speak(env, text, persona),
+  voice = createVoice(env),
   facts = (code) => loadFacts(code),
   askEnabled = Boolean(env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_KEY && env.AZURE_OPENAI_CHAT_DEPLOYMENT),
   tiger = createTiger(env),
@@ -57,7 +58,6 @@ export function createApp({
   const hashPlayer = (id) => hash(id);
   const reportLimit = rateLimiter(REPORT_LIMIT_PER_HOUR);
   const askLimit = rateLimiter(ASK_LIMIT_PER_HOUR);
-  const speechReady = Boolean(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION);
 
   const noteLimit = rateLimiter(NOTE_LIMIT_PER_HOUR);
   const currentWeather = weather ?? (trees.length ? createWeather(centroid()) : async () => null);
@@ -155,6 +155,7 @@ export function createApp({
         signedTags: Boolean(env.QR_SECRET),
         ask: askEnabled,
         tigerData: Boolean(tiger),
+        voice: voice?.provider ?? null,
       },
     });
   });
@@ -413,10 +414,9 @@ export function createApp({
     }
     const answer = (await askModel(buildAskMessages(tree, persona, facts(tree.code), question, { retrieved, lang }))).slice(0, 600);
     let audio = null;
-    const voiceName = persona && voiceFor(persona, lang);
-    if (speechReady && voiceName) {
+    if (voice && voice.canSpeak(persona, lang)) {
       try {
-        audio = `data:audio/mpeg;base64,${(await voice(answer, persona, voiceName)).toString('base64')}`;
+        audio = `data:audio/mpeg;base64,${(await voice.speak(answer, persona, lang)).toString('base64')}`;
       } catch (e) {
         console.warn('speech failed:', e.message);
       }
