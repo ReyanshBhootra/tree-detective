@@ -24,7 +24,7 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 - Speech for each tree's voice
 - OpenAI for writing the stories and time-lapse images (ahead of time), and for "Ask me something", where you can ask a tree a question and it answers only from its own sourced facts
 - Custom Vision for spotting pests and damage in photos (species guesses use the free [Pl@ntNet API](https://my.plantnet.org) if you add a key)
-- Translator to tell each story in Spanish, Portuguese, Haitian Creole, Chinese, Hindi and Gujarati, with Speech as the backup voice
+- Translator to tell each story in Spanish, Chinese, Hindi and Gujarati, with Speech as the backup voice
 - OpenAI embeddings so trees can look up their sourced facts
 - Communication Services Email for the weekly grounds summary
 - Table Storage and Blob Storage for visits, reports and photos
@@ -32,7 +32,7 @@ It runs fine without any Azure keys, it just falls back to local files and the b
 
 ## ElevenLabs
 
-Each of the 9 tree personalities has its own ElevenLabs voice (set in `data/personas.json`, or override one with `ELEVENLABS_VOICE_ELDER=...` and so on). With `ELEVENLABS_API_KEY` set, `npm run audio` and `npm run translate` record every story in all 7 languages, and trees answer "Ask me something" out loud. Without it, Azure Speech does the voices.
+Each of the 9 tree personalities has its own ElevenLabs voice (set in `data/personas.json`, or override one with `ELEVENLABS_VOICE_ELDER=...` and so on). With `ELEVENLABS_API_KEY` set, `npm run audio` and `npm run translate` record every story in all 5 languages, and trees answer "Ask me something" out loud. Without it, Azure Speech does the voices.
 
 ## TigerData
 
@@ -64,7 +64,7 @@ To write a tree's story, put the facts and sources in `data/facts/<code>.json` (
 npm run stories     # writes the story in the tree's voice
 npm run timelapse   # makes the time-lapse images
 npm run audio       # records the narration
-npm run translate   # Spanish, Portuguese, Kreyòl, Chinese, Hindi and Gujarati (+ voices)
+npm run translate   # Spanish, Chinese, Hindi and Gujarati (+ voices)
 npm run historic    # adds a real 1930s aerial photo of the spot to the time-lapse
 npm run qr          # printable QR tags, set PUBLIC_URL and QR_SECRET first
 ```

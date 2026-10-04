@@ -220,13 +220,14 @@ test('ask prompt keeps the tree to its own facts', async () => {
   assert.equal(m[1].content, 'what was here?');
 });
 
-test('languages: voices follow the persona, Kreyòl is text only', async () => {
+test('languages: voices follow the persona', async () => {
   const { voiceFor, isLanguage } = await import('../server/lib/languages.js');
   assert.equal(voiceFor({ voice: 'en-US-DavisNeural', gender: 'male' }, 'es'), 'es-US-AlonsoNeural');
-  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'pt'), 'pt-BR-FranciscaNeural');
+  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'hi'), 'hi-IN-SwaraNeural');
   assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'en'), 'en-US-JaneNeural');
-  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'ht'), null);
-  assert.equal(isLanguage('ht'), true);
+  assert.equal(voiceFor({ voice: 'en-US-JaneNeural', gender: 'female' }, 'pt'), null);
+  assert.equal(isLanguage('gu'), true);
+  assert.equal(isLanguage('pt'), false);
   assert.equal(isLanguage('toString'), false);
   const personas = loadPersonas();
   assert.ok(personas.every((p) => p.gender === 'male' || p.gender === 'female'));
@@ -320,10 +321,10 @@ test('TigerData: schema, hypertable, vector search and event logging', async () 
 test('ask prompt includes retrieved campus facts and the chosen language', async () => {
   const { buildAskMessages } = await import('../server/lib/ask.js');
   const m = buildAskMessages({ name: 'Riddle', story: 'Hi.' }, null, null, 'q', {
-    lang: 'ht', retrieved: [{ text: 'A trolley ran here.', label: 'Fact', source_url: 'https://s', tree_code: null }],
+    lang: 'gu', retrieved: [{ text: 'A trolley ran here.', label: 'Fact', source_url: 'https://s', tree_code: null }],
   });
   assert.match(m[0].content, /Campus fact \(Fact, source https:\/\/s\): A trolley ran here\./);
-  assert.match(m[0].content, /Answer in Haitian Creole \(Kreyòl, language code ht\)/);
+  assert.match(m[0].content, /Answer in Gujarati \(ગુજરાતી, language code gu\)/);
 });
 
 test('voices: ElevenLabs first, Azure as backup, nothing when neither is set', async () => {
@@ -337,25 +338,26 @@ test('voices: ElevenLabs first, Azure as backup, nothing when neither is set', a
   const v = createVoice({ ELEVENLABS_API_KEY: 'k', ELEVENLABS_VOICE_ELDER: 'custom-id', AZURE_SPEECH_KEY: 'a', AZURE_SPEECH_REGION: 'eastus' }, { fetchImpl: fake });
   assert.equal(v.provider, 'ElevenLabs');
   const elder = { id: 'elder', elevenVoiceId: 'default-id', voice: 'en-US-DavisNeural', gender: 'male' };
-  assert.equal(v.canSpeak(elder, 'ht'), true, 'ElevenLabs can do Kreyòl');
-  const mp3 = await v.speak('Hello', elder, 'ht');
+  assert.equal(v.canSpeak(elder, 'gu'), true);
+  const mp3 = await v.speak('Hello', elder, 'gu');
   assert.deepEqual([...mp3], [1, 2, 3]);
   assert.match(calls[0].url, /text-to-speech\/custom-id\?output_format=mp3/);
   assert.equal(calls[0].opts.headers['xi-api-key'], 'k');
   const body = JSON.parse(calls[0].opts.body);
   assert.equal(body.model_id, 'eleven_v3');
-  assert.equal(body.language_code, 'ht');
+  assert.equal(body.language_code, 'gu');
   await v.speak('Hola', { ...elder, id: 'sprout' }, 'es');
   assert.equal(JSON.parse(calls[1].opts.body).model_id, 'eleven_multilingual_v2');
   const azure = createVoice({ AZURE_SPEECH_KEY: 'a', AZURE_SPEECH_REGION: 'eastus' });
   assert.equal(azure.provider, 'Azure Speech');
-  assert.equal(azure.canSpeak(elder, 'ht'), false, 'Azure has no Kreyòl voice');
+  assert.equal(azure.canSpeak(elder, 'zh'), true);
+  assert.equal(azure.canSpeak(elder, 'pt'), false, 'unknown language');
   assert.ok(loadPersonas().every((p) => p.elevenVoiceId));
 });
 
-test('seven languages, and Translator gets its own code for Chinese', async () => {
+test('five languages, and Translator gets its own code for Chinese', async () => {
   const { LANGUAGES, voiceFor } = await import('../server/lib/languages.js');
-  assert.deepEqual(Object.keys(LANGUAGES), ['en', 'es', 'pt', 'ht', 'zh', 'hi', 'gu']);
+  assert.deepEqual(Object.keys(LANGUAGES), ['en', 'es', 'zh', 'hi', 'gu']);
   assert.equal(voiceFor({ voice: 'x', gender: 'female' }, 'gu'), 'gu-IN-DhwaniNeural');
   const { translate } = await import('../server/lib/azure.js');
   const realFetch = globalThis.fetch;

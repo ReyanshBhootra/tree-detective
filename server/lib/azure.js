@@ -66,7 +66,7 @@ export async function embed(env, input) {
   return Array.isArray(input) ? data.map((d) => d.embedding) : data[0].embedding;
 }
 
-// Azure AI Translator. Haitian Creole is "ht", Simplified Chinese is "zh-Hans".
+// Azure AI Translator. Simplified Chinese is "zh-Hans".
 // `to` uses our codes; `codeMap` maps any that Translator spells differently.
 export async function translate(env, text, to, codeMap = {}) {
   need(env, 'AZURE_TRANSLATOR_KEY', 'AZURE_TRANSLATOR_REGION');

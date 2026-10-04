@@ -1,12 +1,11 @@
 // One place that turns text into a tree's voice.
-// ElevenLabs when ELEVENLABS_API_KEY is set (more expressive, and it covers
-// Haitian Creole, which Azure Speech doesn't), otherwise Azure Speech.
+// ElevenLabs when ELEVENLABS_API_KEY is set (more expressive), otherwise Azure Speech.
 import { speak as azureSpeak } from './azure.js';
 import { voiceFor } from './languages.js';
 
-// eleven_multilingual_v2 covers English, Spanish, Portuguese, Chinese and Hindi;
-// Kreyòl and Gujarati need the newer eleven_v3.
-const ELEVEN_MODEL_FOR = { ht: 'eleven_v3', gu: 'eleven_v3' };
+// eleven_multilingual_v2 covers English, Spanish, Chinese and Hindi;
+// Gujarati needs the newer eleven_v3.
+const ELEVEN_MODEL_FOR = { gu: 'eleven_v3' };
 
 export async function elevenSpeak(env, text, voiceId, { lang = 'en', fetchImpl = fetch } = {}) {
   const model = ELEVEN_MODEL_FOR[lang] ?? env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2';

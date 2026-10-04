@@ -1,8 +1,6 @@
 // npm run translate [-- TD-001] [--force]
-// Translates each story into Spanish, Portuguese, Haitian Creole, Chinese,
-// Hindi and Gujarati with Azure
-// AI Translator, then records narration in each language (ElevenLabs covers
-// all of them; Azure Speech has no Kreyòl voice, so with Azure, Kreyòl is text only).
+// Translates each story into Spanish, Chinese, Hindi and Gujarati with Azure
+// AI Translator, then records narration in each language (ElevenLabs, or Azure Speech).
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadEnv, ROOT } from '../server/config.js';
