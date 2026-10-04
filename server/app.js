@@ -70,6 +70,14 @@ export function createApp({
   const askLimit = rateLimiter(ASK_LIMIT_PER_HOUR);
 
   const noteLimit = rateLimiter(NOTE_LIMIT_PER_HOUR);
+  // The Photon companion sends everyone's iMessages from one machine, so its
+  // requests are limited per player instead of per network.
+  const fromPhoton = (req) => {
+    const key = env.PHOTON_API_KEY;
+    const given = req.get('x-photon-key') ?? '';
+    return Boolean(key) && given.length === key.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(key));
+  };
+  const limitKey = (req, kind, playerId) => hash(fromPhoton(req) ? `${kind}:player:${playerId}` : `${kind}:${req.ip}`);
   const currentWeather = weather ?? (trees.length ? createWeather(centroid()) : async () => null);
   // TigerData writes never block or break a request.
   const logEvent = (e) => tiger?.logEvent(e).catch((err) => console.warn('tigerdata:', err.message));
@@ -357,7 +365,7 @@ export function createApp({
     const season = String(req.body.season || '').toLowerCase();
     if (season && !SEASONS.includes(season)) return bad(res, `season must be one of ${SEASONS.join(', ')}`);
     if (!req.file && flagType === 'none' && !season) return bad(res, 'send a photo, a flag, a season sighting, or all three');
-    if (!reportLimit(hash(`ip:${req.ip}`))) return bad(res, 'Lots of reports from this network. Try again in a bit.', 429);
+    if (!reportLimit(limitKey(req, 'ip', playerId))) return bad(res, 'Lots of reports from this network. Try again in a bit.', 429);
 
     let analysis = { available: false };
     let photoUrl = '';
@@ -472,7 +480,7 @@ export function createApp({
     const question = String(req.body.question ?? '').trim().slice(0, 200);
     if (question.length < 3) return bad(res, 'ask a question first');
     if (!(await store.get('visits', playerId, tree.code))) return bad(res, 'Wake this tree first, then you can ask it things.', 403);
-    if (!askLimit(hash(`ask:${req.ip}`))) return bad(res, 'The trees need a short rest. Try again soon.', 429);
+    if (!askLimit(limitKey(req, 'ask', playerId))) return bad(res, 'The trees need a short rest. Try again soon.', 429);
 
     const lang = isLanguage(req.body.lang) ? req.body.lang : 'en';
 
@@ -558,11 +566,7 @@ export function createApp({
 
   const photon = express.Router();
   photon.use((req, res, next) => {
-    const key = env.PHOTON_API_KEY;
-    const given = req.get('x-photon-key') ?? '';
-    if (!key || given.length !== key.length || !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(key))) {
-      return bad(res, 'not allowed', 401);
-    }
+    if (!fromPhoton(req)) return bad(res, 'not allowed', 401);
     next();
   });
 
@@ -578,6 +582,25 @@ export function createApp({
       linkedAt: new Date().toISOString(), lastNudgedAt: '', nudges: 'on',
     });
     res.json(await playerSummary(row.playerId));
+  }));
+
+  // iMessage-only explorers: the first text creates a player for that number,
+  // no website or sign-in needed. Linking from the website later replaces it.
+  photon.post('/players/:senderId/start', wrap(async (req, res) => {
+    const senderId = req.params.senderId;
+    let link = await store.get('links', 'link', senderId);
+    const isNew = !link;
+    if (!link) {
+      link = {
+        partitionKey: 'link', rowKey: senderId, playerId: `imsg-${crypto.randomUUID()}`, spaceId: req.body?.spaceId ?? '',
+        linkedAt: new Date().toISOString(), lastNudgedAt: '', nudges: 'on', lang: 'en', currentTree: '',
+      };
+      await store.upsert('links', link);
+    }
+    res.json({
+      isNew, playerId: link.playerId, lang: link.lang || 'en', currentTree: link.currentTree || null,
+      ...(await playerSummary(link.playerId)),
+    });
   }));
 
   photon.get('/players/:senderId', wrap(async (req, res) => {
@@ -604,9 +627,14 @@ export function createApp({
   photon.post('/links/:senderId/prefs', wrap(async (req, res) => {
     const link = await store.get('links', 'link', req.params.senderId);
     if (!link) return bad(res, 'not linked', 404);
-    const nudges = req.body?.nudges === false ? 'off' : 'on';
-    await store.upsert('links', { partitionKey: 'link', rowKey: req.params.senderId, nudges });
-    res.json({ ok: true, nudges: nudges === 'on' });
+    const b = req.body ?? {};
+    const row = { partitionKey: 'link', rowKey: req.params.senderId };
+    if (typeof b.nudges === 'boolean') row.nudges = b.nudges ? 'on' : 'off';
+    if (isLanguage(b.lang)) row.lang = b.lang;
+    if (typeof b.currentTree === 'string' && (b.currentTree === '' || byCode.has(b.currentTree))) row.currentTree = b.currentTree;
+    await store.upsert('links', row);
+    const now = { ...link, ...row };
+    res.json({ ok: true, nudges: now.nudges !== 'off', lang: now.lang || 'en', currentTree: now.currentTree || null });
   }));
 
   // Confirmed problems waiting to be texted to the grounds team.

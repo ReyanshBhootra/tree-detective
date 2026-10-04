@@ -6,42 +6,60 @@
 //   npm run photon:nudge        send any due nudges once and exit
 import { pathToFileURL } from 'node:url';
 import { loadEnv } from '../server/config.js';
-import { parse, reply, nudgeText, dueForNudge, alertText, NOT_LINKED } from './commands.js';
+import { nudgeText, dueForNudge, alertText } from './commands.js';
+import { createBot } from './bot.js';
+import { readTag } from '../server/lib/qrread.js';
+import { geminiReadTag } from '../server/lib/gemini.js';
 
 loadEnv();
 const API = (process.env.API_BASE || 'http://localhost:3000').replace(/\/+$/, '');
 const KEY = process.env.PHOTON_API_KEY;
 const INTERVAL_H = Number(process.env.NUDGE_INTERVAL_HOURS || 24);
 
-async function api(path, { method = 'GET', body } = {}) {
-  const res = await fetch(`${API}${path}`, {
-    method,
-    headers: { 'content-type': 'application/json', 'x-photon-key': KEY },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+async function api(path, { method = 'GET', body, form, raw } = {}) {
+  const headers = { 'x-photon-key': KEY };
+  if (body) headers['content-type'] = 'application/json';
+  const res = await fetch(`${API}${path}`, { method, headers, body: form ?? (body ? JSON.stringify(body) : undefined) });
+  if (raw) {
+    return { status: res.status, ok: res.ok, buffer: res.ok ? Buffer.from(await res.arrayBuffer()) : null, mimeType: res.headers.get('content-type') };
+  }
   const json = await res.json().catch(() => ({}));
   return { status: res.status, ok: res.ok, json };
 }
 
-export async function handleText(text, senderId, spaceId, trees) {
-  const intent = parse(text);
-  if (intent.intent === 'link') {
-    const r = await api('/api/photon/link', { method: 'POST', body: { code: intent.code, senderId, spaceId } });
-    if (!r.ok) return 'That code didn\'t work. Codes last 30 minutes, so grab a fresh one from the website.';
-    return `Linked! You have ${r.json.totalPoints} points so far. Text "help" any time to see what I can do.`;
+// QR first, then Gemini reads the printed code if the QR is blurry.
+const readText = process.env.GEMINI_API_KEY ? (buf, mime) => geminiReadTag(process.env, buf, mime) : null;
+const bot = createBot({
+  api,
+  readTag: (buf, mime) => readTag(buf, mime, { readText }),
+  publicUrl: (process.env.PUBLIC_URL || '').replace(/\/+$/, ''),
+});
+
+// Turns a Photon message into the plain pieces the bot understands.
+async function contentsOf(content) {
+  if (!content) return [];
+  if (content.type === 'group') return (await Promise.all(content.items.map((m) => contentsOf(m.content)))).flat();
+  if (content.type === 'text') return [{ type: 'text', text: content.text }];
+  if (content.type === 'attachment' && /^image\//.test(content.mimeType ?? '')) {
+    return [{ type: 'image', buffer: await content.read(), mimeType: content.mimeType, name: content.name }];
   }
-  if (intent.intent === 'nudges-off' || intent.intent === 'nudges-on') {
-    const r = await api(`/api/photon/links/${encodeURIComponent(senderId)}/prefs`, {
-      method: 'POST', body: { nudges: intent.intent === 'nudges-on' },
-    });
-    if (!r.ok) return NOT_LINKED;
-    return r.json.nudges ? 'Reminders are back on.' : 'Okay, no more reminders. Text "start" to turn them back on.';
+  if (content.type === 'voice' || (content.type === 'attachment' && /^audio\//.test(content.mimeType ?? ''))) return [{ type: 'voice' }];
+  return [];
+}
+
+async function sendAll(space, parts, { text, voice, attachment }) {
+  for (const p of parts) {
+    if (p.type === 'text') {
+      await space.send(text(p.text));
+    } else if (p.type === 'voice') {
+      const ext = p.mimeType.includes('wav') ? 'wav' : 'mp3';
+      try {
+        await space.send(voice(p.buffer, { mimeType: p.mimeType, name: `tree.${ext}` }));
+      } catch {
+        await space.send(attachment(p.buffer, { mimeType: p.mimeType, name: `tree-story.${ext}` }));
+      }
+    }
   }
-  if (intent.intent === 'help') return reply(intent, null, trees);
-  const r = await api(`/api/photon/players/${encodeURIComponent(senderId)}`);
-  if (r.status === 404) return NOT_LINKED;
-  if (!r.ok) return 'The grove is a little sleepy right now. Try again in a minute.';
-  return reply(intent, r.json, trees);
 }
 
 async function sendNudges(spectrum, imessage, text) {
@@ -101,7 +119,7 @@ async function main() {
     console.error('Set PHOTON_API_KEY to the same value the API server uses.');
     process.exit(1);
   }
-  const { Spectrum, text } = await import('spectrum-ts');
+  const { Spectrum, text, voice, attachment } = await import('spectrum-ts');
   const { imessage } = await import('spectrum-ts/providers/imessage');
   console.log('Connecting to Photon…');
   const spectrum = await Spectrum({
@@ -116,9 +134,8 @@ async function main() {
     return;
   }
 
-  let trees;
   try {
-    trees = await (await fetch(`${API}/api/trees`)).json();
+    await bot.loadTrees();
   } catch {
     console.error(`Can't reach the app at ${API}. Start it first with "npm start" in another window.`);
     process.exit(1);
@@ -130,14 +147,21 @@ async function main() {
   console.log('Photon companion listening for iMessages.');
 
   for await (const [space, message] of spectrum.messages) {
-    if (message.direction !== 'inbound' || message.content?.type !== 'text' || !message.sender) continue;
-    await space.responding(async () => {
+    if (message.direction !== 'inbound' || !message.sender) continue;
+    // Handle each message on its own so one slow photo never blocks everyone else.
+    (async () => {
       try {
-        await message.reply(await handleText(message.content.text, message.sender.id, space.id, trees));
+        const contents = await contentsOf(message.content);
+        if (!contents.length) return;
+        await space.responding(async () => {
+          const parts = await bot.handle({ senderId: message.sender.id, spaceId: space.id, contents });
+          await sendAll(space, parts, { text, voice, attachment });
+        });
       } catch (e) {
         console.warn('reply failed:', e.message);
+        await space.send(text('The grove is a little sleepy right now. Try again in a minute.')).catch(() => {});
       }
-    });
+    })();
   }
 }
 

@@ -171,3 +171,34 @@ export async function geminiHealth(env, buffer, mime, fetchImpl = fetch) {
   if (!HEALTH_LABELS.includes(out.label)) throw new Error(`Gemini gave an unknown label: ${out.label}`);
   return { label: out.label, confidence: Math.max(0, Math.min(1, Number(out.confidence) || 0)), reason: String(out.reason ?? '').slice(0, 200) };
 }
+
+// Reads the text printed on a Tree Detective tag (backup when the QR won't decode).
+export async function geminiReadTag(env, buffer, mime, fetchImpl = fetch) {
+  const name = await model(env, 'chat', fetchImpl);
+  const json = await call(env, name, 'generateContent', {
+    contents: [{
+      role: 'user',
+      parts: [
+        {
+          text:
+            'This photo may show a "Tree Detective" tag: a QR code with a code printed under it like "TD-001-AB12CD", ' +
+            'or a screen showing such a tag. Copy the printed code exactly. If you can read a web link, copy it too. ' +
+            'If there is no tag, return empty strings.',
+        },
+        { inlineData: { mimeType: mime, data: buffer.toString('base64') } },
+      ],
+    }],
+    generationConfig: {
+      temperature: 0,
+      ...thinking(name, 200),
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'OBJECT',
+        properties: { code: { type: 'STRING' }, link: { type: 'STRING' } },
+        required: ['code', 'link'],
+      },
+    },
+  }, fetchImpl);
+  const out = JSON.parse((json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join(''));
+  return out.link || out.code || '';
+}

@@ -38,6 +38,14 @@ if (new URLSearchParams(location.search).has('reset')) {
   } catch { /* nothing stored */ }
   history.replaceState(null, '', location.pathname);
 }
+// From iMessage ("map"): open the site as the same explorer, so their awake trees show.
+{
+  const fromText = new URLSearchParams(location.search).get('player');
+  if (fromText && /^imsg-[a-f0-9-]{36}$/.test(fromText)) {
+    try { localStorage.setItem('td-player', fromText); } catch { /* private mode */ }
+    history.replaceState(null, '', location.pathname);
+  }
+}
 
 // Anonymous player id. Nothing personal, just a random id kept on this device.
 const playerId = (() => {

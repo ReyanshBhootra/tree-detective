@@ -23,8 +23,8 @@ test('parses the five questions from the doc', () => {
 });
 
 test('link codes and reminder controls', () => {
-  assert.deepEqual(parse(' k7mq2p '), { intent: 'link', code: 'K7MQ2P' });
-  assert.equal(parse('KOMQ2P').intent, 'help'); // O is not in the code alphabet
+  assert.deepEqual(parse(' k7mq2p '), { intent: 'link', code: 'K7MQ2P', text: 'k7mq2p' });
+  assert.equal(parse('KOMQ2P').intent, 'chat'); // O is not in the code alphabet
   assert.equal(parse('STOP').intent, 'nudges-off');
   assert.equal(parse('start').intent, 'nudges-on');
 });
@@ -62,4 +62,18 @@ test('grounds alert text', () => {
   assert.match(msg, /maps\?q=40\.742,-74\.179/);
   assert.match(msg, /1-833-223-2840/);
   assert.doesNotMatch(alertText({ flagType: 'damage', treeName: 'X', treeCode: 'X', reporters: 5, lat: 1, lng: 1, mapUrl: 'u' }, '1-833'), /1-833/);
+});
+
+test('iMessage-only commands', async () => {
+  const { parse: p, reportText, wakeText } = await import('../photon/commands.js');
+  assert.deepEqual(p('TD-001-8MG3JE'), { intent: 'wake', code: 'TD-001', key: '8MG3JE' });
+  assert.equal(p('spanish').lang, 'es');
+  assert.equal(p('ગુજરાતી').lang, 'gu');
+  assert.equal(p('report a broken branch').flag, 'damage');
+  assert.equal(p('talk to whisper').query, 'whisper');
+  assert.equal(p('story').query, null);
+  // questions go to the tree, not to commands
+  for (const q of ['where did you come from?', 'have you seen a squirrel?', 'who lived here first?']) assert.equal(p(q).intent, 'chat', q);
+  assert.match(wakeText({ name: 'Old Oakley' }, { firstVisit: true, pointsEarned: 10, visited: [1], totalTrees: 6 }), /You woke Old Oakley! \+10 points\. 1 of 6/);
+  assert.match(reportText({ name: 'Whisper' }, { species: { guess: 'Pin oak', confidence: 0.82 }, flag: { flagType: 'pest', status: 'possible', reporters: 2 } }), /Pin oak \(82% sure\).*possible pests \(2 of 5/);
 });
