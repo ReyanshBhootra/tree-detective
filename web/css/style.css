@@ -323,8 +323,8 @@ dialog.sheet[open] { animation: sheet-in 0.35s cubic-bezier(.2, .9, .3, 1.2); }
 
 /* route panel */
 .panel {
-  position: fixed; z-index: 550; right: 16px; top: 76px;
-  width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 170px); overflow: auto;
+  position: fixed; z-index: 550; right: 16px; top: calc(max(12px, env(safe-area-inset-top)) + 112px);
+  width: min(320px, calc(100vw - 32px)); max-height: calc(100dvh - 210px); overflow: auto;
   background: rgba(251, 243, 223, 0.97); color: var(--ink);
   border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow);
 }
