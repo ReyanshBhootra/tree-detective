@@ -518,3 +518,23 @@ test('time-lapse eras look like real photos from their period', async () => {
   assert.match(periodLook(1985), /faded color/);
   assert.match(periodLook(2026), /modern/);
 });
+
+test('reference photo search keeps real photos of the right building', async () => {
+  const { findPhoto } = await import('../server/lib/reference.js');
+  const info = (mime) => [{ mime, url: 'u', thumburl: 't', descriptionurl: 'd', extmetadata: { Artist: { value: '<a>Jane</a>' }, LicenseShortName: { value: 'CC BY-SA 4.0' } } }];
+  const pages = {
+    1: { title: 'File:NJIT logo.jpg', index: 1, imageinfo: info('image/jpeg') },
+    2: { title: 'File:Campus street.jpg', index: 2, imageinfo: info('image/jpeg') },
+    3: { title: 'File:Eberhardt Hall 2019.jpg', index: 3, imageinfo: info('image/jpeg') },
+    4: { title: 'File:Eberhardt Hall plan.png', index: 4, imageinfo: info('image/png') },
+  };
+  const calls = [];
+  const fake = async (url) => { calls.push(url); return { ok: true, status: 200, json: async () => ({ query: { pages } }) }; };
+  const { photo } = await findPhoto({ searches: ['Eberhardt Hall'], keywords: ['eberhardt'] }, fake, 0);
+  assert.equal(photo.title, 'File:Eberhardt Hall 2019.jpg');
+  assert.equal(photo.author, 'Jane');
+  assert.equal(calls.length, 1);
+  const none = await findPhoto({ searches: ['a', 'b'], keywords: ['cullimore'] }, fake, 0);
+  assert.equal(none.photo, null);
+  assert.equal(none.tried.length, 2);
+});

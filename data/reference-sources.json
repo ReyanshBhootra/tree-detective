@@ -1,8 +1,8 @@
 {
-  "TD-001": { "wikipedia": "Eberhardt_Hall,_New_Jersey_Institute_of_Technology" },
-  "TD-002": { "wikipedia": "Central_King_Building" },
-  "TD-003": { "commons": "Weston Hall NJIT Newark", "wikipedia": "New_Jersey_Institute_of_Technology" },
-  "TD-004": { "commons": "NJIT campus Newark green", "wikipedia": "New_Jersey_Institute_of_Technology" },
-  "TD-005": { "commons": "NJIT Specht Building Newark", "wikipedia": "New_Jersey_Institute_of_Technology" },
-  "TD-006": { "commons": "Cullimore Hall NJIT", "wikipedia": "New_Jersey_Institute_of_Technology" }
+  "TD-001": { "searches": ["Eberhardt Hall NJIT", "Eberhardt Hall Newark", "Newark Orphan Asylum"], "keywords": ["eberhardt", "orphan"] },
+  "TD-002": { "searches": ["Central King Building", "Central High School Newark New Jersey"], "keywords": ["central king", "central high", "ckb"] },
+  "TD-003": { "searches": ["Weston Hall NJIT", "NJIT Weston Hall"], "keywords": ["weston"] },
+  "TD-004": { "searches": ["New Jersey Institute of Technology campus", "NJIT campus"], "keywords": [] },
+  "TD-005": { "searches": ["Specht Building NJIT", "NJIT Specht"], "keywords": ["specht"] },
+  "TD-006": { "searches": ["Cullimore Hall NJIT", "Cullimore Hall"], "keywords": ["cullimore"] }
 }
