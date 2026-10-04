@@ -5,6 +5,7 @@ import { startScanner, parseTag } from './scanner.js';
 import { shrinkPhoto } from './photo.js';
 import { initBook } from './book.js';
 import { initTimeTravel } from './timetravel.js';
+import { initSocial, loadTreeSocial } from './social.js';
 
 const API = (window.TD_CONFIG?.apiBase || '').replace(/\/+$/, '');
 const $ = (id) => document.getElementById(id);
@@ -562,6 +563,7 @@ function openStory(tree, visitNote, { keepNote = false } = {}) {
   resetReport();
   renderCompare(tree);
   loadNotes(tree);
+  loadTreeSocial(tree);
   const dlg = $('story-dialog');
   if (!dlg.open) dlg.showModal();
 
@@ -642,11 +644,12 @@ async function loadNotes(tree) {
   $('notes').hidden = false;
   $('note-form').hidden = !state.visited.has(tree.code);
   $('note-locked').hidden = state.visited.has(tree.code);
+  $('btn-memory').hidden = !state.visited.has(tree.code) || !window.MediaRecorder;
   try {
     const notes = await api(`/api/trees/${encodeURIComponent(tree.code)}/notes`);
     if (state.currentTree !== tree) return;
     list.innerHTML = notes.length
-      ? notes.map((n) => `<li><p>${escapeHtml(n.text)}</p><small>${n.name ? `${escapeHtml(n.name)} · ` : ''}${new Date(n.timestamp).toLocaleDateString()}
+      ? notes.map((n) => `<li>${n.audioUrl ? `<audio controls preload="none" src="${escapeHtml(/^https?:/.test(n.audioUrl) ? n.audioUrl : `${API}${n.audioUrl}`)}"></audio>` : ''}<p>${n.audioUrl ? '🎙️ ' : ''}${escapeHtml(n.text)}</p><small>${n.name ? `${escapeHtml(n.name)} · ` : ''}${new Date(n.timestamp).toLocaleDateString()}
           <button class="link-btn" data-flag="${escapeHtml(n.id)}">Report</button></small></li>`).join('')
       : '<li class="muted">No notes yet. Be the first.</li>';
     list.querySelectorAll('[data-flag]').forEach((b) => b.addEventListener('click', async () => {
@@ -942,19 +945,6 @@ $('route-close').addEventListener('click', () => {
   state.routeLayer = null;
 });
 
-// ---------- Photon linking ----------
-
-$('btn-link').addEventListener('click', async () => {
-  try {
-    const { code } = await api('/api/link-codes', { method: 'POST', body: JSON.stringify({ playerId }) });
-    $('link-code').textContent = code;
-    if (state.config.photonNumber) $('link-number').textContent = state.config.photonNumber;
-    $('link-dialog').showModal();
-  } catch (e) {
-    toast(e.message);
-  }
-});
-
 // ---------- boot ----------
 
 $('btn-scan').addEventListener('click', openScanner);
@@ -974,7 +964,7 @@ async function boot() {
     state.lang = known(savedLang) ? savedLang : known(browserLang) ? browserLang : 'en';
     $('note-name').value = storageGet('td-name') ?? '';
     document.querySelectorAll('.confirm-n').forEach((el) => { el.textContent = config.confirmThreshold; });
-    $('btn-link').hidden = !config.features.photon;
+    $('btn-link').hidden = !config.features.phoneLogin;
     applySummary(summary);
   } catch (e) {
     toast(`The grove is unreachable right now (${e.message}).`, 10000);
@@ -987,6 +977,7 @@ async function boot() {
   loadMapStatus();
   api('/api/weather').then((w) => { state.weather = w; renderStatusLine(); }).catch(() => {});
   initBook({ state, persona, escapeHtml, onOpenTree: (code) => openStory(state.byCode.get(code), null) });
+  initSocial({ state, api, API, playerId, toast, escapeHtml, burst, bumpPoints, refreshSummary, loadNotes });
 
   const params = new URLSearchParams(location.search);
   const tag = params.get('tree') ? parseTag(location.href) : null;

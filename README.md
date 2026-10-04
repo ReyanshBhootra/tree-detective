@@ -49,6 +49,10 @@ Create a free service at [console.cloud.timescale.com](https://console.cloud.tim
 - `/` the map. Drag the time travel slider back through real photos of campus from above: New Jersey's 1930s aerial survey, any later state aerial surveys its server has, and satellite photos from 2014 to now ([Esri World Imagery Wayback](https://livingatlas.arcgis.com/wayback/)). No keys needed. A line above the buttons shows how many trees are asleep, which ones need a check-up, and today's weather. The Book button shows the trees you've met and your badges.
 
 Inside a tree's story you can switch language, compare "then" with "today", ask it a question (type or hold the mic), and leave it a note for the next visitor. Sending a photo of a tree that already has a reported problem earns a rescue bonus.
+- 📱 **Log in** with your phone number: the bot texts you, you reply YES, and the website and iMessage share the same trees and points. No password.
+- 💚 **Adopt** a tree you've woken. After that it texts you first, in its own voice: when someone reports a problem on it, leaves a note or voice memory, takes its photo, or when it's scorching, freezing or stormy (at most 4 texts a day, never at night).
+- 🎯 **Quests**: seasonal photo challenges ("a tree with red leaves", "a squirrel on a tree"). Gemini checks the photo, you get points, and the photo goes into that tree's explorer album and the grounds team's records.
+- 🎙️ **Voice memories**: record a short memory at a tree (or send a voice note in iMessage). It's transcribed and checked, and the next person who wakes the tree hears it.
 - `/grounds.html` tree health dashboard for the grounds team, with seasons, photos and a CSV export
 
 ## Things that keep it honest
@@ -100,6 +104,8 @@ The whole game also works over iMessage, no app, website or sign-in needed. Text
 - After that, anything you text is a question for that tree, and it answers out loud
 - "report pest" (or damage, dying), then a photo, sends it to the grounds team with a species guess
 - "spanish", "chinese", "hindi", "gujarati" or "english" switches the language
+- "adopt" so the tree texts you first, "quest" for photo challenges, and a voice note leaves a memory at the tree
+- "pictures" sends the tree's spot through time
 - "points", "visited", "next", "route", "story", "talk to Whisper", "map" (opens the website as you)
 
 People who already play on the website can tap "Text me" and send the code to link the two. Get keys from app.photon.codes and add them to `.env`. Then `npm start` runs the website and the iMessage bot together in one window (set `PHOTON=off` to run the website alone).

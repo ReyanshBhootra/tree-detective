@@ -36,8 +36,9 @@
       Scan a tree
     </button>
     <button id="btn-book" class="btn">Book</button>
+    <button id="btn-quests" class="btn">🎯 Quests</button>
     <button id="btn-route" class="btn">Route</button>
-    <button id="btn-link" class="btn" hidden>Text me</button>
+    <button id="btn-link" class="btn" hidden>📱 Log in</button>
     <a class="btn" href="grounds.html">Grounds</a>
   </nav>
 
@@ -114,6 +115,16 @@
     <p id="story-text" class="story-text"></p>
     <p class="source small" id="story-source"></p>
 
+    <div class="adopt-row" id="adopt-row" hidden>
+      <button type="button" class="btn btn-small" id="btn-adopt">💚 Adopt me</button>
+      <span class="muted small" id="adopters"></span>
+    </div>
+
+    <section class="album" id="album" hidden>
+      <h3>Explorer photos</h3>
+      <div class="album-strip" id="album-strip"></div>
+    </section>
+
     <div id="story-benefits" class="benefits" hidden></div>
 
     <section id="ask" class="ask" hidden>
@@ -137,6 +148,7 @@
           <button class="btn btn-primary">Leave note</button>
         </div>
       </form>
+      <button type="button" class="btn btn-small memory-btn" id="btn-memory" hidden>🎙️ Record a voice memory</button>
       <p class="muted small" id="note-locked" hidden>Wake this tree to leave it a note.</p>
     </section>
 
@@ -194,13 +206,39 @@
     <ol id="route-list"></ol>
   </aside>
 
-  <!-- Photon link dialog -->
+  <!-- Log in with iMessage -->
   <dialog id="link-dialog" class="sheet">
     <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
-    <h2>Get texts from the grove</h2>
-    <p>Text this code to <strong id="link-number">our Tree Detective number</strong> to link your progress. It works for 30 minutes.</p>
-    <p class="link-code" id="link-code">······</p>
-    <p class="muted small">Then text "points", "next", "route" or "story Old Oakley". Text "stop" any time to pause reminders.</p>
+    <div id="login-start">
+      <h2>Log in with your phone</h2>
+      <p class="login-reason" id="login-reason" hidden></p>
+      <p>We'll text you on iMessage. No password, no app.</p>
+      <form id="login-form" class="row">
+        <input id="login-phone" type="tel" inputmode="tel" placeholder="201-555-0123" autocomplete="tel" required>
+        <button class="btn btn-primary">Text me</button>
+      </form>
+      <p class="muted small">Or skip the website: text <strong class="photon-number"></strong> and play right in iMessage.</p>
+    </div>
+    <div id="login-wait" hidden>
+      <h2>Check your iMessage 📱</h2>
+      <p>We texted <strong id="login-wait-phone"></strong>. Reply <strong>YES</strong> to log in.</p>
+      <p class="muted small" id="login-wait-note">Waiting for your reply…</p>
+      <button type="button" class="link-btn" id="login-cancel">Use a different number</button>
+    </div>
+    <div id="login-done" hidden>
+      <h2>📱 <span id="login-phone-shown"></span></h2>
+      <p>You're logged in. Your trees, points and adopted tree are the same here and in iMessage.</p>
+      <p class="muted small">Text <strong class="photon-number"></strong> to play from iMessage.</p>
+      <button type="button" class="btn" id="btn-logout">Log out</button>
+    </div>
+  </dialog>
+
+  <!-- Photo quests -->
+  <dialog id="quests-dialog" class="sheet">
+    <form method="dialog" class="sheet-close"><button aria-label="Close">×</button></form>
+    <h2>📸 Photo quests</h2>
+    <p class="muted">Snap these around campus for points. Every photo also lands in that tree's album and helps the grounds team keep an eye on it.</p>
+    <ul class="quest-list" id="quest-list"></ul>
   </dialog>
 
   <script src="config.js"></script>
